@@ -1,0 +1,15 @@
+{
+  "name": "abdallah-hatem",
+  "owner": {
+    "name": "Abdallah",
+    "url": "https://github.com/abdallah-hatem"
+  },
+  "plugins": [
+    {
+      "name": "abdallah-skills",
+      "source": "./plugins/abdallah-skills",
+      "description": "Frontend and backend conventions for Next.js + NestJS + Prisma, plus a correction-capture loop."
+    }
+  ],
+  "description": "Abdallah's Claude Code skills: opinionated Next.js and NestJS + Prisma conventions, and a hook-backed loop that records corrections so they don't repeat."
+}
