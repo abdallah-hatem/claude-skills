@@ -63,6 +63,21 @@ Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
 Use absolute paths if `~` doesn't expand in your shell. Both scripts exit 0 on unexpected
 input, so a broken hook can never block a prompt.
 
+## Editing these
+
+Edit here, not in `~/.claude/skills/` — the plugin install is what your machines read.
+
+**Bump `version` in `plugins/abdallah-skills/.claude-plugin/plugin.json` in the same commit.**
+`claude plugin update` compares version strings, so without a bump it reports
+"already at the latest version" and silently keeps serving the old files.
+
+```bash
+claude plugin marketplace update abdallah-hatem
+claude plugin update abdallah-skills@abdallah-hatem
+```
+
+Then restart the session; skills load at startup.
+
 ## Adapting these
 
 They encode *my* stack. The line that matters is in each skill:
