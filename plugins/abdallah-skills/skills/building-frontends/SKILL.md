@@ -41,88 +41,16 @@ When shadcn has no equivalent, style it yourself until it belongs to the design:
 
 ## Forms
 
-**Every required field is marked with an asterisk on its label** — not in the placeholder,
-which vanishes the moment someone types.
+Every required field carries an asterisk on its **label** (`aria-hidden`, with `required` on
+the input). Every input gets a placeholder **and** keeps its label — the placeholder shows the
+shape of a valid answer, never restates the name. Both are translated strings.
 
-```tsx
-<FormLabel>
-  {t('customers.phone')}
-  {required && <span aria-hidden="true" className="ms-0.5 text-destructive">*</span>}
-</FormLabel>
-```
+Fields are 16px on mobile (`text-base md:text-sm`) or iOS Safari zooms in and stays zoomed.
+Number inputs ship with no spin buttons and ignore the wheel. Numbers a person reads as
+quantities are displayed grouped — `100,000`, not `100000` — with the form holding a number
+and the input holding a string.
 
-Three things that keep it correct:
-
-- **`aria-hidden` on the asterisk**, with `required` (or `aria-required`) on the input. The
-  asterisk is a visual convention; without this a screen reader announces "star" as if it
-  were part of the label, and never says the field is required.
-- **`ms-0.5`, not `ml-0.5`** — the asterisk follows the label text in both directions.
-- **Never the only signal.** Colour and a glyph both fail someone; the validation message is
-  what actually states the requirement.
-
-When most fields in a form are required, invert it — mark the few optional ones instead. A
-form where every label carries an asterisk conveys nothing.
-
-**Every input gets a placeholder, and every input keeps its label.** The two do different
-jobs: the label names the field, the placeholder shows the shape of a valid answer. A
-placeholder disappears on input, so it can never carry the name — the field would lose its
-identity exactly when someone is checking what they typed.
-
-So the placeholder never restates the label. `Phone` / `"Phone"` is wasted space;
-`Phone` / `"01xxxxxxxxx"` answers the question the label raises.
-
-```tsx
-<FormLabel>{t('customers.phone')}<span aria-hidden="true" className="ms-0.5 text-destructive">*</span></FormLabel>
-<Input placeholder={t('customers.phonePlaceholder')} {...field} />
-```
-
-Placeholders are user-facing strings — they come from the locale files like everything else,
-and `en`/`ar` both carry the key. A hardcoded placeholder is the most commonly missed
-untranslated string on a screen.
-
-**iOS Safari zooms the page when a focused field's font-size is under 16px** — and it does
-not zoom back out on blur, so the whole layout stays scaled and the user has to pinch out.
-Applies to `<input>`, `<textarea>`, and `<select>`, in every iOS browser (they all run WebKit).
-
-`text-sm` is 14px, so the default trips it. Fix it on the primitive, once:
-
-```tsx
-// components/ui/input.tsx — 16px on mobile, design size from md up where zoom can't happen
-className={cn('... text-base md:text-sm', className)}
-```
-
-Older shadcn `Input`/`Textarea`/`Select` ship bare `text-sm` — check the primitive before
-assuming it's handled.
-
-**Never fix it with the viewport meta.** `maximum-scale=1` or `user-scalable=no` stops the
-zoom by disabling pinch-zoom entirely, which fails WCAG 1.4.4 and takes the feature away from
-everyone who relies on it.
-
-**Number inputs ship with no spin buttons, and the wheel must not change their value.** The
-arrows are a tiny hit target nobody uses, and scrolling past a focused number field silently
-edits it — the user sees a changed quantity or price they never typed. Fix both on the
-primitive:
-
-```tsx
-// components/ui/input.tsx
-className={cn(
-  '... [appearance:textfield]',
-  '[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
-  className,
-)}
-onWheel={(e) => e.currentTarget.blur()}
-```
-
-`onWheel` blurs rather than calling `preventDefault()` because React attaches wheel listeners
-passively at the root — `preventDefault()` there is ignored, which is why the obvious fix
-looks like it works and doesn't. Blurring hands the scroll back to the page.
-
-Keyboard ↑/↓ still step the value while focused; that one is fine, since it is deliberate.
-
-For anything that isn't really a spinnable quantity — a phone number, an OTP, an ID, a card
-number — prefer `type="text"` with `inputMode="numeric"`. It gets the mobile numeric keypad
-without inheriting any of `type="number"`'s behaviour, and unlike `type="number"` it respects
-`maxLength`.
+See [forms.md](forms.md).
 
 ## Tables and pagination
 
@@ -214,6 +142,9 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - A hardcoded placeholder string
 - `router.push` or `<Link>` on a pagination, sort, or filter control without `scroll: false`
 - A table that falls back to skeletons on page change instead of dimming its rows
+- A raw `100000` shown to a user where `100,000` belongs
+- Formatted text stored in form state or sent to the API
+- Reformatting on every keystroke — the caret jumps; format on blur
 - A `type="number"` with visible spin buttons, or one the wheel can change
 - `preventDefault()` in an `onWheel` handler — React makes it passive, so it does nothing
 - `type="number"` for a phone, OTP, or ID — use `inputMode="numeric"`
