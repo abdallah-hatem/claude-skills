@@ -98,6 +98,25 @@ assuming it's handled.
 zoom by disabling pinch-zoom entirely, which fails WCAG 1.4.4 and takes the feature away from
 everyone who relies on it.
 
+## Tables and pagination
+
+**Paging a table never moves the viewport.** The user is looking at the rows; jumping to the
+top of the page means scrolling back down to see what they asked for. Same for sorting and
+filtering — the control they just used should still be under their cursor.
+
+In the App Router, pagination is a URL param change, and `router.push` scrolls to top by
+default. Opt out at every pagination, sort, and filter control:
+
+```tsx
+router.push(`?${params}`, { scroll: false })
+// and for links
+<Link href={`?${params}`} scroll={false}>
+```
+
+While the next page loads, keep the current rows in place and dim them. Swapping back to
+skeletons collapses the table to a different height, which moves the viewport just as badly
+as scrolling did — see Loading states.
+
 ## Reusability contract
 
 The rule that matters most, because it is the one that erodes under deadline.
@@ -167,6 +186,8 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - An input with no placeholder, or a placeholder that just repeats the label
 - A placeholder used instead of a label
 - A hardcoded placeholder string
+- `router.push` or `<Link>` on a pagination, sort, or filter control without `scroll: false`
+- A table that falls back to skeletons on page change instead of dimming its rows
 - An input/textarea/select under 16px on mobile — iOS Safari zooms and stays zoomed
 - `user-scalable=no` or `maximum-scale=1` in the viewport meta
 - A clickable element without `cursor-pointer`
