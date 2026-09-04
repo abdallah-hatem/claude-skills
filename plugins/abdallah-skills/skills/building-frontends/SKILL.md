@@ -98,6 +98,32 @@ assuming it's handled.
 zoom by disabling pinch-zoom entirely, which fails WCAG 1.4.4 and takes the feature away from
 everyone who relies on it.
 
+**Number inputs ship with no spin buttons, and the wheel must not change their value.** The
+arrows are a tiny hit target nobody uses, and scrolling past a focused number field silently
+edits it — the user sees a changed quantity or price they never typed. Fix both on the
+primitive:
+
+```tsx
+// components/ui/input.tsx
+className={cn(
+  '... [appearance:textfield]',
+  '[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+  className,
+)}
+onWheel={(e) => e.currentTarget.blur()}
+```
+
+`onWheel` blurs rather than calling `preventDefault()` because React attaches wheel listeners
+passively at the root — `preventDefault()` there is ignored, which is why the obvious fix
+looks like it works and doesn't. Blurring hands the scroll back to the page.
+
+Keyboard ↑/↓ still step the value while focused; that one is fine, since it is deliberate.
+
+For anything that isn't really a spinnable quantity — a phone number, an OTP, an ID, a card
+number — prefer `type="text"` with `inputMode="numeric"`. It gets the mobile numeric keypad
+without inheriting any of `type="number"`'s behaviour, and unlike `type="number"` it respects
+`maxLength`.
+
 ## Tables and pagination
 
 **Paging a table never moves the viewport.** The user is looking at the rows; jumping to the
@@ -188,6 +214,9 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - A hardcoded placeholder string
 - `router.push` or `<Link>` on a pagination, sort, or filter control without `scroll: false`
 - A table that falls back to skeletons on page change instead of dimming its rows
+- A `type="number"` with visible spin buttons, or one the wheel can change
+- `preventDefault()` in an `onWheel` handler — React makes it passive, so it does nothing
+- `type="number"` for a phone, OTP, or ID — use `inputMode="numeric"`
 - An input/textarea/select under 16px on mobile — iOS Safari zooms and stays zoomed
 - `user-scalable=no` or `maximum-scale=1` in the viewport meta
 - A clickable element without `cursor-pointer`
