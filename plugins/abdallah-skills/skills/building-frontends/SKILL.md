@@ -55,12 +55,13 @@ See [forms.md](forms.md).
 
 ## Tables and pagination
 
-**Paging a table never moves the viewport.** The user is looking at the rows; jumping to the
-top of the page means scrolling back down to see what they asked for. Same for sorting and
-filtering — the control they just used should still be under their cursor.
+**No control that re-queries a list ever moves the viewport** — pagination, search, sort,
+filter, page size, tab switches, "load more". The user is looking at the rows; jumping to the
+top of the page means scrolling back down to see what they just asked for, and the control
+they used should still be under their cursor.
 
-In the App Router, pagination is a URL param change, and `router.push` scrolls to top by
-default. Opt out at every pagination, sort, and filter control:
+In the App Router these are URL param changes, and `router.push` scrolls to top by default.
+Opt out at every one of them:
 
 ```tsx
 router.push(`?${params}`, { scroll: false })
@@ -141,7 +142,7 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - An input with no placeholder, or a placeholder that just repeats the label
 - A placeholder used instead of a label
 - A hardcoded placeholder string
-- `router.push` or `<Link>` on a pagination, sort, or filter control without `scroll: false`
+- `router.push` or `<Link>` without `scroll: false` on any list control — pagination, search, sort, filter, page size, tabs
 - A table that falls back to skeletons on page change instead of dimming its rows
 - A description, notes, or comment field as a single-line `<Input>`
 - A length limit with no visible counter
