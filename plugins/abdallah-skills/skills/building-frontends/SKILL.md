@@ -45,8 +45,9 @@ Every required field carries an asterisk on its **label** (`aria-hidden`, with `
 the input). Every input gets a placeholder **and** keeps its label — the placeholder shows the
 shape of a valid answer, never restates the name. Both are translated strings.
 
-Fields are 16px on mobile (`text-base md:text-sm`) or iOS Safari zooms in and stays zoomed.
-Number inputs ship with no spin buttons and ignore the wheel. Numbers a person reads as
+Prose fields — description, notes, address, comment — are a `<Textarea>` with 3–4 rows, never
+a single-line input. Fields are 16px on mobile (`text-base md:text-sm`) or iOS Safari zooms in
+and stays zoomed. Number inputs ship with no spin buttons and ignore the wheel. Numbers a person reads as
 quantities are displayed grouped — `100,000`, not `100000` — with the form holding a number
 and the input holding a string.
 
@@ -142,6 +143,8 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - A hardcoded placeholder string
 - `router.push` or `<Link>` on a pagination, sort, or filter control without `scroll: false`
 - A table that falls back to skeletons on page change instead of dimming its rows
+- A description, notes, or comment field as a single-line `<Input>`
+- A length limit with no visible counter
 - A raw `100000` shown to a user where `100,000` belongs
 - Formatted text stored in form state or sent to the API
 - Reformatting on every keystroke — the caret jumps; format on blur

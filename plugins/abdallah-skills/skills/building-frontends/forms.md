@@ -39,6 +39,22 @@ Placeholders are user-facing strings — they come from the locale files like ev
 and `en`/`ar` both carry the key. A hardcoded placeholder is the most commonly missed
 untranslated string on a screen.
 
+**Prose gets a `<Textarea>`, not an `<Input>`.** Description, notes, address, comment, reason,
+message, feedback, instructions — anything written in sentences. A single-line input scrolls
+its own text out of view as you type, so the writer can't re-read what they wrote before
+submitting, and a long value looks empty from the left edge.
+
+Give it a real starting height, 3–4 rows. The size of the box is how the form says how much
+it expects; a one-row textarea is an input with extra steps.
+
+Let it grow with the content or scroll inside itself — never clip.
+
+The inverse holds too: a name, a title, a reference number is an `<Input>`. A textarea there
+invites paragraphs into a field the table renders on one line.
+
+Where there is a length limit, show a live counter. A limit the user only discovers by
+hitting it is a limit that loses their sentence.
+
 **iOS Safari zooms the page when a focused field's font-size is under 16px** — and it does
 not zoom back out on blur, so the whole layout stays scaled and the user has to pinch out.
 Applies to `<input>`, `<textarea>`, and `<select>`, in every iOS browser (they all run WebKit).
