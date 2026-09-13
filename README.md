@@ -20,6 +20,7 @@ Restart the session afterwards; skills load at startup.
 | **building-backends** | any API work — controllers, services, DTOs, Prisma, auth, pagination, errors |
 | **capturing-corrections** | a correction worth recording so it doesn't have to be given twice |
 | **deploying-to-vercel** | deploying a Nest/Express/Next app, and the failures that look like nothing is wrong |
+| **build-software** | `/build-software` only — idea → spec → API contract → plan → build → verify → deploy, loading the other skills at each stage and using subagents where tasks are independent |
 
 Each keeps `SKILL.md` as a scannable contract and pushes detail into sibling files that load
 only when they're relevant.
