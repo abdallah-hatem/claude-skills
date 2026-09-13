@@ -1,6 +1,6 @@
 ---
 name: build-software
-description: Use when the user runs /build-software to build a new app from idea to deployed — intake, spec, business doc, API contract, design system, plan, build, verify, ship — or to add a feature to an existing app through the lighter feature mode, on the NestJS + Next.js stack.
+description: Use when the user runs /build-software to build a new app from idea to deployed — intake, spec, business doc, API contract, design system, plan, build, verify, ship — or to add a feature to an existing app through the lighter feature mode — guided, or fully autonomous — on the NestJS + Next.js stack.
 disable-model-invocation: true
 ---
 
@@ -13,6 +13,21 @@ front.
 
 **In an existing repo, read its `CLAUDE.md`, `docs/BUSINESS_LOGIC.md`, and `docs/DESIGN.md`
 first.** The repo's branching, test commands, and verification steps override anything here.
+
+## Run mode — ask first
+
+Before anything else, ask with `AskUserQuestion` how the run should go:
+
+- **Guided** — stops at every gate below that waits for the user.
+- **Autonomous to preview** — decides every gate itself, ships to the `dev` preview, and ends at the
+  release PR.
+- **Fully autonomous** — decides every gate itself and doesn't stop until the app is live in
+  production.
+
+Skip the question if the invocation names the mode (`/build-software autonomous <goal>`), or if
+`docs/BUILD_LOG.md` already records one — then resume from it. Autonomous runs log every decision in
+`docs/BUILD_LOG.md`, and still stop for money, missing access, and irreversible data loss. Details:
+[autonomous.md](autonomous.md).
 
 ## Modes
 
@@ -76,6 +91,9 @@ If that doesn't print, stop. Layout and rules: [credentials.md](credentials.md).
 | 6 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests + alignment review** |
 | 7 | Verify | `superpowers:verification-before-completion` | **all green** |
 | 8 | Ship | `abdallah-skills:deploying-to-vercel` | **dev: automatic after Verify · production: user says go** |
+
+In an autonomous run, every gate that waits for the user is decided with the recommended default and
+logged in `docs/BUILD_LOG.md` instead — see [autonomous.md](autonomous.md).
 
 ### 1. Intake
 
@@ -282,6 +300,7 @@ When to use them, what a brief must contain, and how to check the result:
 - A subagent brief or report that skips the rules in `subagents.md`
 - `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
 - A PR merged into `dev` before Verify passes, or a direct push to `dev` or `production`
-- A merge into `production` without the user's go-ahead
+- A merge into `production` without the user's go-ahead, in a run that isn't fully autonomous
+- A run started without asking the run mode, or an autonomous decision missing from the build log
 - A squash merge from `dev` into `production`
 - A preview deployment that reads the production database or calls the production API

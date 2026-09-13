@@ -2,7 +2,8 @@
 
 Work reaches users by one path: a feature branch, a PR into `dev`, a preview deployment, then a
 release PR into `production`. Both PRs are opened by default, and the `dev` PR is merged by
-default. **The `production` merge waits for the user** — it is the production deploy.
+default. **The `production` merge waits for the user** — it is the production deploy — unless the user chose
+a fully autonomous run.
 
 ```
 feature/<name> ──PR──▶ dev ──PR──▶ production
@@ -83,6 +84,10 @@ user should check on the preview first. Then **stop** and wait for the user. On 
 gh pr merge --merge              # a merge commit — never squash
 ```
 
+In a **fully autonomous** run the go-ahead was given when the run started: merge once the release PR's
+checks pass and the preview walk-through has succeeded. An **autonomous-to-preview** run opens the
+release PR and ends there.
+
 **Never squash `dev` into `production`.** A squash writes a new commit onto `production` that `dev`
 doesn't contain. The next release PR then shows changes that are already live, and the two branches
 drift further apart with every release.
@@ -139,7 +144,7 @@ serves errors.
 - A first commit made before `.gitignore` covers `.env*` and `*.local.md`
 - A direct push to `dev` or `production` after setup
 - A PR merged into `dev` before Verify passes
-- A merge into `production` without the user's go-ahead
+- A merge into `production` without the user's go-ahead, in a run that isn't fully autonomous
 - A squash merge from `dev` into `production`
 - A Vercel project whose Production Branch is still the default
 - A preview environment variable copied from production, or a shared database
