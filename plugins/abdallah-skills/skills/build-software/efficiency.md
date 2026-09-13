@@ -28,6 +28,8 @@ work happens elsewhere:
   parallel, each in its own worktree.
 - **Broad searches go to a read-only search subagent**, which returns the answer, not the files it read.
 - **Read the lines you need**, not the whole file. Never re-read a file you just wrote.
+- **With Graft on, query before reading** — `graft_repo_map`, `graft_find_code`, and `graft skeleton
+  <file>` for a file's signatures without its bodies ([graft.md](graft.md)).
 
 Stages that need the user — intake, approvals, open decisions — stay in the main thread, since a
 subagent can't ask the user anything.

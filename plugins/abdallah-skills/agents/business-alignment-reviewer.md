@@ -34,7 +34,8 @@ If the business doc does not exist, stop and report `NO BUSINESS DOC`.
 
 ## Checking a task
 
-Read the diff with `git diff <range>` or `git show <commit>`.
+Read the diff with `git diff <range>` or `git show <commit>`. If the repo has a `graft/` folder, locate
+the code a rule concerns with `graft ask`, `graft callers`, or `graft skeleton` before reading whole files.
 
 - The code implements the rules the task claims — including the failure paths the flow
   describes, not only the success path.
@@ -55,7 +56,8 @@ skipped per-task review, and none of them may change business behavior.
 ## Not your job
 
 - Style, naming, architecture, or test quality.
-- Fixing anything. Use Bash only for `git diff`, `git show`, and `git log`.
+- Fixing anything. Use Bash only for `git diff`, `git show`, `git log`, and read-only `graft` queries
+  (`ask`, `callers`, `skeleton`, `blast`).
 - Deciding who is right. When the code and the doc disagree, report the disagreement.
 
 ## Report

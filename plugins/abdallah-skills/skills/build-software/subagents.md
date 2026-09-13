@@ -27,6 +27,9 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Scope** — the repo path, the `feature/<name>` branch or worktree it works in, the files or
   domain it owns, and what it must not touch.
 - **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
+- **Graft, if the run uses it** — start with `graft_repo_map` and `graft_find_code` (or `graft ask`)
+  before reading files. Subagents don't get the repo map or the per-prompt pointers Graft injects into
+  the main session, so without this line they explore file by file ([graft.md](graft.md)).
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
 - **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
   Screens use tokens only; no new colours, sizes, or curves.

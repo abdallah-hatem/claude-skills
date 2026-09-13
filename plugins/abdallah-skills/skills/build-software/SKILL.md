@@ -28,18 +28,22 @@ through six or eight stages wastes hours and tokens.
 
 The test: **does it add or change what the product does for a user?** If not, it doesn't belong here.
 
-## Run mode — ask first
+## Ask first
 
-Before anything else, ask with `AskUserQuestion` how the run should go:
+Before anything else, ask two questions in one `AskUserQuestion` call:
 
-- **Guided** — stops at every gate below that waits for the user.
-- **Autonomous to preview** — decides every gate itself, ships to the `dev` preview, and ends at the
-  release PR.
-- **Fully autonomous** — decides every gate itself and doesn't stop until the app is live in
-  production.
+1. **Run mode**
+   - **Guided** — stops at every gate below that waits for the user.
+   - **Autonomous to preview** — decides every gate itself, ships to the `dev` preview, and ends at
+     the release PR.
+   - **Fully autonomous** — decides every gate itself and doesn't stop until the app is live in
+     production.
+2. **Use Graft?** — a local code graph that lets agents find code with a query instead of reading
+   file after file. It pays off on large existing repos, and grows into its value on a new one:
+   [graft.md](graft.md).
 
-Skip the question if the invocation names the mode (`/build-software autonomous <goal>`), or if
-`docs/BUILD_LOG.md` already records one — then resume from it. Autonomous runs log every decision in
+Skip any question the invocation already answers (`/build-software autonomous graft <goal>`), or that
+`docs/BUILD_LOG.md` already records — then resume from it. Autonomous runs log every decision in
 `docs/BUILD_LOG.md`, and still stop for money, missing access, and irreversible data loss:
 [autonomous.md](autonomous.md).
 
@@ -57,7 +61,8 @@ Pick the mode from the repo, not from how the request is worded; if the two disa
 `docs/BUSINESS_LOGIC.md` and **stops for approval only when the feature changes a business rule, a
 role, money, or the data model**. Its Verify runs the whole suite and every smoke spec, not only the
 new ones. A feature that needs a new design direction, a new kind of user, or a change to how tenants
-are separated is architecture — use new-app mode. Stage by stage: [feature-mode.md](feature-mode.md).
+are separated is architecture — use new-app mode. With Graft on, its Context stage wires Graft in if the repo doesn't have it yet, and explores the code
+through it. Stage by stage: [feature-mode.md](feature-mode.md).
 
 ## The business doc
 
@@ -193,6 +198,7 @@ Before the first task, set up what every later check depends on:
    `CREDENTIALS.local.md`: [verification.md](verification.md).
 3. **Smoke specs** — the Playwright setup that signs in as the seeded accounts:
    [verification.md](verification.md).
+4. **Graft**, if the user chose it — wired in before the first task: [graft.md](graft.md).
 
 Every task then happens on a `feature/<name>` branch cut from `dev`. Backend tasks load
 `building-backends`; frontend tasks load `building-frontends`. Tests follow the class:

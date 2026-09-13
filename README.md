@@ -20,7 +20,7 @@ Restart the session afterwards; skills load at startup.
 | **building-backends** | any API work — controllers, services, DTOs, Prisma, auth, pagination, errors |
 | **capturing-corrections** | a correction worth recording so it doesn't have to be given twice |
 | **deploying-to-vercel** | deploying a Nest/Express/Next app, and the failures that look like nothing is wrong |
-| **build-software** | `/build-software` only — a new app from idea to production, or a feature added to an existing app, run guided or fully autonomous. Business doc, edge-case tests, a design approval, git flow with PRs into `dev` and `production`, preview and production deploys on Vercel, and test logins kept in a gitignored file |
+| **build-software** | `/build-software` only — a new app from idea to production, or a feature added to an existing app, run guided or fully autonomous, with optional Graft code search. Business doc, edge-case tests, a design approval, git flow with PRs into `dev` and `production`, preview and production deploys on Vercel, and test logins kept in a gitignored file |
 
 Each keeps `SKILL.md` as a scannable contract and pushes detail into sibling files that load
 only when they're relevant.
