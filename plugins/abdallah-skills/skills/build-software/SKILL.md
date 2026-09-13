@@ -53,44 +53,16 @@ Three rules keep it true:
 
 ## Test credentials
 
-Every login needed to test the app — local, preview, and production before launch — lives in
-`CREDENTIALS.local.md` at the repo root, so the user can sign in to any environment without asking.
-
-**It is never committed, and the repo is public.** Before writing a single value:
+Every test login — local, preview, and production before launch — goes in `CREDENTIALS.local.md` at
+the repo root, so the user can sign in to any environment. **The repo is public, so the file is
+never committed.** Before writing any value:
 
 ```bash
 grep -qxF '*.local.md' .gitignore || echo '*.local.md' >> .gitignore
 git check-ignore -q CREDENTIALS.local.md && echo "ignored — safe to write"
 ```
 
-If that doesn't print, stop. A credential pushed to a public repo is exposed the moment it lands,
-and deleting the file afterwards doesn't take it back.
-
-```markdown
-# Test credentials — never commit
-Last updated: YYYY-MM-DD
-
-## Local — http://localhost:3000
-| Role  | Email            | Password | Notes                    |
-|-------|------------------|----------|--------------------------|
-| Owner | owner@test.local | …        | seeded by prisma/seed.ts |
-
-## Preview — https://<app>-git-dev-<team>.vercel.app  (branch: dev)
-| Role | Email | Password | Notes |
-
-## Production — https://<app>.vercel.app  (branch: production)
-| Role  | Email | Password | Notes                                   |
-|-------|-------|----------|-----------------------------------------|
-| Owner | …     | …        | pre-launch test account — remove at launch |
-```
-
-- **Test accounts only**, one per role. Never a real user's password.
-- **Logins and URLs, not infrastructure secrets.** Database passwords and API keys live in
-  `.env.local` and Vercel's environment settings.
-- **Updated in the same step** that seeds an account, changes a password, or gives an environment
-  a new URL.
-- **Never copied** into a commit, a PR description, a code comment, a log, or a subagent brief.
-- If the repo already keeps credentials under another gitignored name, follow the repo.
+If that doesn't print, stop. Layout and rules: [credentials.md](credentials.md).
 
 ## Stages — new app
 
@@ -309,8 +281,6 @@ When to use them, what a brief must contain, and how to check the result:
 - Every stack skill loaded at the start instead of at its stage
 - A subagent brief or report that skips the rules in `subagents.md`
 - `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
-- A credential value in a commit, PR description, code comment, log, or brief
-- A real user's password in the credentials file
 - A PR merged into `dev` before Verify passes, or a direct push to `dev` or `production`
 - A merge into `production` without the user's go-ahead
 - A squash merge from `dev` into `production`
