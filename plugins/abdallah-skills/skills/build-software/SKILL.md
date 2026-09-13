@@ -46,7 +46,7 @@ Three rules keep it true:
 | 1 | Intake | `grilling` (or `superpowers:brainstorming`) | — |
 | 2 | Spec + business doc | — | **user approves both** |
 | 3 | Contract | `abdallah-skills:building-backends` | — |
-| 4 | Plan | `superpowers:writing-plans` | **alignment review** |
+| 4 | Plan | `superpowers:writing-plans` | **edge cases listed + alignment review** |
 | 5 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests + alignment review** |
 | 6 | Verify | `superpowers:verification-before-completion` | **all green** |
 | 7 | Ship | `abdallah-skills:deploying-to-vercel` | **user says go** |
@@ -72,8 +72,35 @@ be built independently — and what stops them disagreeing when they meet.
 ### 4. Plan
 
 Break the spec into tasks, each tagged `backend` / `frontend` / `infra` and each marked with what
-it depends on — the dependency marks decide what can run in parallel. Then run the alignment
-review on the plan, before any code is written.
+it depends on — the dependency marks decide what can run in parallel.
+
+**Every task lists its edge cases in the plan, before any code is written.** Derive them from
+three sources, in this order:
+
+| Source | Rule |
+|---|---|
+| **Business doc** | every invariant the task touches gets a test that tries to break it · every failure path in its flows gets a test · every money rule gets boundary tests · every role gets a test proving a role without the permission is refused |
+| **Contract** | every request field the task accepts: missing, `null`, wrong type, at the limit, one past the limit |
+| **Stack checklist** | the generic cases in `building-backends` → `testing.md`, or `building-frontends` → Testing |
+
+Write each case as one line with its expected outcome and where it came from:
+
+```markdown
+#### Task 7 — Cancel a booking (backend)
+Edge cases:
+- [ ] Cancel a booking whose wash has started → 409, status unchanged   (invariant: cancel only before start)
+- [ ] Cancel another customer's booking → 404                            (role: customers see only their own)
+- [ ] Cancel a paid booking → refund created for the full amount         (money: cancellation refunds in full)
+- [ ] Cancel an already-cancelled booking → 409                          (checklist: wrong state)
+- [ ] Unknown booking id → 404                                           (checklist: not found)
+```
+
+Business-doc cases come first because no generic checklist can produce them. The source in
+brackets shows why each case is there — and makes a missing one easy to spot.
+
+Keep the edge-case lists in the plan file and include them when you summarise the plan, so the
+user sees them before any code and can add one that was missed. Then run the alignment review
+on the plan.
 
 ### 5. Build
 
@@ -81,8 +108,8 @@ Backend tasks load `building-backends`; frontend tasks load `building-frontends`
 with three kinds of test:
 
 - **Unit** — the logic, branch by branch
-- **Edge cases** — the checklist in the stack skill: empty and null input, bounds, duplicates,
-  wrong state, pagination limits, access, and another user's data
+- **Edge cases** — every case the plan lists for this task, one test each, named after the case.
+  A case discovered while building is added to the plan *and* tested; the list only grows.
 - **Full flow** — the feature driven end to end the way a user would
 
 One task, one commit, then the alignment review on that task's diff. Decide per batch whether to
@@ -90,9 +117,10 @@ run tasks inline or through subagents — see below.
 
 ### 6. Verify
 
-Full test suite green, with the real output shown. Check that every task's three kinds of test
-exist, not only that the suite passes — a suite with no edge-case tests passes too. For UI, drive
-the changed flow in a browser at mobile and tablet, in LTR and RTL.
+Full test suite green, with the real output shown. Then tick off each planned edge case against
+the test that covers it, by test name. A case with no matching test fails verification, however
+green the suite is. For UI, drive the changed flow in a browser at mobile and tablet, in LTR
+and RTL.
 
 ### 7. Ship
 
@@ -106,8 +134,8 @@ plan's path or the task's commit range. It reports; it never edits.
 
 Run it:
 
-- **after the plan**, before any code
-- **after each task**, on that task's diff
+- **after the plan**, before any code — including whether the edge cases cover every rule in the doc
+- **after each task**, on that task's diff — including whether each planned edge case has a test
 - **after a business change**, on the plan, to find the tasks the change invalidated
 
 Not after every step. A task is the smallest unit with a diff worth judging; reviewing smaller
@@ -155,7 +183,8 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
 - **The contract** it builds against, pasted in rather than pointed at.
-- **Tests** — unit, edge-case, and full-flow, per the stack skill.
+- **Tests** — unit and full-flow, plus **the task's edge-case list from the plan, pasted in** —
+  one test per case, named after it.
 - **Run the test suite in the foreground and commit before reporting.** A subagent that starts a
   long test run in the background stops mid-turn and leaves its work uncommitted.
 - **Report back** the files changed, the test command with its real output, and the commit hash.
@@ -173,7 +202,11 @@ against the contract. "All tests pass" with no output is a claim, not evidence.
 - Table names, endpoints, or components in the business doc
 - Backend and frontend built in parallel before the API contract exists
 - A task shipped without unit, edge-case, and full-flow tests
-- A green suite accepted as proof when the edge-case tests don't exist
+- A task in the plan with no edge-case list
+- Edge cases taken only from the generic checklist, none from the business doc
+- A rule in the business doc that must never break, with no test that tries to break it
+- A planned edge case ticked off without a test named for it
+- A green suite accepted as proof without ticking each planned edge case against a test
 - A `CONFLICTS` verdict overridden without asking the user
 - The alignment review run on every step instead of every task
 - Every stack skill loaded at the start instead of at its stage

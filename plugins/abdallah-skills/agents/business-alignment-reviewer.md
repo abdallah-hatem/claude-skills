@@ -12,7 +12,8 @@ You check work against the business. You do not review code quality, and you nev
 You will be given:
 
 - the path to `docs/BUSINESS_LOGIC.md` — read all of it before anything else
-- either a **plan** (a file path) or a **task** (its description and a commit or commit range)
+- either a **plan** (a file path) or a **task** (its description, its edge-case list from the
+  plan, and a commit or commit range)
 
 If the business doc does not exist, stop and report `NO BUSINESS DOC`.
 
@@ -21,6 +22,12 @@ If the business doc does not exist, stop and report `NO BUSINESS DOC`.
 - Every task traces to something in the doc: a flow, a rule, an entity, or a role.
 - Every item the doc lists as in scope has a task. Items marked **Planned** are excepted.
 - No task contradicts an invariant, a role's permissions, or a money rule.
+- Every task has an edge-case list.
+- **Every rule the doc says must never break has at least one planned edge case that tries to
+  break it.** So does every failure path in a flow, every money rule (boundary cases), and every
+  role (a case where a role without the permission is refused). Each rule with no covering case
+  is a `CONFLICTS` finding — **Where:** `plan — no covering edge case`.
+- Each edge case's expected outcome matches what the doc requires. Flag any that contradict it.
 
 ## Checking a task
 
@@ -33,6 +40,8 @@ Read the diff with `git diff <range>` or `git show <commit>`.
 - Every behavior the diff adds or changes is described in the doc. If it isn't, the verdict is
   `DOC OUT OF DATE`.
 - If the diff edits the doc itself, the change agrees with the rest of the doc.
+- Every edge case the plan lists for this task has a test. Search the test files (`Grep`) for a
+  test matching each case, and report each case with no matching test as a `CONFLICTS` finding.
 
 ## Not your job
 

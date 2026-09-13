@@ -39,7 +39,7 @@ testing setup.
 
 | Agent | Used by | Does |
 |---|---|---|
-| `business-alignment-reviewer` | `/build-software` | Checks a plan, or a task's diff, against `docs/BUSINESS_LOGIC.md`. Reports conflicts, missing coverage, or a doc that's out of date. Read-only. |
+| `business-alignment-reviewer` | `/build-software` | Checks a plan, or a task's diff, against `docs/BUSINESS_LOGIC.md` — including whether every business rule has an edge-case test that tries to break it. Reports conflicts, missing coverage, or a doc that's out of date. Read-only. |
 
 ## Hooks
 
