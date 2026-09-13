@@ -35,8 +35,9 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
   Screens use tokens only; no new colours, sizes, or curves.
 - **The contract** it builds against, pasted in rather than pointed at.
-- **Tests** — unit and full-flow, plus **the task's edge-case list from the plan, pasted in** —
-  one test per case, named after it.
+- **The task's class and its tests** — `logic`: unit and full-flow tests plus **the edge-case list
+  from the plan, pasted in**, one test per case named after it · `ui`: component tests for the
+  behavior and a smoke spec · `surface`: no new tests.
 - **No credentials.** Never paste values from `CREDENTIALS.local.md`. Tests that need a signed-in
   user create one in their own setup.
 - **Run the test suite in the foreground and commit before reporting.** A subagent that starts a

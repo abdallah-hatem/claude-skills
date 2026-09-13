@@ -78,6 +78,9 @@ up instead of leaving it idle.
 still fails, mark it under **Blocked** with what was tried, and carry on with every task that doesn't
 depend on it. Only when every remaining task depends on something blocked does the run stop.
 
+**A failed production smoke check doesn't stop the run either.** Roll back, log the release under
+**Blocked**, fix forward through `dev`, and release again — `shipping.md` → Rollback.
+
 ## What still stops an autonomous run
 
 These can't be decided on the user's behalf, whatever mode was chosen:
@@ -98,8 +101,8 @@ The run is done when:
 - every task in the plan is ticked, or listed under **Blocked** with its reason
 - the full suite is green and every planned edge case matches a named test
 - the final alignment review is `ALIGNED`
-- the app is deployed — to preview, or to production for a fully autonomous run — and the main flows
-  have been walked on the deployed URL
+- the app is deployed — to preview, or to production for a fully autonomous run — and the smoke
+  specs pass against the deployed URL — read-only specs on production
 - `CREDENTIALS.local.md` has every URL and test account
 
 Then write a final report: what was built, the preview and production URLs, where the test logins

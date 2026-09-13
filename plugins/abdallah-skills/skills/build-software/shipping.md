@@ -65,13 +65,16 @@ and whether `docs/BUSINESS_LOGIC.md` changed. No credential values.
 After the merge:
 
 - wait for the Vercel preview deployment to be Ready — the PR's deployment check, or `vercel ls`
-- walk the changed flow on the preview URL; working locally is not the same as working deployed
+- run the smoke specs against the preview URL ([verification.md](verification.md)); working locally is not
+  the same as working deployed
 
 A broken preview is fixed on a new branch and a new PR — never by pushing to `dev`.
 
 ## dev → production (on the user's go-ahead)
 
-When `dev` holds something worth releasing, open the release PR:
+When `dev` holds something worth releasing, run the alignment review once over everything since the
+last release — it covers the `ui` and `surface` tasks that skipped per-task review — then open the
+release PR:
 
 ```bash
 gh pr create --base production --head dev --title "release: <summary>" --body-file <release-body.md>
@@ -91,6 +94,37 @@ release PR and ends there.
 **Never squash `dev` into `production`.** A squash writes a new commit onto `production` that `dev`
 doesn't contain. The next release PR then shows changes that are already live, and the two branches
 drift further apart with every release.
+
+## Rollback
+
+Straight after every production deploy, run the read-only smoke specs against production:
+
+```bash
+BASE_URL=https://<app>.vercel.app npx playwright test --grep @readonly
+```
+
+If they fail, **roll back first and investigate second**:
+
+```bash
+vercel rollback <previous-production-deployment-url>     # or Instant Rollback in the dashboard
+```
+
+1. **The previous deployment is live again at once.** Users are back on working code before anyone
+   starts debugging.
+2. **Vercel stops promoting new production deployments automatically after a rollback.** The broken
+   commit on `production` won't go live again by accident — but the fix won't either until it is
+   promoted.
+3. **Fix forward the normal way:** a `fix/<name>` branch, a PR into `dev`, smoke specs on the preview,
+   a release PR into `production`. Never push a fix straight to `production` — the branches would
+   drift.
+4. **Promote the fixed release** once it's merged — `vercel promote <deployment-url>` — which turns
+   automatic promotion back on. Then run the production smoke specs again.
+5. **A rollback doesn't undo migrations.** The previous deployment runs against the already-migrated
+   database, which is why every migration must stay compatible with the code before it (see
+   Migrations).
+
+An autonomous run does all of this without stopping, and keeps the failed release under **Blocked**
+in the build log until the fix is live.
 
 ## Vercel: two environments
 
@@ -137,7 +171,7 @@ serves errors.
 - [ ] Production environment variables reviewed; none point at preview resources
 - [ ] The production database has its own credentials, shared with nothing else
 - [ ] The custom domain attached, if there is one, and its URL in `CREDENTIALS.local.md`
-- [ ] The main flows walked on the production URL
+- [ ] The read-only smoke specs pass against the production URL
 
 ## Red flags
 
@@ -150,3 +184,7 @@ serves errors.
 - A preview environment variable copied from production, or a shared database
 - `prisma migrate deploy` in the Vercel build command
 - A production test account still active after launch
+- A production deploy with no smoke check afterwards
+- A failed production smoke check investigated before rolling back
+- A fix pushed straight to `production` after a rollback instead of through `dev`
+- A fixed release merged after a rollback but never promoted

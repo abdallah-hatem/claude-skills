@@ -14,6 +14,22 @@ front.
 **In an existing repo, read its `CLAUDE.md`, `docs/BUSINESS_LOGIC.md`, and `docs/DESIGN.md`
 first.** The repo's branching, test commands, and verification steps override anything here.
 
+## Not for this skill
+
+This pipeline builds a product or adds a feature to one. Most changes are neither, and pushing them
+through six or eight stages wastes hours and tokens.
+
+| Change | Do this instead |
+|---|---|
+| **A bug** | `superpowers:systematic-debugging` — reproduce it, write a test that fails, fix it, then a `fix/<name>` PR into `dev` ([shipping.md](shipping.md)) |
+| **A small change** — copy, a style tweak, a config value, a dependency bump | a `chore/<name>` branch, a visual check, the same PR into `dev` |
+| **A refactor** that changes no behavior | the existing tests pass before and after; no spec, no plan |
+| **A question or an investigation** | answer it — there is nothing to ship |
+
+The test: **does it add or change what the product does for a user?** If not, it doesn't belong
+here. A bug fix that turns out to change a business rule updates `docs/BUSINESS_LOGIC.md` in the
+same PR — that still isn't a reason to run the pipeline.
+
 ## Run mode — ask first
 
 Before anything else, ask with `AskUserQuestion` how the run should go:
@@ -79,6 +95,25 @@ git check-ignore -q CREDENTIALS.local.md && echo "ignored — safe to write"
 
 If that doesn't print, stop. Layout and rules: [credentials.md](credentials.md).
 
+## Task classes
+
+Not everything is worth testing, and not everything needs a business review. Every task in the plan
+gets one class, and the class decides both:
+
+| Class | Covers | Tests | Alignment review |
+|---|---|---|---|
+| **`logic`** | business rules, money, permissions, data writes, tenant isolation — anything the business doc names | unit, edge cases, full flow | after the task |
+| **`ui`** | screens with behavior: forms, validation, conditional states, anything a user can get wrong | component tests for that behavior, plus a smoke spec | in the release review |
+| **`surface`** | styling, copy, layout, static pages, config, dependency bumps | none — the smoke screenshots are the check | in the release review |
+
+- **When unsure, go up a class.** A task is `logic` if breaking it would be wrong for the business,
+  not merely ugly.
+- **A screen that enforces a business rule is `logic`.** A form that blocks a refund larger than the
+  amount paid is a money rule with a screen attached.
+- **Tests prove behavior, never appearance.** No test that a button renders, a class is applied, or
+  a heading reads some text — those break on every redesign and catch nothing.
+- **The reviewer checks the classes on the plan**, so no task can be classed down to dodge its tests.
+
 ## Stages — new app
 
 | # | Stage | Load | Gate |
@@ -87,10 +122,10 @@ If that doesn't print, stop. Layout and rules: [credentials.md](credentials.md).
 | 2 | Spec + business doc | — | **user approves both** |
 | 3 | Contract | `abdallah-skills:building-backends` | — |
 | 4 | Design system | `frontend-design` (or `epic-design` for a marketing site) | **user approves the look** |
-| 5 | Plan | `superpowers:writing-plans` | **edge cases listed + alignment review** |
-| 6 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests + alignment review** |
-| 7 | Verify | `superpowers:verification-before-completion` | **all green** |
-| 8 | Ship | `abdallah-skills:deploying-to-vercel` | **dev: automatic after Verify · production: user says go** |
+| 5 | Plan | `superpowers:writing-plans` | **classes, edge cases, alignment review** |
+| 6 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests by class · review for `logic`** |
+| 7 | Verify | `superpowers:verification-before-completion` | **all green + smoke check** |
+| 8 | Ship | `abdallah-skills:deploying-to-vercel` | **dev: automatic · production: user says go · rollback on failure** |
 
 In an autonomous run, every gate that waits for the user is decided with the recommended default and
 logged in `docs/BUILD_LOG.md` instead — see [autonomous.md](autonomous.md).
@@ -131,11 +166,12 @@ is cheap; a look changed after twenty screens is a rewrite.
 
 ### 5. Plan
 
-Break the spec into tasks, each tagged `backend` / `frontend` / `infra` and each marked with what
-it depends on — the dependency marks decide what can run in parallel.
+Break the spec into tasks. Each gets a **class** (`logic` / `ui` / `surface`), an area (`backend` /
+`frontend` / `infra`), and what it depends on — the dependency marks decide what can run in
+parallel.
 
-**Every task lists its edge cases in the plan, before any code is written.** Derive them from
-three sources, in this order:
+**Every `logic` task lists its edge cases before any code is written.** Derive them from three
+sources, in this order:
 
 | Source | Rule |
 |---|---|
@@ -143,10 +179,13 @@ three sources, in this order:
 | **Contract** | every request field the task accepts: missing, `null`, wrong type, at the limit, one past the limit |
 | **Stack checklist** | the generic cases in `building-backends` → `testing.md`, or `building-frontends` → Testing |
 
+`ui` tasks list only the interaction cases that apply — validation messages, empty and error states,
+double submit. `surface` tasks list none.
+
 Write each case as one line with its expected outcome and where it came from:
 
 ```markdown
-#### Task 7 — Cancel a booking (backend)
+#### Task 7 — Cancel a booking (backend · logic)
 Edge cases:
 - [ ] Cancel a booking whose wash has started → 409, status unchanged   (invariant: cancel only before start)
 - [ ] Cancel another customer's booking → 404                            (role: customers see only their own)
@@ -158,42 +197,55 @@ Edge cases:
 Business-doc cases come first because no generic checklist can produce them. The source in
 brackets shows why each case is there — and makes a missing one easy to spot.
 
-Keep the edge-case lists in the plan file and include them when you summarise the plan, so the
-user sees them before any code and can add one that was missed. Then run the alignment review
-on the plan.
+Keep the lists in the plan file and include them when you summarise the plan, so the user sees them
+before any code and can add one that was missed. Then run the alignment review on the plan.
 
 ### 6. Build
 
-Before the first task, set up the repository and its `production` and `dev` branches —
-[shipping.md](shipping.md) → Repository setup. Every task then happens on a `feature/<name>`
-branch cut from `dev`.
+Before the first task, set up what every later check depends on:
 
-Backend tasks load `building-backends`; frontend tasks load `building-frontends`. Every task ships
-with three kinds of test:
+1. **Repository** — the repo and its `production` and `dev` branches:
+   [shipping.md](shipping.md) → Repository setup.
+2. **Seed data** — one test account per role and realistic data for every flow, with the logins
+   written to `CREDENTIALS.local.md`: [verification.md](verification.md) → Seed data.
+3. **Smoke specs** — the Playwright setup that signs in as the seeded accounts:
+   [verification.md](verification.md) → Smoke check.
 
-- **Unit** — the logic, branch by branch
-- **Edge cases** — every case the plan lists for this task, one test each, named after the case.
-  A case discovered while building is added to the plan *and* tested; the list only grows.
-- **Full flow** — the feature driven end to end the way a user would
+Every task then happens on a `feature/<name>` branch cut from `dev`. Backend tasks load
+`building-backends`; frontend tasks load `building-frontends`. Tests follow the task's class:
 
-One task, one commit, then the alignment review on that task's diff. Decide per batch whether to
-run tasks inline or through subagents — see Subagents.
+- **`logic`** — unit tests branch by branch, one test per planned edge case named after it, and a
+  full-flow test. A case discovered while building is added to the plan *and* tested.
+- **`ui`** — component tests for the behavior, and the screen added to a smoke spec.
+- **`surface`** — no new tests; the screen's smoke screenshots are the check.
+
+One task, one commit. A `logic` task then gets the alignment review on its diff. Decide per batch
+whether to run tasks inline or through subagents — see Subagents.
 
 ### 7. Verify
 
-Full test suite green, with the real output shown. Then tick off each planned edge case against
-the test that covers it, by test name. A case with no matching test fails verification, however
-green the suite is. For UI, drive the changed flow in a browser at mobile and tablet, in LTR
-and RTL, and in light and dark mode.
+1. **The full test suite is green**, with the real output shown.
+2. **Each planned edge case is ticked off** against the test that covers it, by name. A case with no
+   matching test fails verification, however green the suite is.
+3. **The smoke check passes locally.** The smoke specs sign in as the seeded accounts, walk the main
+   flows, and screenshot every changed screen at mobile and tablet, in LTR and RTL, in light and
+   dark. Look at the screenshots — a passing spec doesn't prove a screen looks right.
+
+Signing in happens inside the specs, from the seeded accounts. Verification never depends on anyone
+typing a password into a login page — the agent can't, and scripted checks can be re-run against
+every deployment anyway.
 
 ### 8. Ship
 
-Everything reaches users by one path — full details in [shipping.md](shipping.md):
+Everything reaches users by one path — details in [shipping.md](shipping.md):
 
-1. **feature → `dev`, by default.** Once Verify passes, open a PR into `dev` and merge it. `dev`
-   deploys to the Vercel preview; confirm the deployment is Ready and walk the changed flow there.
-2. **`dev` → `production`, on the user's go-ahead.** Open a release PR listing what's in it, then
-   **stop.** Merging it is the production deploy, so it waits for the user.
+1. **feature → `dev`, by default.** Once Verify passes, open a PR into `dev` and merge it. When the
+   preview deployment is Ready, run the smoke specs against the preview URL.
+2. **`dev` → `production`, on the user's go-ahead.** Run the alignment review once over everything
+   since the last release, open a release PR listing what's in it, then **stop.** Merging it is the
+   production deploy, so it waits for the user.
+3. **Smoke-check production after every deploy.** If the read-only smoke specs fail, roll back to the
+   previous deployment first, then fix forward through `dev` — [shipping.md](shipping.md) → Rollback.
 
 Before each merge, migrations run deliberately against that environment's database, and
 `CREDENTIALS.local.md` gets any new URL or test account.
@@ -223,23 +275,26 @@ model.** Otherwise summarise the spec and continue.
 
 ### 3. Plan
 
-As new-app stage 5: tasks with dependencies, an edge-case list per task drawn from the business doc
-first, then the alignment review on the plan.
+As new-app stage 5: every task classed, dependencies marked, an edge-case list for each `logic` task
+drawn from the business doc first, then the alignment review on the plan.
 
 ### 4. Build
 
-On a `feature/<name>` branch cut from `dev`, with the same three kinds of test and a per-task
-alignment review. The business doc edit goes in the same PR as the code that makes it true.
+On a `feature/<name>` branch cut from `dev`, with tests by class and the review on `logic` tasks. A
+new role gets its seeded account. The business doc edit goes in the same PR as the code that makes
+it true.
 
 ### 5. Verify
 
-As new-app stage 7 — every planned edge case matched to a named test, and the browser pass. Run the
-**whole** suite, not only the new tests: a feature in an existing app is where unrelated flows break.
+As new-app stage 7 — edge cases matched to named tests, and the smoke check. Run the **whole** suite
+and every smoke spec, not only the new ones: a feature in an existing app is where unrelated flows
+break.
 
 ### 6. Ship
 
-As new-app stage 8: PR into `dev` and merge, check the preview, then the release PR into
-`production` on the user's go-ahead. New roles or test accounts go into `CREDENTIALS.local.md`.
+As new-app stage 8: PR into `dev` and merge, smoke specs against the preview, the release review and
+release PR into `production` on the user's go-ahead, then the production smoke check with rollback.
+New roles or test accounts go into `CREDENTIALS.local.md`.
 
 **Switch to new-app mode** when the feature needs a new design direction, a new kind of user with
 their own area of the product, or a change to how tenants are separated. Those are architecture,
@@ -248,17 +303,21 @@ not features.
 ## Alignment review
 
 The `business-alignment-reviewer` agent ships with this plugin — subagent type
-`abdallah-skills:business-alignment-reviewer`. Give it the business doc's path and either the
-plan's path or the task's commit range. It reports; it never edits.
+`abdallah-skills:business-alignment-reviewer`. Give it the business doc's path and the plan's path,
+a task's commit range, or the release's range. It reports; it never edits.
 
 Run it:
 
-- **after the plan**, before any code — including whether the edge cases cover every rule in the doc
-- **after each task**, on that task's diff — including whether each planned edge case has a test
+- **after the plan**, before any code — including whether every task is classed correctly and the
+  edge cases cover every rule in the doc
+- **after each `logic` task**, on that task's diff — including whether each planned edge case has a
+  test
+- **once before each release PR**, over everything since the last release — which covers the `ui` and
+  `surface` tasks it skipped
 - **after a business change**, on the plan, to find the tasks the change invalidated
 
-Not after every step. A task is the smallest unit with a diff worth judging; reviewing smaller
-pieces multiplies the cost without catching more.
+Not after every task. `ui` and `surface` tasks don't change business behavior, and the release review
+still reads their diffs; reviewing each one separately multiplies the cost without catching more.
 
 | Verdict | Then |
 |---|---|
@@ -282,6 +341,7 @@ When to use them, what a brief must contain, and how to check the result:
 
 ## Red flags
 
+- A bug fix, small change, or refactor run through the full pipeline
 - Code written before the spec and business doc are approved
 - Feature mode used in a repo with no business doc or design system
 - A feature that changes a business rule, role, money, or the data model built without approval
@@ -290,17 +350,22 @@ When to use them, what a brief must contain, and how to check the result:
 - Table names, endpoints, or components in the business doc
 - Backend and frontend built in parallel before the API contract exists
 - Frontend screens built before the design system is approved
-- A task in the plan with no edge-case list, or one drawn only from the generic checklist
+- A task in the plan with no class, or one classed down to avoid its tests
+- A `logic` task with no edge-case list, or one drawn only from the generic checklist
 - A rule in the business doc that must never break, with no test that tries to break it
-- A task shipped without unit, edge-case, and full-flow tests
+- A `logic` task shipped without unit, edge-case, and full-flow tests
+- A test that checks appearance — a class name, a rendered heading — instead of behavior
 - A green suite accepted as proof without ticking each planned edge case against a named test
 - A `CONFLICTS` verdict overridden without asking the user
-- The alignment review run on every step instead of every task
+- The alignment review run on `ui` or `surface` tasks, or skipped before a release PR
 - Every stack skill loaded at the start instead of at its stage
 - A subagent brief or report that skips the rules in `subagents.md`
 - `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
+- Tests, credentials, or a preview that depend on an account no seed script creates
+- A verification step that needs someone to type a password into a login page
 - A PR merged into `dev` before Verify passes, or a direct push to `dev` or `production`
 - A merge into `production` without the user's go-ahead, in a run that isn't fully autonomous
 - A run started without asking the run mode, or an autonomous decision missing from the build log
 - A squash merge from `dev` into `production`
 - A preview deployment that reads the production database or calls the production API
+- A production deploy with no smoke check afterwards, or a failed one left live

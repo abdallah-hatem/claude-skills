@@ -152,7 +152,9 @@ Tablet-first. Every screen works at ~375px and ~768–1024px: no horizontal over
 ## Testing
 
 Components with Vitest + React Testing Library, full flows with Playwright — unless the project
-already uses something else. Every screen is tested beyond the happy path:
+already uses something else. **Test behavior, not appearance.** No test that a button renders, a class is applied, or a heading
+reads some text — those break on every redesign and catch nothing; screenshots cover appearance.
+Screens with behavior are tested beyond the happy path:
 
 - **Empty, loading, and error states** — each one renders; none is a blank screen
 - **Long content** — a 200-character name or an unbroken URL doesn't break the layout

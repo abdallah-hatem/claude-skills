@@ -120,6 +120,18 @@ e2e specs share one database, so they cannot run in parallel:
 - **The envelope**, once — that a success is `{ success: true, data }` and a thrown
   exception comes back `{ success: false, error }`.
 
+## What doesn't need a test
+
+Every test is code to maintain. Spend them where a break would hurt:
+
+- **Framework behavior** — that a Nest decorator routes a request, that Prisma saves a row
+- **Pass-through code** — a controller method that only calls a service
+- **Wiring** — module registration, config loading
+- **Code with no branches and no rule behind it**
+
+A test that fails only when the implementation changes, never when the behavior breaks, costs
+maintenance and protects nothing.
+
 ## Edge cases, per endpoint
 
 Go through this list for every endpoint and write a test for each case that applies. The happy
