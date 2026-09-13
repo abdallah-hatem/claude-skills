@@ -16,7 +16,7 @@ Restart the session afterwards; skills load at startup.
 
 | Skill | Fires on |
 |---|---|
-| **building-frontends** | any UI work — components, forms, styling, loading states, i18n/RTL, data fetching |
+| **building-frontends** | any UI work — design system, colour tokens and motion, components, forms, styling, loading states, i18n/RTL, data fetching |
 | **building-backends** | any API work — controllers, services, DTOs, Prisma, auth, pagination, errors |
 | **capturing-corrections** | a correction worth recording so it doesn't have to be given twice |
 | **deploying-to-vercel** | deploying a Nest/Express/Next app, and the failures that look like nothing is wrong |

@@ -1,6 +1,6 @@
 ---
 name: build-software
-description: Use when the user runs /build-software to take a product from idea to a tested, deployed app — intake, spec, business doc, API contract, plan, backend, frontend, verification, and deploy — on the NestJS + Next.js stack.
+description: Use when the user runs /build-software to take a product from idea to a tested, deployed app — intake, spec, business doc, API contract, design system, plan, backend, frontend, verification, and deploy — on the NestJS + Next.js stack.
 disable-model-invocation: true
 ---
 
@@ -46,10 +46,11 @@ Three rules keep it true:
 | 1 | Intake | `grilling` (or `superpowers:brainstorming`) | — |
 | 2 | Spec + business doc | — | **user approves both** |
 | 3 | Contract | `abdallah-skills:building-backends` | — |
-| 4 | Plan | `superpowers:writing-plans` | **edge cases listed + alignment review** |
-| 5 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests + alignment review** |
-| 6 | Verify | `superpowers:verification-before-completion` | **all green** |
-| 7 | Ship | `abdallah-skills:deploying-to-vercel` | **user says go** |
+| 4 | Design system | `frontend-design` (or `epic-design` for a marketing site) | **user approves the look** |
+| 5 | Plan | `superpowers:writing-plans` | **edge cases listed + alignment review** |
+| 6 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests + alignment review** |
+| 7 | Verify | `superpowers:verification-before-completion` | **all green** |
+| 8 | Ship | `abdallah-skills:deploying-to-vercel` | **user says go** |
 
 ### 1. Intake
 
@@ -69,7 +70,23 @@ Before splitting work, fix the seam between backend and frontend: every endpoint
 its response shape inside the envelope. Write it into the spec. This is what lets the two sides
 be built independently — and what stops them disagreeing when they meet.
 
-### 4. Plan
+### 4. Design system
+
+Skip this only when the project already has one. Load `frontend-design` — or `epic-design` for a
+marketing site — and set the direction from the spec: who the users are and what the product
+should feel like. Then put it into code before any screen exists, following
+`building-frontends` → `design-system.md`:
+
+- colour tokens in `globals.css` for light and dark, mapped into Tailwind
+- fonts through `next/font`, covering Arabic
+- the easing curve and durations in the theme and `lib/motion.ts`
+- `docs/DESIGN.md` with the feel, colour roles, type, motion, and what to avoid — no values
+
+Show the user the palette, the type scale, and one representative screen in light and dark — a
+preview page, or a mockup through the `design` skill. **Stop for approval.** A look agreed now
+is cheap; a look changed after twenty screens is a rewrite.
+
+### 5. Plan
 
 Break the spec into tasks, each tagged `backend` / `frontend` / `infra` and each marked with what
 it depends on — the dependency marks decide what can run in parallel.
@@ -102,7 +119,7 @@ Keep the edge-case lists in the plan file and include them when you summarise th
 user sees them before any code and can add one that was missed. Then run the alignment review
 on the plan.
 
-### 5. Build
+### 6. Build
 
 Backend tasks load `building-backends`; frontend tasks load `building-frontends`. Every task ships
 with three kinds of test:
@@ -115,14 +132,14 @@ with three kinds of test:
 One task, one commit, then the alignment review on that task's diff. Decide per batch whether to
 run tasks inline or through subagents — see below.
 
-### 6. Verify
+### 7. Verify
 
 Full test suite green, with the real output shown. Then tick off each planned edge case against
 the test that covers it, by test name. A case with no matching test fails verification, however
 green the suite is. For UI, drive the changed flow in a browser at mobile and tablet, in LTR
-and RTL.
+and RTL, and in light and dark mode.
 
-### 7. Ship
+### 8. Ship
 
 Push and deploy only on the user's explicit go-ahead.
 
@@ -182,6 +199,8 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Scope** — the repo path, the files or domain it owns, and what it must not touch.
 - **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
+- **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
+  Screens use tokens only; no new colours, sizes, or curves.
 - **The contract** it builds against, pasted in rather than pointed at.
 - **Tests** — unit and full-flow, plus **the task's edge-case list from the plan, pasted in** —
   one test per case, named after it.
@@ -216,3 +235,5 @@ against the contract. "All tests pass" with no output is a claim, not evidence.
 - A subagent running its tests in the background
 - A subagent's "done" accepted without checking the commit and re-running the tests
 - Pushing or deploying without the user's go-ahead
+- Frontend screens built before the design system is approved
+- A frontend brief that doesn't point the subagent at the design system

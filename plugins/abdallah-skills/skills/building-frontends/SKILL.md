@@ -1,6 +1,6 @@
 ---
 name: building-frontends
-description: Use when building or changing any frontend UI — React or Next.js components, pages, forms, modals, styling, loading states, scrollbars, client state, or data fetching — and when scaffolding a new frontend project, adding a shadcn/ui component, or touching i18n/RTL layout.
+description: Use when building or changing any frontend UI — React or Next.js components, pages, forms, modals, design system and color tokens, animations, styling, loading states, scrollbars, client state, or data fetching — and when scaffolding a new frontend project, adding a shadcn/ui component, or touching i18n/RTL layout.
 ---
 
 # Building Frontends
@@ -19,15 +19,29 @@ Abdallah's frontend conventions. Every screen ships reusable, generic, internati
 | Data fetching | `apiFetch` → `src/apis.ts` endpoints → `callApi` on the client — see [fetch-wrapper.md](fetch-wrapper.md) |
 | Auth | access + refresh tokens in `httpOnly` cookies, refreshed inside `apiFetch` |
 | Forms | shadcn `<Form>` + react-hook-form + zod |
+| Design | tokens as CSS variables in `globals.css`, mapped to Tailwind — see [design-system.md](design-system.md) |
+| Animation | `motion` for choreography; Tailwind transitions and `tw-animate-css` for state |
 
 **The existing project's stack always wins.** In a repo that already picked Vite, Redux, or anything else, follow the repo. This table is for new projects and for gaps a repo hasn't filled. Never migrate a working project to match it.
 
 ## Design
 
-Pick by what is being built, before writing markup:
+**Design comes from a design system, never screen by screen.** Before a project's first screen,
+load `frontend-design` and establish one: palette, type, spacing, radius, shadow, and motion. For
+landing pages and anything scroll-driven, `epic-design` sets the direction instead.
 
-- **App UI** — dashboards, tables, forms, settings, anything behind a login: call the Skill tool with `frontend-design`.
-- **Marketing** — landing pages, hero sections, anything scroll-driven or promotional: call the Skill tool with `epic-design`.
+- **Tokens live in code, once.** CSS variables in `globals.css`, defined for light and dark
+  together and mapped to semantic Tailwind names (`@theme inline` on v4, `tailwind.config.ts` on
+  v3). Components use `bg-primary` and `text-muted-foreground` — never `bg-blue-500` or a hex code.
+- **`docs/DESIGN.md` holds the direction, not the values:** the feel, what each colour role is
+  for, the type pairing, what animates, and what to avoid.
+- **Pleasant and readable.** Every text-and-background pair passes WCAG AA in both themes, and
+  the typeface covers Arabic.
+- **Motion explains change and never delays it.** 150–250ms, transform and opacity only, exits
+  faster than entrances, reduced motion respected, horizontal motion flipped in RTL. `motion` for
+  choreography, Tailwind transitions for state.
+
+See [design-system.md](design-system.md).
 
 ## Components
 
@@ -153,7 +167,10 @@ The full-flow test drives the feature end to end the way a user would, against a
 
 ## Before calling it done
 
-Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL (Arabic). Mirroring breaks layouts the LTR pass looks fine in.
+Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL (Arabic), and in
+**both** light and dark mode. Mirroring breaks layouts the LTR pass looks fine in, and a colour
+that works on white can disappear on dark. Turn reduced motion on once and confirm nothing that
+matters depends on an animation.
 
 ## Red flags
 
@@ -203,3 +220,14 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - Verified in English only
 - A screen tested only on the happy path — no empty, error, long-content, or RTL case
 - A submit button that can fire twice while its request is pending
+- A screen built before the project has a design system
+- A raw colour in a component — `bg-blue-500`, `text-[#…]`, inline `style={{ color }}`
+- A token defined for light but not for dark
+- Text that fails WCAG AA contrast in either theme
+- Hex values in `docs/DESIGN.md` — they drift from the code
+- A one-off colour instead of a new token with a role
+- A Latin-only font in a UI that renders Arabic
+- Animating width, height, top, or margin instead of transform and opacity
+- Motion that ignores `prefers-reduced-motion`
+- A horizontal slide that doesn't flip in RTL
+- An app-UI animation over ~300ms, or one the user has to wait through
