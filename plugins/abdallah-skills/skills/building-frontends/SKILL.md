@@ -1,6 +1,6 @@
 ---
 name: building-frontends
-description: Use when building or changing any frontend UI — React or Next.js components, pages, forms, styling, loading states, scrollbars, client state, or data fetching — and when scaffolding a new frontend project, adding a shadcn/ui component, or touching i18n/RTL layout.
+description: Use when building or changing any frontend UI — React or Next.js components, pages, forms, modals, styling, loading states, scrollbars, client state, or data fetching — and when scaffolding a new frontend project, adding a shadcn/ui component, or touching i18n/RTL layout.
 ---
 
 # Building Frontends
@@ -73,6 +73,22 @@ While the next page loads, keep the current rows in place and dim them. Swapping
 skeletons collapses the table to a different height, which moves the viewport just as badly
 as scrolling did — see Loading states.
 
+## Modals and overlays
+
+**Size a dialog to its content**, not to shadcn's `max-w-lg` default: a `size` prop on the
+primitive (`sm`/`md`/`lg`/`xl`), chosen from the widest thing inside, always capped at
+`max-w-[calc(100vw-2rem)]`. A modal that scrolls sideways because it is too narrow is a sizing
+bug — widen it.
+
+**Cap the height** at `max-h-[calc(100dvh-2rem)]` — `dvh`, because mobile `vh` hides the bottom
+of the modal, and the Save button with it, under the toolbar. Header and footer stay fixed;
+only the body scrolls (`min-h-0 flex-1 overflow-y-auto overscroll-contain`).
+
+**Scroll lives inside the container** — modal, sheet, drawer, popover, dropdown — never on the
+page behind it.
+
+See [ui-patterns.md](ui-patterns.md).
+
 ## Reusability contract
 
 The rule that matters most, because it is the one that erodes under deadline.
@@ -136,6 +152,12 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - A scroll container without `scrollbar-clean`
 - A JS scrollbar library in `package.json`
 - Hand-rolled dialog, dropdown, or toast
+- A dialog at shadcn's default width holding a table or multi-column form
+- A modal that scrolls horizontally because it is too narrow
+- A modal, sheet, popover, or dropdown with no max height
+- `vh` in an overlay's height cap — use `dvh`
+- A flex scroll body without `min-h-0` — the overflow never engages
+- Save or other actions inside the scrolling body instead of a fixed footer
 - A bare `<select>`, checkbox, radio, date, or file input — style it or use shadcn
 - A required field with no asterisk on its label
 - An asterisk without `aria-hidden`, or an input without `required`

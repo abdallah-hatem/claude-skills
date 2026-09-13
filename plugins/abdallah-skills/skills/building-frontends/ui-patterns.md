@@ -125,3 +125,85 @@ Apply it to the scroll container, and to `html` for the page itself:
   `dir="rtl"`. Don't hand-position it.
 - `scrollbar-gutter: stable` matters most on dynamic lists — without it, the layout shifts
   the moment content grows past one screen.
+
+## Modals, sheets and popovers
+
+Every bounded overlay — dialog, sheet, drawer, popover, dropdown — follows three rules:
+
+1. its **width follows its content**,
+2. its **height is capped** by the viewport,
+3. it **scrolls its own body**, never the page behind it.
+
+### Width follows content
+
+shadcn's `DialogContent` defaults to `sm:max-w-lg` (32rem). That fits a confirmation and not
+much else: a table or a two-column form inside it gets squeezed until it wraps badly or
+scrolls sideways. **A modal that scrolls horizontally because it is too narrow is a sizing
+bug — widen it.**
+
+Put a size prop on the primitive instead of overriding `className` at each call site:
+
+```tsx
+const dialogSizes = {
+  sm: 'sm:max-w-md',   // confirmation, a single field
+  md: 'sm:max-w-lg',   // short form
+  lg: 'sm:max-w-3xl',  // two-column form, detail view
+  xl: 'sm:max-w-5xl',  // tables, wide content
+} as const
+```
+
+Pick the size from the **widest thing inside**. Every size is still capped at
+`max-w-[calc(100vw-2rem)]`, so `xl` on a phone is simply full width with a margin.
+
+Horizontal scroll is acceptable only when content is genuinely wider than any screen — a
+12-column table on mobile — and then it lives on that table's own `overflow-x-auto` wrapper,
+not on the modal.
+
+### Height is capped; only the body scrolls
+
+```tsx
+<DialogContent
+  className={cn(
+    'flex max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 p-0',
+    dialogSizes[size],
+  )}
+>
+  <DialogHeader className="shrink-0 border-b p-6">…</DialogHeader>
+
+  <div className="scrollbar-clean min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+    {children}
+  </div>
+
+  <DialogFooter className="shrink-0 border-t p-6">…</DialogFooter>
+</DialogContent>
+```
+
+Four details, each load-bearing:
+
+- **`dvh`, not `vh`.** On mobile `100vh` includes the area under the browser toolbars, so a
+  `vh`-capped modal has its bottom cut off — and the bottom is where Save is.
+- **`min-h-0` on the body.** A flex child won't shrink below its content without it, so
+  `overflow-y-auto` never engages and the whole modal overflows instead.
+- **Header and footer `shrink-0`, outside the scroll region.** Title and actions stay put;
+  only the content moves. A Save button that scrolls out of view is one nobody finds.
+- **`overscroll-contain`.** Reaching the end of the body doesn't chain the scroll to the
+  page underneath.
+
+### Scroll never escapes to the page
+
+Radix locks body scroll while a dialog is open — which is exactly why an uncapped modal is
+broken: its overflow has nowhere to go, so the content past the fold is simply unreachable.
+The height cap plus an internal scroll body is what makes long content reachable at all.
+
+The rule is not modal-specific. A sheet, a popover list, a dropdown with 200 options, a side
+panel: each gets a max height and scrolls itself. Content never scrolls by moving the page
+behind the thing it belongs to.
+
+**Rules**
+
+- Size from the content, through the size prop — never ship shadcn's default width holding a
+  table or a multi-column form.
+- Cap both axes at the viewport: `max-w-[calc(100vw-2rem)]`, `max-h-[calc(100dvh-2rem)]`.
+- Actions live in a fixed footer, never inside the scrolling body.
+- Every scroll body gets `scrollbar-clean`, like every other scroll container.
+
