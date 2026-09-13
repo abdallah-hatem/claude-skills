@@ -1,17 +1,29 @@
 ---
 name: build-software
-description: Use when the user runs /build-software to take a product from idea to a tested, deployed app — intake, spec, business doc, API contract, design system, plan, backend, frontend, verification, and deploy — on the NestJS + Next.js stack.
+description: Use when the user runs /build-software to build a new app from idea to deployed — intake, spec, business doc, API contract, design system, plan, build, verify, ship — or to add a feature to an existing app through the lighter feature mode, on the NestJS + Next.js stack.
 disable-model-invocation: true
 ---
 
 # Build Software
 
-The pipeline from an idea to a deployed app. This skill owns the **order**, the **gates**, and
-**which skill to load when** — not the rules. Those live in the stack skills, loaded at the
-stage that needs them, never all up front.
+The pipeline from an idea to a deployed app, and a shorter one for adding a feature to an app that
+already exists. This skill owns the **order**, the **gates**, and **which skill to load when** —
+not the rules. Those live in the stack skills, loaded at the stage that needs them, never all up
+front.
 
-**In an existing repo, read its `CLAUDE.md` and `docs/BUSINESS_LOGIC.md` first.** The repo's
-branching, test commands, and verification steps override anything here.
+**In an existing repo, read its `CLAUDE.md`, `docs/BUSINESS_LOGIC.md`, and `docs/DESIGN.md`
+first.** The repo's branching, test commands, and verification steps override anything here.
+
+## Modes
+
+| | New app | Feature |
+|---|---|---|
+| **Use when** | the repo has no `docs/BUSINESS_LOGIC.md` yet | the repo already has a business doc and a design system |
+| **Stages** | all eight, below | Context → Feature spec → Plan → Build → Verify → Ship |
+| **Skips** | — | intake, the full contract, and the design system — it uses what exists |
+
+Pick the mode from the repo, not from how the request is worded. If the request sounds like a new
+app but the repo already has a business doc, ask which one is meant.
 
 ## The business doc
 
@@ -39,7 +51,48 @@ Three rules keep it true:
 3. **When the business changes mid-build, the doc changes first.** Update it, run the alignment
    review on the plan to find the tasks the change affects, then change the code.
 
-## Stages
+## Test credentials
+
+Every login needed to test the app — local, preview, and production before launch — lives in
+`CREDENTIALS.local.md` at the repo root, so the user can sign in to any environment without asking.
+
+**It is never committed, and the repo is public.** Before writing a single value:
+
+```bash
+grep -qxF '*.local.md' .gitignore || echo '*.local.md' >> .gitignore
+git check-ignore -q CREDENTIALS.local.md && echo "ignored — safe to write"
+```
+
+If that doesn't print, stop. A credential pushed to a public repo is exposed the moment it lands,
+and deleting the file afterwards doesn't take it back.
+
+```markdown
+# Test credentials — never commit
+Last updated: YYYY-MM-DD
+
+## Local — http://localhost:3000
+| Role  | Email            | Password | Notes                    |
+|-------|------------------|----------|--------------------------|
+| Owner | owner@test.local | …        | seeded by prisma/seed.ts |
+
+## Preview — https://<app>-git-dev-<team>.vercel.app  (branch: dev)
+| Role | Email | Password | Notes |
+
+## Production — https://<app>.vercel.app  (branch: production)
+| Role  | Email | Password | Notes                                   |
+|-------|-------|----------|-----------------------------------------|
+| Owner | …     | …        | pre-launch test account — remove at launch |
+```
+
+- **Test accounts only**, one per role. Never a real user's password.
+- **Logins and URLs, not infrastructure secrets.** Database passwords and API keys live in
+  `.env.local` and Vercel's environment settings.
+- **Updated in the same step** that seeds an account, changes a password, or gives an environment
+  a new URL.
+- **Never copied** into a commit, a PR description, a code comment, a log, or a subagent brief.
+- If the repo already keeps credentials under another gitignored name, follow the repo.
+
+## Stages — new app
 
 | # | Stage | Load | Gate |
 |---|---|---|---|
@@ -50,7 +103,7 @@ Three rules keep it true:
 | 5 | Plan | `superpowers:writing-plans` | **edge cases listed + alignment review** |
 | 6 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests + alignment review** |
 | 7 | Verify | `superpowers:verification-before-completion` | **all green** |
-| 8 | Ship | `abdallah-skills:deploying-to-vercel` | **user says go** |
+| 8 | Ship | `abdallah-skills:deploying-to-vercel` | **dev: automatic after Verify · production: user says go** |
 
 ### 1. Intake
 
@@ -121,6 +174,10 @@ on the plan.
 
 ### 6. Build
 
+Before the first task, set up the repository and its `production` and `dev` branches —
+[shipping.md](shipping.md) → Repository setup. Every task then happens on a `feature/<name>`
+branch cut from `dev`.
+
 Backend tasks load `building-backends`; frontend tasks load `building-frontends`. Every task ships
 with three kinds of test:
 
@@ -130,7 +187,7 @@ with three kinds of test:
 - **Full flow** — the feature driven end to end the way a user would
 
 One task, one commit, then the alignment review on that task's diff. Decide per batch whether to
-run tasks inline or through subagents — see below.
+run tasks inline or through subagents — see Subagents.
 
 ### 7. Verify
 
@@ -141,7 +198,62 @@ and RTL, and in light and dark mode.
 
 ### 8. Ship
 
-Push and deploy only on the user's explicit go-ahead.
+Everything reaches users by one path — full details in [shipping.md](shipping.md):
+
+1. **feature → `dev`, by default.** Once Verify passes, open a PR into `dev` and merge it. `dev`
+   deploys to the Vercel preview; confirm the deployment is Ready and walk the changed flow there.
+2. **`dev` → `production`, on the user's go-ahead.** Open a release PR listing what's in it, then
+   **stop.** Merging it is the production deploy, so it waits for the user.
+
+Before each merge, migrations run deliberately against that environment's database, and
+`CREDENTIALS.local.md` gets any new URL or test account.
+
+## Feature mode
+
+For adding a feature to an app that already has a business doc and a design system. The same
+rules apply; the stages that set up the product are skipped.
+
+### 1. Context
+
+Read `CLAUDE.md`, `docs/BUSINESS_LOGIC.md`, `docs/DESIGN.md`, and the code the feature touches.
+No intake interview — ask only what the docs and the code can't answer.
+
+### 2. Feature spec
+
+Write a short `docs/specs/YYYY-MM-DD-<feature>.md`:
+
+- what the feature does, and for which roles
+- the business rules it adds or changes — written as the exact edit to `docs/BUSINESS_LOGIC.md`
+- new or changed endpoints, DTOs, and responses
+- screens it adds or changes, built from the existing design system
+- what is out of scope
+
+**Stop for approval when the feature adds or changes a business rule, a role, money, or the data
+model.** Otherwise summarise the spec and continue.
+
+### 3. Plan
+
+As new-app stage 5: tasks with dependencies, an edge-case list per task drawn from the business doc
+first, then the alignment review on the plan.
+
+### 4. Build
+
+On a `feature/<name>` branch cut from `dev`, with the same three kinds of test and a per-task
+alignment review. The business doc edit goes in the same PR as the code that makes it true.
+
+### 5. Verify
+
+As new-app stage 7 — every planned edge case matched to a named test, and the browser pass. Run the
+**whole** suite, not only the new tests: a feature in an existing app is where unrelated flows break.
+
+### 6. Ship
+
+As new-app stage 8: PR into `dev` and merge, check the preview, then the release PR into
+`production` on the user's go-ahead. New roles or test accounts go into `CREDENTIALS.local.md`.
+
+**Switch to new-app mode** when the feature needs a new design direction, a new kind of user with
+their own area of the product, or a change to how tenants are separated. Those are architecture,
+not features.
 
 ## Alignment review
 
@@ -170,70 +282,36 @@ disagree because the business moved, that call belongs to the user.
 
 ## Subagents
 
-Use them where they buy real parallelism or keep noise out of the main context — not by default.
-Every subagent rebuilds context from scratch and multiplies token spend.
+Use them for independent tasks, broad investigations, and reviews — not by default, since each one
+rebuilds context and multiplies token spend. Tasks that share files, depend on each other, are
+small, or need the user stay in the main thread. Every brief stands alone, and every report is
+checked rather than trusted.
 
-**Use a subagent when:**
-
-- Tasks are independent: no shared files, no task waiting on another's output. Backend and
-  frontend tasks become independent once the Contract stage has fixed the API.
-- An investigation sweeps many files and only the conclusion matters.
-- Reviewing a finished task — a fresh context catches what the author's context explains away.
-- A plan has many independent tasks → `superpowers:subagent-driven-development`.
-
-**Stay in the main thread when:**
-
-- Two tasks touch the same files, or one needs the other's result.
-- The task is small — writing the brief costs more than doing the work.
-- The stage needs the user: intake, spec approval, any open decision. A subagent cannot ask the
-  user anything.
-
-**Parallel subagents in one repo each get their own worktree** (`superpowers:using-git-worktrees`),
-or they overwrite each other's changes.
-
-### Briefing a subagent
-
-A subagent starts with none of this conversation, so the brief has to stand alone:
-
-- **Goal and done-criteria** — the task from the plan, and what proves it is finished.
-- **Scope** — the repo path, the files or domain it owns, and what it must not touch.
-- **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
-- **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
-- **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
-  Screens use tokens only; no new colours, sizes, or curves.
-- **The contract** it builds against, pasted in rather than pointed at.
-- **Tests** — unit and full-flow, plus **the task's edge-case list from the plan, pasted in** —
-  one test per case, named after it.
-- **Run the test suite in the foreground and commit before reporting.** A subagent that starts a
-  long test run in the background stops mid-turn and leaves its work uncommitted.
-- **Report back** the files changed, the test command with its real output, and the commit hash.
-
-### After it reports
-
-Check, don't trust. Confirm the commit exists, re-run the tests yourself, and read the diff
-against the contract. "All tests pass" with no output is a claim, not evidence.
+When to use them, what a brief must contain, and how to check the result:
+[subagents.md](subagents.md).
 
 ## Red flags
 
 - Code written before the spec and business doc are approved
-- A behavior change committed without updating `docs/BUSINESS_LOGIC.md`
+- Feature mode used in a repo with no business doc or design system
+- A feature that changes a business rule, role, money, or the data model built without approval
+- A behavior change committed without updating `docs/BUSINESS_LOGIC.md`, or in a different PR
 - A business change made in code before it is made in the doc
 - Table names, endpoints, or components in the business doc
 - Backend and frontend built in parallel before the API contract exists
-- A task shipped without unit, edge-case, and full-flow tests
-- A task in the plan with no edge-case list
-- Edge cases taken only from the generic checklist, none from the business doc
+- Frontend screens built before the design system is approved
+- A task in the plan with no edge-case list, or one drawn only from the generic checklist
 - A rule in the business doc that must never break, with no test that tries to break it
-- A planned edge case ticked off without a test named for it
-- A green suite accepted as proof without ticking each planned edge case against a test
+- A task shipped without unit, edge-case, and full-flow tests
+- A green suite accepted as proof without ticking each planned edge case against a named test
 - A `CONFLICTS` verdict overridden without asking the user
 - The alignment review run on every step instead of every task
 - Every stack skill loaded at the start instead of at its stage
-- A subagent spawned for a task smaller than its brief
-- Parallel subagents editing the same files, or sharing one worktree
-- A brief that doesn't say which skill to load
-- A subagent running its tests in the background
-- A subagent's "done" accepted without checking the commit and re-running the tests
-- Pushing or deploying without the user's go-ahead
-- Frontend screens built before the design system is approved
-- A frontend brief that doesn't point the subagent at the design system
+- A subagent brief or report that skips the rules in `subagents.md`
+- `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
+- A credential value in a commit, PR description, code comment, log, or brief
+- A real user's password in the credentials file
+- A PR merged into `dev` before Verify passes, or a direct push to `dev` or `production`
+- A merge into `production` without the user's go-ahead
+- A squash merge from `dev` into `production`
+- A preview deployment that reads the production database or calls the production API
