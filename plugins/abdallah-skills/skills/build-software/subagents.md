@@ -5,23 +5,19 @@ Every subagent rebuilds context from scratch and multiplies token spend.
 
 ## When
 
-**Use a subagent when:**
+**Build tasks run in subagents** — that is what keeps a long run's main thread small. Each task's file
+reads, test output, and debugging are discarded when the subagent reports back.
 
-- Tasks are independent: no shared files, no task waiting on another's output. Backend and
-  frontend tasks become independent once the Contract stage has fixed the API.
-- An investigation sweeps many files and only the conclusion matters.
-- Reviewing a finished task — a fresh context catches what the author's context explains away.
-- A plan has many independent tasks → `superpowers:subagent-driven-development`.
+- **Related small tasks go into one subagent together.** A brief for a two-line change costs more than
+  the change; five of them in one brief doesn't.
+- **Tasks that depend on each other run one after another**, each in its own subagent.
+- **Independent tasks run in parallel**, each in its own worktree (`superpowers:using-git-worktrees`),
+  or they overwrite each other's changes. Backend and frontend tasks become independent once the
+  Contract stage has fixed the API. For many at once: `superpowers:subagent-driven-development`.
+- **Broad investigations and reviews** also go to subagents — only the conclusion comes back.
 
-**Stay in the main thread when:**
-
-- Two tasks touch the same files, or one needs the other's result.
-- The task is small — writing the brief costs more than doing the work.
-- The stage needs the user: intake, spec approval, any open decision. A subagent cannot ask the
-  user anything.
-
-**Parallel subagents in one repo each get their own worktree** (`superpowers:using-git-worktrees`),
-or they overwrite each other's changes.
+**Stay in the main thread for anything that needs the user:** intake, approvals, any open decision. A
+subagent cannot ask the user anything.
 
 ## Briefing a subagent
 
@@ -43,16 +39,19 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Run the test suite in the foreground and commit before reporting.** A subagent that starts a
   long test run in the background stops mid-turn and leaves its work uncommitted.
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
-- **Report back** the files changed, the test command with its real output, and the commit hash.
+- **Report back in ten lines or fewer:** the files changed, the test command with the runner's summary
+  line and any failures in full, and the commit hash. No narrative, no recap of the brief.
+- **Keep test output quiet** — full log to a file, summary and failures only ([efficiency.md](efficiency.md)).
 
 ## After it reports
 
-Check, don't trust. Confirm the commit exists, re-run the tests yourself, and read the diff
-against the contract. "All tests pass" with no output is a claim, not evidence.
+Check, don't trust — cheaply. Confirm the commit exists with `git show --stat`, re-run the tests with
+quiet output, and for a `logic` task let the alignment review read the diff. "All tests pass" without
+the runner's summary line is a claim, not evidence.
 
 ## Red flags
 
-- A subagent spawned for a task smaller than its brief
+- A subagent spawned for one tiny task that could have been batched with others
 - Parallel subagents editing the same files, or sharing one worktree
 - A brief that doesn't say which skill to load
 - A frontend brief that doesn't point the subagent at the design system
@@ -60,3 +59,4 @@ against the contract. "All tests pass" with no output is a claim, not evidence.
 - A subagent running its tests in the background
 - A subagent that pushes, opens a PR, or merges
 - A subagent's "done" accepted without checking the commit and re-running the tests
+- A report longer than about ten lines, or one that pastes a full test log

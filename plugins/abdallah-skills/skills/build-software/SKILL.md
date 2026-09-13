@@ -109,6 +109,25 @@ gets one class, and the class decides both:
   a heading reads some text.
 - **The reviewer checks the classes on the plan**, so no task can be classed down to dodge its tests.
 
+## Staying light
+
+A long run gets expensive because the conversation keeps growing and every turn re-sends it. Four
+rules keep it small — commands and examples in [efficiency.md](efficiency.md):
+
+1. **State lives in files, not in the conversation.** Every run — guided or autonomous — keeps
+   `docs/BUILD_LOG.md`, the plan's checkboxes, and the business doc current, so a compaction or a new
+   session loses nothing.
+2. **The main thread coordinates; subagents do the heavy work.** Build tasks run in fresh subagents,
+   whose file reads, test output, and debugging are discarded when they report back. This happens on
+   its own in every run — no one has to clear anything.
+3. **Output is short.** One line per finished task; specs, plans, and reports go to files and the chat
+   points to them; nothing already written gets restated.
+4. **Tests are quiet.** The full log goes to a file; the conversation gets the summary line and the
+   failures.
+
+In a guided run, each approval gate ends with a one-line suggestion to `/clear` and run
+`/build-software` again — the user is there anyway, and the run resumes from the build log.
+
 ## Stages — new app
 
 | # | Stage | Load | Gate |
@@ -183,12 +202,13 @@ Every task then happens on a `feature/<name>` branch cut from `dev`. Backend tas
 - **`ui`** — component tests for the behavior, and the screen added to a smoke spec.
 - **`surface`** — no new tests; the screen's smoke screenshots are the check.
 
-One task, one commit. A `logic` task then gets the alignment review on its diff. Whether to run a
-batch inline or through subagents: see Subagents.
+One task, one commit. A `logic` task then gets the alignment review on its diff. Tasks run in
+subagents — see Staying light and Subagents.
 
 ### 7. Verify
 
-1. **The full test suite is green**, with the real output shown.
+1. **The full test suite is green**, with the runner's real summary line shown — and any failures in
+   full, never the whole log.
 2. **Each planned edge case is ticked off** against its test, by name. A case with no matching test
    fails verification, however green the suite is.
 3. **The smoke check passes locally** — the specs sign in as the seeded accounts, walk the main flows,
@@ -236,10 +256,10 @@ business moved, the user decides.
 
 ## Subagents
 
-Use them for independent tasks, broad investigations, and reviews — not by default, since each one
-rebuilds context and multiplies token spend. Tasks that share files, depend on each other, are small,
-or need the user stay in the main thread. Every brief stands alone, and every report is checked
-rather than trusted: [subagents.md](subagents.md).
+Build tasks run in subagents so each one's reading and test output is discarded when it reports:
+related small tasks batched into one, dependent tasks one after another, independent tasks in
+parallel in separate worktrees. Stages that need the user stay in the main thread. Every brief stands
+alone, and every report is checked rather than trusted: [subagents.md](subagents.md).
 
 ## Red flags
 
@@ -258,3 +278,4 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
 - A merge into `production` without the user's go-ahead, in a run that isn't fully autonomous
 - A production deploy with no smoke check afterwards, or a failed one left live
+- Run state that exists only in the conversation, or Build tasks run inline on a long run
