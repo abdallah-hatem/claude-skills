@@ -49,7 +49,9 @@ Prose fields — description, notes, address, comment — are a `<Textarea>` wit
 a single-line input. Fields are 16px on mobile (`text-base md:text-sm`) or iOS Safari zooms in
 and stays zoomed. Number inputs ship with no spin buttons and ignore the wheel. Numbers a person reads as
 quantities are displayed grouped — `100,000`, not `100000` — with the form holding a number
-and the input holding a string.
+and the input holding a string. Egyptian mobile fields accept exactly 11 digits starting with
+`01`: a 12th digit or an impossible prefix is never entered, and a pasted `+20` number is
+normalised.
 
 See [forms.md](forms.md).
 
@@ -133,6 +135,22 @@ Never a JS scrollbar library. They break keyboard scrolling, momentum, and scree
 
 Tablet-first. Every screen works at ~375px and ~768–1024px: no horizontal overflow, tap targets ≥ 44px, readable type.
 
+## Testing
+
+Components with Vitest + React Testing Library, full flows with Playwright — unless the project
+already uses something else. Every screen is tested beyond the happy path:
+
+- **Empty, loading, and error states** — each one renders; none is a blank screen
+- **Long content** — a 200-character name or an unbroken URL doesn't break the layout
+- **Validation** — every rule shows its translated message and blocks submit
+- **Double submit** — the button is disabled while the request is pending; two clicks send one
+  request
+- **Permissions** — a user without the permission can't reach the action
+- **RTL** — the screen rendered under `dir="rtl"`, not only in English
+- **Input edge cases** — pasted text, the 12th phone digit, the wheel over a number field
+
+The full-flow test drives the feature end to end the way a user would, against a real backend.
+
 ## Before calling it done
 
 Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL (Arabic). Mirroring breaks layouts the LTR pass looks fine in.
@@ -169,6 +187,10 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - A description, notes, or comment field as a single-line `<Input>`
 - A length limit with no visible counter
 - A raw `100000` shown to a user where `100,000` belongs
+- An Egyptian mobile field that accepts a 12th digit, letters, or a prefix other than `01`
+- A phone field that trims to 11 digits instead of rejecting the change — the last digit falls off
+- `maxLength` on a phone field — it clips a pasted `+20` number before it can be normalised
+- A phone number passed through `Number()` — the leading zero is lost
 - Formatted text stored in form state or sent to the API
 - Reformatting on every keystroke — the caret jumps; format on blur
 - A `type="number"` with visible spin buttons, or one the wheel can change
@@ -179,3 +201,5 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 - A clickable element without `cursor-pointer`
 - `cursor-pointer` on something disabled or non-interactive
 - Verified in English only
+- A screen tested only on the happy path — no empty, error, long-content, or RTL case
+- A submit button that can fire twice while its request is pending

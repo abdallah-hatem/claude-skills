@@ -35,6 +35,12 @@ Controller → service → repository, a single response envelope with a matchin
 filter, DTO conventions, RLS multi-tenancy, Docker for local/test/prod, and a two-tier
 testing setup.
 
+## Agent
+
+| Agent | Used by | Does |
+|---|---|---|
+| `business-alignment-reviewer` | `/build-software` | Checks a plan, or a task's diff, against `docs/BUSINESS_LOGIC.md`. Reports conflicts, missing coverage, or a doc that's out of date. Read-only. |
+
 ## Hooks
 
 `hooks/` holds the pieces `capturing-corrections` needs — a skill alone can't guarantee

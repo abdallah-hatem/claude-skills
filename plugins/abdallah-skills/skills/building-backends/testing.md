@@ -120,6 +120,36 @@ e2e specs share one database, so they cannot run in parallel:
 - **The envelope**, once — that a success is `{ success: true, data }` and a thrown
   exception comes back `{ success: false, error }`.
 
+## Edge cases, per endpoint
+
+Go through this list for every endpoint and write a test for each case that applies. The happy
+path proves the feature exists; these prove it survives real input.
+
+**Input**
+- Empty, `null`, and missing — each optional field, and a body with nothing in it
+- Bounds — zero, negative, the maximum, one past the maximum, the longest allowed string
+- Wrong type — a string where a number belongs, an array where an object belongs
+- Non-Latin text — Arabic names and addresses, emoji, leading and trailing whitespace
+- Money — decimal precision, rounding at the half, a discount larger than the price
+
+**Data**
+- Duplicates — creating what a unique constraint forbids returns 409, not 500
+- Not found — an id that never existed, and one that was deleted
+- Relations — deleting a row that other rows still point to
+- Wrong state — an action on a record that can't take it (cancelling a completed booking)
+- Concurrency — two requests changing the same row leave it consistent
+
+**Lists**
+- Pagination — page 0, a page past the end, a limit over the cap, an empty result
+- Filters and search that match nothing, and search text containing `%`, `_`, or quotes
+
+**Access**
+- No token, an expired token, the wrong role
+- Another user's or tenant's id
+
+A case that doesn't apply is skipped on purpose, not forgotten. When a bug reaches production,
+its input joins the tests for that endpoint.
+
 ## Use real fixtures
 
 Copy an actual payload — a real SMS body, a real webhook, the real Arabic string with its

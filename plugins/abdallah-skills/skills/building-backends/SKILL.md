@@ -97,6 +97,10 @@ Build services with a `makeService(overrides)` factory — don't boot `Test.crea
 for an object `new` would give you. Every endpoint taking an id needs a cross-user isolation
 test; that is the bug class that leaks data and never shows up in manual testing.
 
+Every endpoint also goes through the edge-case checklist in `testing.md`: empty and null input,
+bounds, wrong types, duplicates, not-found, wrong state, concurrency, pagination limits, and
+access.
+
 See [testing.md](testing.md).
 
 ## Data
@@ -167,7 +171,7 @@ foreign key or filtered column with no index.
 policy with no SELECT policy · a view with no `security_invoker` · an elevated client injected
 into a tenant-scoped service · a new tenant table missing its policy, index, or isolation test.
 
-**Tests** — a bug fixed without the test that reproduces it · an id endpoint with no
+**Tests** — an endpoint shipped without its edge-case tests · a bug fixed without the test that reproduces it · an id endpoint with no
 cross-user isolation test · an isolation test that only checks the allowed case · e2e pointed
 at the dev database · tests parallel against one database.
 

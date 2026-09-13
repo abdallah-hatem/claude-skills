@@ -163,3 +163,64 @@ shows `100000`, the value appears to change when you click edit.
 
 Money keeps its decimals — `minimumFractionDigits: 2` — so `1200` renders `1,200.00` and
 doesn't look like a different figure from the invoice beside it.
+
+## Egyptian mobile numbers
+
+An Egyptian mobile number is exactly **11 digits starting with `01`** — `01012345678`. The field
+enforces that while the user types: no 12th digit, no letters, and no prefix that could never
+become valid. Like every phone field it is `type="text"` with `inputMode="numeric"`, never
+`type="number"`.
+
+```tsx
+// lib/phone.ts
+/** Digits only, with a pasted international prefix (+20 / 0020) turned into the local 0. */
+export function normalizeEgyptianMobile(input: string): string {
+  let digits = input.replace(/\D/g, '')
+  if (digits.startsWith('0020')) digits = '0' + digits.slice(4)
+  else if (digits.startsWith('20') && digits.length === 12) digits = '0' + digits.slice(2)
+  return digits
+}
+
+/** A value on its way to 01XXXXXXXXX: empty, "0", or "01" plus up to 9 digits. */
+export const EG_MOBILE_PARTIAL = /^(0|01\d{0,9})?$/
+export const EG_MOBILE = /^01\d{9}$/
+```
+
+```tsx
+<Input
+  type="text"
+  inputMode="numeric"
+  autoComplete="tel-national"
+  placeholder={t('customers.phonePlaceholder')}
+  value={field.value}
+  onChange={(e) => {
+    const next = normalizeEgyptianMobile(e.target.value)
+    // Reject the whole change rather than trimming it (see below).
+    if (EG_MOBILE_PARTIAL.test(next)) field.onChange(next)
+  }}
+/>
+```
+
+```ts
+phone: z.string().regex(EG_MOBILE, t('validation.egyptianMobile'))
+```
+
+- **Reject the change, don't trim it.** Cutting the value to 11 digits looks the same but isn't:
+  type a digit into the middle of a full number and trimming drops the *last* digit, so the
+  12th was entered after all. Rejecting leaves the field exactly as it was.
+- **No `maxLength`.** The browser clips a paste *before* `onChange` runs, so
+  `+20 10 1234 5678` (16 characters) arrives cut short and can't be normalised. Length is
+  enforced in `onChange` instead.
+- **Normalise pasted international numbers.** Numbers copied from contacts or WhatsApp come as
+  `+20 10…` or `0020 10…`. Turn the country code into the leading `0` rather than rejecting a
+  correct number.
+- **Store the 11-digit string.** Never pass a phone number through `Number()` — the leading zero
+  disappears. And don't group it with commas: that rule is for quantities, not identifiers.
+- **Validate again on submit** with `EG_MOBILE`. Typing rules stop bad characters; they can't
+  stop a number that is still too short.
+- **The backend repeats the check** — `@Matches(/^01\d{9}$/)` on the DTO. The input is a
+  convenience; the server is the guard.
+
+A stricter pattern that only allows the four carrier prefixes (010, 011, 012, 015):
+`/^01[0125]\d{8}$/`.
+
