@@ -200,7 +200,8 @@ Before the first task, set up what every later check depends on:
    [verification.md](verification.md).
 4. **Graft**, if the user chose it — wired in before the first task: [graft.md](graft.md).
 
-Every task then happens on a `feature/<name>` branch cut from `dev`. Backend tasks load
+Every task then happens on a `feature/<name>` branch cut from `dev` — or, when it depends on a task
+that isn't merged yet, from that task's branch. Backend tasks load
 `building-backends`; frontend tasks load `building-frontends`. Tests follow the class:
 
 - **`logic`** — unit tests branch by branch, one test per planned edge case named after it, and a
@@ -209,7 +210,7 @@ Every task then happens on a `feature/<name>` branch cut from `dev`. Backend tas
 - **`surface`** — no new tests; the screen's smoke screenshots are the check.
 
 One task, one commit. A `logic` task then gets the alignment review on its diff. Tasks run in
-subagents — see Staying light and Subagents.
+subagents, in parallel waves wherever the plan's dependencies allow — see Staying light and Subagents.
 
 ### 7. Verify
 
@@ -264,8 +265,10 @@ business moved, the user decides.
 
 Build tasks run in subagents so each one's reading and test output is discarded when it reports:
 related small tasks batched into one, dependent tasks one after another, independent tasks in
-parallel in separate worktrees. Stages that need the user stay in the main thread. Every brief stands
-alone, and every report is checked rather than trusted: [subagents.md](subagents.md).
+parallel in separate worktrees. **Before every dispatch, run the parallel check** — which tasks are
+ready, which collide — send every ready, non-colliding task in one message, and log the wave. Stages
+that need the user stay in the main thread. Every brief stands alone, and every report is checked
+rather than trusted: [subagents.md](subagents.md).
 
 ## Red flags
 
@@ -276,6 +279,7 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - A behavior change without a `docs/BUSINESS_LOGIC.md` update in the same PR
 - A business change made in code before it is made in the doc
 - Backend and frontend built in parallel before the API contract exists
+- Independent tasks built one at a time because no parallel check was run
 - Frontend screens built before the design system is approved
 - A task with no class, or one classed down to avoid its tests
 - A test that checks appearance instead of behavior

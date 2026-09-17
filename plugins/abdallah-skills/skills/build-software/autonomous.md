@@ -51,6 +51,9 @@ Graft: yes — chosen by the user on YYYY-MM-DD
 Goal: <the goal, in the user's words>
 Current stage: 6 — Build (task 9 of 14)
 
+## Waves
+- Wave 3: T7 T8 T9 in parallel · T10 waits on T8 · T11 after T9 (both edit schema.prisma)
+
 ## Decisions
 - **[Stage 2] Refund policy** — cancellations before the wash starts refund in full.
   Why: the request mentions refunds but no rule; this is the simplest rule a customer accepts.
@@ -63,7 +66,8 @@ Current stage: 6 — Build (task 9 of 14)
 
 - One entry per decision a guided run would have asked about: what was decided, why, and the
   alternatives it passed over — so each one can be reversed later.
-- Update `Current stage` whenever a stage or task finishes.
+- Update `Current stage` whenever a stage or task finishes, and add a wave line before every
+  dispatch ([subagents.md](subagents.md) → The parallel check).
 - No credential values, ever — the file is committed and the repo is public.
 
 ## Not stopping
