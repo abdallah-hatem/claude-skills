@@ -49,7 +49,7 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 | Hook | Event | Does |
 |---|---|---|
 | `capture-correction.sh` | `UserPromptSubmit` | notices correction-shaped messages and asks the model to record the rule |
-| `load-learnings.sh` | `SessionStart` | force-loads `.claude/LEARNINGS.md` so the record is actually read |
+| `load-learnings.sh` | `SessionStart` | force-loads `~/.claude/LEARNINGS.md` (every project) and `<repo>/.claude/LEARNINGS.md` (that repo) so the record is actually read |
 | `burn-warn.py` | `UserPromptSubmit` | warns when the 5-hour usage window is burning fast |
 
 Copy them somewhere stable and wire them up in `~/.claude/settings.json`:

@@ -1,5 +1,5 @@
 #!/bin/bash
-# UserPromptSubmit — nudge to record a correction in .claude/LEARNINGS.md.
+# UserPromptSubmit — nudge to record a correction in the global or project LEARNINGS.md.
 # Silent unless the prompt is correction-shaped. Never blocks.
 set -uo pipefail
 
@@ -13,6 +13,6 @@ lower=$(printf '%s' "$prompt" | tr '[:upper:]' '[:lower:]')
 if printf '%s' "$lower" | grep -Eq \
   '(^|[[:space:]])(no|nope|wrong|instead|stop)([[:space:][:punct:]]|$)|i meant|i said|i told you|i already|you forgot|you keep|not what i|don.?t (do|use|add|call|touch|change|put)|never (do|use|add|call|put)|stop doing'
 then
-  printf '%s' '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"[capturing-corrections] This message reads as a course correction. Once you have resolved it, invoke the capturing-corrections skill to record the durable rule in .claude/LEARNINGS.md. Skip it only if the point was a one-off that could not recur."}}'
+  printf '%s' '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"[capturing-corrections] This message reads as a course correction. Once you have resolved it, invoke the capturing-corrections skill to record the durable rule: in ~/.claude/LEARNINGS.md if it is about the user, or <repo>/.claude/LEARNINGS.md if it is about this codebase. Skip it only if the point was a one-off that could not recur."}}'
 fi
 exit 0

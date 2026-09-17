@@ -5,9 +5,9 @@ description: Use when the user corrects course, restates something already said,
 
 # Capturing Corrections
 
-A correction the user has to give twice is a correction that was never recorded. Write it
-to `.claude/LEARNINGS.md` in the current project, where a `SessionStart` hook force-loads it
-into every future session.
+A correction the user has to give twice is a correction that was never recorded. Write it to
+one of two `LEARNINGS.md` files — global or project, see Where it goes — which a `SessionStart`
+hook force-loads into every future session.
 
 ## Record it when
 
@@ -30,11 +30,24 @@ If it does not survive the "true next week?" test, resolve it and move on.
 
 ## Where it goes
 
-`<repo>/.claude/LEARNINGS.md` — the project you are working in. Create the file if absent.
+Pick the file by what the rule is about, not by the folder the session happens to be in:
 
-A rule about **how you should work** in general belongs in a global skill, not here. A rule
-about **this codebase** belongs here. When both fit, this file wins — it is cheaper to
-promote later than to pollute every project now.
+| The rule is about | File | Loaded |
+|---|---|---|
+| **The user** — how they want you to work, their preferences, their machine and tools, their own commands and shortcuts, facts about them and their work | `~/.claude/LEARNINGS.md` | in every project |
+| **This codebase** — its branches, test setup, deploy targets, a trap in its code | `<repo>/.claude/LEARNINGS.md` | in this repo only |
+
+The test: **would it still be true in a different repo?** Yes → global. No → project.
+
+- "Every command must use an absolute path" → global. "Lead with the verdict" → global.
+- "No Flutter jobs" → global, even when said inside a job-hunt repo: it is about the user.
+- "pgTAP here runs on the live DB — never assert global counts" → project.
+
+Create the file if it is absent. Both are the only targets: `CLAUDE.md` files are instructions the
+user maintains by hand, so a correction never goes there.
+
+A new global rule reaches other sessions that are already running only at their next start,
+resume, `/clear`, or compaction.
 
 ## Format
 
@@ -67,14 +80,18 @@ Only a genuinely new rule gets a new line.
 
 ## After writing
 
-Tell the user in one line what was recorded and where. They may want it worded differently,
-and this is the moment to catch it — not three sessions later.
+Tell the user in one line what was recorded and in which file — **global** or **this project**.
+They may want it worded differently or filed in the other one, and this is the moment to catch it
+— not three sessions later.
 
 ## Red flags
 
 - Appending without reading the file first
+- A rule about the user written to a project file — every other repo will repeat the mistake
+- A rule about one codebase written to the global file
+- A correction written into a `CLAUDE.md`
 - A rule that restates something in `CLAUDE.md`
 - An entry naming a line number or a function that will move
 - Recording the task instead of the rule
-- More than about 40 lines in one file — it has become a dumping ground; promote the
-  durable ones to `CLAUDE.md` or a skill and delete the rest
+- More than about 40 lines in a project file, or 150 in the global one — it has become a dumping
+  ground; move the durable ones into a skill and delete the rest
