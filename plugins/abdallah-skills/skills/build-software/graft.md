@@ -4,15 +4,17 @@
 short card per file — so an agent finds code with a query instead of reading file after file. It
 parses with tree-sitter, runs on this machine, and needs no key.
 
-Used only when the user chose it at the start of the run.
+**Every run uses it** — wired in at Build setup, or at the Context stage in feature mode. If the
+install fails (no npm, no network), log `Graft: off — <reason>` in the build log and carry on reading
+files; don't stop the run over it.
 
-## When it pays
+## What to expect
 
-| Repo | Worth it |
+| Repo | Payoff |
 |---|---|
-| An existing app of tens of thousands of lines, or a monorepo | **yes** — exploring the code is where the tokens go |
-| A new app | wire it in at Build setup; the graph starts nearly empty and pays off as the code grows |
-| A few thousand lines | little — the map costs about what it saves |
+| An existing app of tens of thousands of lines, or a monorepo | large — exploring the code is where the tokens go |
+| A new app | small at first; the graph starts nearly empty and pays off as the code grows |
+| A few thousand lines | about break-even — still on, so every run works the same way |
 
 ## Wiring it in
 
@@ -50,17 +52,31 @@ unstaged.
 - **Scope a change before making it.** `graft_trace_calls`, or `graft callers <symbol> --depth all`, for
   everything that depends on a symbol; `graft blast` on a diff.
 - **Subagents don't get Graft's automatic context.** The repo map injected at session start and the
-  pointers injected for each prompt reach only the main session, so every brief tells the subagent to
-  start with Graft ([subagents.md](subagents.md)).
+  pointers injected for each prompt reach only the main session, so every brief carries the Graft block
+  ([subagents.md](subagents.md)).
+- **Prefix every `graft` command with `DO_NOT_TRACK=1`**, on top of `graft telemetry disable` — a
+  worktree or a fresh machine may not have the setting.
+
+## In a worktree
+
+Parallel subagents work in worktrees, where Graft needs two adjustments:
+
+1. **Build the graph there first.** The `graft/` cache is gitignored, so a new worktree has none.
+   `DO_NOT_TRACK=1 graft build` at the worktree root takes seconds and needs no key.
+2. **Use the CLI, not the `graft_*` MCP tools.** The MCP server the session loaded reads the main
+   checkout, which doesn't have the wave's changes. From the worktree root: `graft ask`, `graft skeleton
+   <file>`, `graft callers <symbol> --depth all`, `graft blast`.
 - **`graft stats`** shows how much of a session went through Graft and the tokens it estimates were saved.
 - **Never run `graft build --deep`.** It sends source code to an LLM provider and costs money — neither is
   part of what the user agreed to.
 
 ## Red flags
 
-- Graft wired in without the user choosing it
+- A run that explores the code file by file because Graft was never wired in
 - `graft init` without `--no-global`, or with telemetry left on
 - `graft build --deep`
 - Graft's wiring committed to a repo the user doesn't own
-- A subagent brief in a Graft run that doesn't say to start with Graft
+- A subagent brief without the Graft block
+- A worktree subagent using the `graft_*` MCP tools, or querying before `graft build`
+- A `graft` command without `DO_NOT_TRACK=1`
 - Waiting on the MCP tools in the same session that ran `init`, instead of using the CLI

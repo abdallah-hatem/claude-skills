@@ -28,7 +28,8 @@ work looks likely:
    whose contract exists).
 2. **Separate the ones that collide.** Two ready tasks can't run side by side when they edit the same
    files. The usual shared ones: `prisma/schema.prisma` and migrations, `package.json` and the
-   lockfile, shared layouts and navigation, the i18n locale files, the generated API client. Colliding
+   lockfile, shared layouts and navigation, the i18n locale files, the generated API client — and a
+   signature change to a symbol another ready task calls (`graft callers <symbol> --depth all`). Colliding
    tasks go into one subagent together, or one waits for the next wave.
 3. **Dispatch the rest in one message** — one `Agent` call per task (or batch), each with
    `isolation: "worktree"` and its own `feature/<name>` branch, at most five at once. A task that
@@ -54,9 +55,16 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Scope** — the repo path, the `feature/<name>` branch or worktree it works in, the files or
   domain it owns, and what it must not touch.
 - **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
-- **Graft, if the run uses it** — start with `graft_repo_map` and `graft_find_code` (or `graft ask`)
-  before reading files. Subagents don't get the repo map or the per-prompt pointers Graft injects into
-  the main session, so without this line they explore file by file ([graft.md](graft.md)).
+- **The Graft block** — subagents don't get the repo map or the per-prompt pointers Graft injects
+  into the main session, so without it they explore file by file ([graft.md](graft.md)):
+  - In a worktree, run `DO_NOT_TRACK=1 graft build` at its root first, then use the CLI there
+    (`graft ask`, `graft skeleton <file>`) — not the `graft_*` MCP tools, which read the main checkout.
+    Outside a worktree, `graft_repo_map` and `graft_find_code` work.
+  - Query Graft before reading a file.
+  - Before changing a symbol other code uses: `graft callers <symbol> --depth all`, and update every
+    caller it returns.
+  - Prefix every `graft` command with `DO_NOT_TRACK=1`. Never `graft build --deep`.
+  - End the report with the tokens-saved line from `DO_NOT_TRACK=1 graft stats`.
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
 - **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
   Screens use tokens only; no new colours, sizes, or curves.
@@ -70,7 +78,7 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   long test run in the background stops mid-turn and leaves its work uncommitted.
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
 - **Report back in ten lines or fewer:** the files changed, the test command with the runner's summary
-  line and any failures in full, and the commit hash. No narrative, no recap of the brief.
+  line and any failures in full, the commit hash, and the `graft stats` tokens-saved line. No narrative, no recap of the brief.
 - **Keep test output quiet** — full log to a file, summary and failures only ([efficiency.md](efficiency.md)).
 
 ## After it reports
@@ -86,7 +94,7 @@ the runner's summary line is a claim, not evidence.
 - A subagent spawned for one tiny task that could have been batched with others
 - Parallel subagents editing the same files, or sharing one worktree
 - Parallel subagents each running e2e specs, dev servers, or migrations on the same machine
-- A brief that doesn't say which skill to load
+- A brief that doesn't say which skill to load, or has no Graft block
 - A frontend brief that doesn't point the subagent at the design system
 - A brief that contains a credential value
 - A subagent running its tests in the background
