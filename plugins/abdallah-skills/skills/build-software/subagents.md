@@ -55,6 +55,10 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Scope** — the repo path, the `feature/<name>` branch or worktree it works in, the files or
   domain it owns, and what it must not touch.
 - **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
+- **Existing code first** — before writing a component, hook, helper, service method, guard, or DTO,
+  search for one with `graft ask "<concept>"` and extend it; extract on the second use, as the stack
+  skill says. List every shared piece it creates (`common/`, `lib/`, `components/ui/`) by path in the
+  report.
 - **The Graft block** — subagents don't get the repo map or the per-prompt pointers Graft injects
   into the main session, so without it they explore file by file ([graft.md](graft.md)):
   - In a worktree, run `DO_NOT_TRACK=1 graft build` at its root first, then use the CLI there
@@ -78,7 +82,8 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   long test run in the background stops mid-turn and leaves its work uncommitted.
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
 - **Report back in ten lines or fewer:** the files changed, the test command with the runner's summary
-  line and any failures in full, the commit hash, and the `graft stats` tokens-saved line. No narrative, no recap of the brief.
+  line and any failures in full, the commit hash, the shared pieces it created, and the `graft stats`
+  tokens-saved line. No narrative, no recap of the brief.
 - **Keep test output quiet** — full log to a file, summary and failures only ([efficiency.md](efficiency.md)).
 
 ## After it reports
@@ -86,6 +91,10 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 Check, don't trust — cheaply. Confirm the commit exists with `git show --stat`, re-run the tests with
 quiet output, and for a `logic` task let the alignment review read the diff. "All tests pass" without
 the runner's summary line is a claim, not evidence.
+
+**Compare the shared pieces across the wave.** Agents in parallel worktrees can't see each other, so
+two of them can each write the same helper or component. When the reports list overlapping pieces,
+merge them into one — and switch both callers to it — before the next wave.
 
 ## Red flags
 
@@ -95,6 +104,8 @@ the runner's summary line is a claim, not evidence.
 - Parallel subagents editing the same files, or sharing one worktree
 - Parallel subagents each running e2e specs, dev servers, or migrations on the same machine
 - A brief that doesn't say which skill to load, or has no Graft block
+- A brief without the existing-code-first line
+- Two agents in one wave each adding the same helper or component, left unmerged
 - A frontend brief that doesn't point the subagent at the design system
 - A brief that contains a credential value
 - A subagent running its tests in the background

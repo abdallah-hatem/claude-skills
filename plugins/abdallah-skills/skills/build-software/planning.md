@@ -4,6 +4,13 @@ Break the spec into tasks. Each gets a **class** (`logic` / `ui` / `surface` —
 `SKILL.md`), an area (`backend` / `frontend` / `infra`), and what it depends on. The dependency marks
 decide what can run in parallel.
 
+## Shared building blocks
+
+When two or more tasks need the same component, helper, or piece of service logic that doesn't exist
+yet — a data table, a money helper, a permission check — it becomes **its own task**, and the tasks
+that use it depend on it. It lands in an earlier wave; otherwise parallel agents each build their own
+copy.
+
 ## Edge cases for `logic` tasks
 
 Every `logic` task lists its edge cases in the plan **before any code is written**. Derive them from
@@ -50,6 +57,7 @@ grows. During Verify, each case is ticked off against the test named for it.
 ## Red flags
 
 - A task with no class, or one classed down to avoid its tests
+- Two tasks that each build the same component or helper, instead of a shared task both depend on
 - A `logic` task with no edge-case list, or one drawn only from the generic checklist
 - A rule in the business doc that must never break, with no case that tries to break it
 - An edge case without an expected outcome or a source

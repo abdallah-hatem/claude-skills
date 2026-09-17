@@ -50,6 +50,22 @@ fine until a second caller needs the same query — then it becomes a repository
 definition nothing checks, and it drifts — a field the schema made nullable stays required in
 the copy. Import from `@prisma/client`. See [repository-layer.md](repository-layer.md).
 
+## Reuse
+
+The rule that erodes under deadline, so it is spelled out:
+
+- **Search before writing.** Before a helper, service method, guard, decorator, pipe, or DTO, look
+  for an existing one: `graft ask "<concept>"`, or grep `src/common/` and the other domains for the
+  concept and its synonyms. Extend what you find rather than writing a sibling.
+- **Second use extracts.** When a second place needs logic that lives somewhere else, move it in the
+  same commit: a pure calculation to `common/utils/<topic>.util.ts`, logic that needs injection to a
+  provider in `common/`, a query to a repository method. The original caller switches to the shared
+  version.
+- **Never copy or reach in.** No copy-with-a-tweak, and no calling another domain's private helper —
+  both fork the rule the moment one side changes. Another domain's *exported* service, injected
+  through its module, is fine.
+- **Utils are pure.** Arguments in, a value out — no `DatabaseService`, no request, no current user.
+
 ## Bootstrap
 
 `main.ts` — `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })` and CORS.
@@ -147,6 +163,10 @@ Production is multi-stage: `npm ci`, a pruned dependency stage so devDependencie
 See [docker.md](docker.md).
 
 ## Red flags
+
+**Reuse** — the same calculation in two services · a helper written without searching `common/`
+and the other domains first · another domain's private helper copied or called · a util that
+injects a service or reads the request.
 
 **Layering** — Prisma in a controller · `res.status().json()` in a controller · an `entities/`
 folder mirroring a Prisma model · a raw client call outside a repository.

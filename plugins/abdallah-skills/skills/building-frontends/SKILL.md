@@ -109,7 +109,7 @@ See [ui-patterns.md](ui-patterns.md).
 
 The rule that matters most, because it is the one that erodes under deadline.
 
-**Before writing a component or helper, search for an existing one.** Grep the components directory and the utils/lib directory for the concept and its synonyms. Extend what you find rather than writing a sibling.
+**Before writing a component, hook, or helper, search for an existing one.** `graft ask "<concept>"`, or grep the components directory and the utils/lib directory for the concept and its synonyms. Extend what you find rather than writing a sibling.
 
 **Write the generic version first.** A component takes props for what varies; it does not read global state, route params, or the current user unless that IS its job. A helper takes arguments and returns a value.
 
