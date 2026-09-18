@@ -20,6 +20,9 @@ release path — for a mobile app alone or next to a web app, on any backend.
 | Expo plugin scope | Installed at user scope (today: project scope in one repo) | Skill references must resolve in any project |
 | Crash reporting | No Sentry; `expo:eas-update-insights` for crash/launch rates per channel | User decision |
 | Design default | Native-first + brand | User decision; feels at home on each OS |
+| Component library | React Native Reusables (the shadcn/ui port) | User decision; same component names and API as the web's shadcn, copied into the repo, NativeWind-based |
+| Native vs kit | Navigation chrome is native (expo-router native tabs, stack headers, system sheets); every control comes from the kit | Native-first for structure, one consistent brand for controls |
+| Consistency enforcement | ESLint `no-restricted-imports` + a token check, not prose alone | Mechanical rules are automated; prose is for judgment calls |
 | Mobile design | New `designing-mobile` skill, the mobile counterpart of `frontend-design` | No existing skill found (`SuggestSkills` returned none) |
 | Existing repos | The repo's stack always wins, as in the web skill | Never migrate a working app to match a table |
 
@@ -51,11 +54,35 @@ release path — for a mobile app alone or next to a web app, on any backend.
   | A third-party integration | `expo:expo-examples` |
 
   Not used: `add-app-clip`, `expo-brownfield`, `expo-api-routes`, `use-dom`, `expo-observe`.
+- **Structure**:
+  ```
+  app/                      routes only — thin files that compose a feature's screen
+  src/ui/                   the kit: React Native Reusables components + the app's own primitives
+  src/features/<name>/      screens, hooks, API calls, and components owned by one feature
+  src/lib/                  data client, i18n, storage, pure helpers
+  packages/shared/          (web + mobile repos) zod schemas, API types, locale files, tokens, pure logic
+  ```
+- **Components — the kit first** (mirrors the web's "shadcn/ui first"): if React Native Reusables has
+  the component, add it with its CLI into `src/ui/` and compose. Never hand-roll a button, input,
+  select, switch, checkbox, dialog, sheet, toast, tabs, or skeleton in a screen.
+- **Nothing ships as a raw React Native control** (mirrors "nothing ships looking native"): `Button`,
+  `Switch`, `TextInput`, `ActivityIndicator`, `Alert.alert`, and the native picker look different on
+  each OS and read as unstyled. Screens use the kit's version; a missing control is built into
+  `src/ui/` first, token-styled, then used. Layout primitives (`View`, `ScrollView`, `FlatList`) are
+  fine. Navigation chrome stays native — expo-router native tabs, stack headers, `formSheet`
+  presentation.
+- **Enforced, not hoped for**: the app's ESLint config gets `no-restricted-imports` blocking those
+  controls from `react-native` outside `src/ui/`, and a check that fails on hex colours or raw
+  pixel values in `app/` and `src/features/`. Set up with the kit, before the first screen.
+- **Reuse**: search first (`graft ask`), extract on the second use — a component to `src/ui/`, a hook
+  or helper shared by two features to `src/lib/` (or `packages/shared` when web needs it too).
+  Features never import from another feature's folder; what two features share moves out.
 - **Screens**: safe areas; keyboard handling per platform (`KeyboardAvoidingView behavior="padding"`
   on Android, `automaticallyAdjustKeyboardInsets` is iOS-only); tap targets ≥ 44pt; phone and tablet
   layouts; design comes from `designing-mobile`.
-- **Reuse**: search first (`graft ask`), shared primitives in `src/ui/`, extract on the second use.
-- **Red flags** section.
+- **Red flags** section — including a raw control in a screen, a hex colour or one-off size outside the
+  tokens, a hand-rolled dialog/sheet/toast, a feature importing another feature's internals, and a
+  kit component copied and tweaked instead of given a variant.
 
 **`data-layer.md`** — one client shape, two backends:
 - NestJS: unwraps the response envelope from `building-backends`, keeps access + refresh tokens in
@@ -100,9 +127,14 @@ and whenever a mobile screen's look is being decided.
   meaningful confirmations only; respect Reduce Motion.
 - **Craft**: spacing scale, type scale covering Arabic and Latin (Dynamic Type honoured), colour roles
   for light and dark, one icon family, designed empty/loading/error states.
+- **Consistency**: one component per job, styled once in the kit with variants (`size`, `variant`)
+  instead of per-screen overrides; one spacing scale, one radius set, one shadow/elevation set, one
+  icon family; the same pattern for the same situation everywhere (every list's empty state, every
+  destructive confirmation, every form error look alike).
 - **Mechanics**: tokens in code before the first screen — NativeWind theme, shared with web through
-  `packages/shared` when both exist; a preview screen for approval; screenshots on iPhone and iPad,
-  LTR and RTL, light and dark.
+  `packages/shared` when both exist; the React Native Reusables kit themed from those tokens; a
+  preview screen showing the kit (buttons, inputs, sheet, toast, list row, empty state) for approval;
+  screenshots on iPhone and iPad, LTR and RTL, light and dark.
 - **Red flags** section.
 
 ## 3. `build-software` changes
@@ -135,7 +167,9 @@ and whenever a mobile screen's look is being decided.
 Per `superpowers:writing-skills`, each change is tested before it ships: scenario prompts run by
 subagents against the skill text, 3 runs before and 3 after, checking concrete behavior — which Expo
 skill is loaded when, where tokens and secrets go, OTA-vs-build choices, whether a store build waits
-for approval, RTL handling, and whether a design direction is committed before the first screen.
+for approval, RTL handling, whether a design direction is committed before the first screen, and
+whether a screen is built from the kit (no raw `Switch`/`TextInput`/`Alert.alert`, no hex colours,
+no hand-rolled sheet) with shared code extracted instead of copied.
 
 ## Out of scope
 
