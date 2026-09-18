@@ -62,6 +62,8 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 | `capture-correction.sh` | `UserPromptSubmit` | notices correction-shaped messages and asks the model to record the rule |
 | `load-learnings.sh` | `SessionStart` | force-loads `~/.claude/LEARNINGS.md` (every project) and `<repo>/.claude/LEARNINGS.md` (that repo) so the record is actually read |
 | `burn-warn.py` | `UserPromptSubmit` | warns when the 5-hour usage window is burning fast |
+| `session-state.sh` | `SessionStart` | loads the work's state into every new, resumed, cleared, or compacted session: a `/build-software` run's `docs/BUILD_LOG.md` header, or the repo's handoff note from `~/.claude/handoffs/` |
+| `pre-compact.sh` | `PreCompact` | tells the compaction summary what must survive — goal, finished work with hashes, work in progress, decisions, next step — and the build log's current stage |
 
 Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
 
@@ -72,14 +74,20 @@ Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/capture-correction.sh", "timeout": 5 }] }
     ],
     "SessionStart": [
-      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/load-learnings.sh", "timeout": 5 }] }
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/load-learnings.sh", "timeout": 5 }] },
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-state.sh", "timeout": 5 }] }
+    ],
+    "PreCompact": [
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/pre-compact.sh", "timeout": 5 }] }
     ]
   }
 }
 ```
 
-Use absolute paths if `~` doesn't expand in your shell. Both scripts exit 0 on unexpected
-input, so a broken hook can never block a prompt.
+Use absolute paths if `~` doesn't expand in your shell. Every script exits 0 on unexpected
+input, so a broken hook can never block a prompt or a compaction. `session-state.sh` reads
+`jq` and `git`; `SessionStart` also fires after a compaction (source `compact`), which is when
+it asks for the build log or the handoff note to be brought up to date.
 
 ## Editing these
 
