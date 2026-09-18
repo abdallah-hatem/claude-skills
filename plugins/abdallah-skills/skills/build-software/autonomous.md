@@ -91,6 +91,8 @@ depend on it. Only when every remaining task depends on something blocked does t
 These can't be decided on the user's behalf, whatever mode was chosen:
 
 - **Spending money** — a paid plan, a domain, any purchase.
+- **A store build or submission** — it spends EAS build credits and starts a store review. OTA updates
+  are not builds and don't stop the run.
 - **Access it doesn't have** — an account to create, a login, an API key, a CLI that isn't signed in.
 - **Irreversible data loss** — deleting a database or a repo, dropping tables that hold data,
   force-pushing a shared branch.

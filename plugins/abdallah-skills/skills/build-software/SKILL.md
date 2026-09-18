@@ -1,6 +1,6 @@
 ---
 name: build-software
-description: Use when the user runs /build-software to build a new app from idea to deployed — intake, spec, business doc, API contract, design system, plan, build, verify, ship — or to add a feature to an existing app through the lighter feature mode — guided, or fully autonomous — on the NestJS + Next.js stack.
+description: Use when the user runs /build-software to build a new app from idea to deployed — intake, spec, business doc, API contract, design system, plan, build, verify, ship — or to add a feature to an existing app through the lighter feature mode — guided, or fully autonomous — on the NestJS + Next.js + Expo (React Native) stack.
 disable-model-invocation: true
 ---
 
@@ -139,12 +139,12 @@ In a guided run, each approval gate ends with a one-line suggestion to `/clear` 
 |---|---|---|---|
 | 1 | Intake | `grilling` (or `superpowers:brainstorming`) | — |
 | 2 | Spec + business doc | — | **user approves both** |
-| 3 | Contract | `abdallah-skills:building-backends` | — |
-| 4 | Design system | `frontend-design` (or `epic-design` for a marketing site) | **user approves the look** |
+| 3 | Contract | `abdallah-skills:building-backends` (or the existing backend) | — |
+| 4 | Design system | `frontend-design` (or `epic-design` for a marketing site); `designing-mobile` for an app | **user approves the look** |
 | 5 | Plan | `superpowers:writing-plans` | **classes, edge cases, alignment review** |
-| 6 | Build | `abdallah-skills:building-backends` / `building-frontends`, per task | **tests by class · review for `logic`** |
+| 6 | Build | `abdallah-skills:building-backends` / `building-frontends` / `building-mobile`, per task | **tests by class · review for `logic`** |
 | 7 | Verify | `superpowers:verification-before-completion` | **all green + smoke check** |
-| 8 | Ship | `abdallah-skills:deploying-to-vercel` | **dev: automatic · production: user says go · rollback on failure** |
+| 8 | Ship | `abdallah-skills:deploying-to-vercel`; `building-mobile` → `release.md` for an app | **dev: automatic · production: user says go · rollback on failure · a store build always waits for the user** |
 
 In an autonomous run, every gate that waits for the user is decided with the recommended default and
 logged in `docs/BUILD_LOG.md` instead.
@@ -152,19 +152,27 @@ logged in `docs/BUILD_LOG.md` instead.
 ### 1. Intake
 
 Ask only what changes the architecture: who it's for, what the first version includes, where it runs,
-and whether it's multi-tenant. Decide everything smaller yourself with the recommended default and
+whether it's multi-tenant, **which platforms** (web, mobile, or both — and for mobile, iOS, Android, or
+both), and **which backend** (a NestJS API this run builds, or an existing NestJS API or Supabase
+project the app connects to). Decide everything smaller yourself with the recommended default and
 record each choice in the spec.
 
 ### 2. Spec and business doc
 
 Write `docs/specs/YYYY-MM-DD-<topic>.md`: users and roles, entities, flows, what is out of scope, and
-the defaults chosen at intake. Then create or update `docs/BUSINESS_LOGIC.md` from it. **Stop for
+the defaults chosen at intake, including the platforms and the backend. Then create or update
+`docs/BUSINESS_LOGIC.md` from it.
+
+**Layout follows the platforms:** web + mobile → `apps/api`, `apps/web`, `apps/mobile`, and
+`packages/shared` for the zod schemas, API types, locale files, tokens, and pure logic both use.
+Mobile only → `apps/mobile` (plus `apps/api` when this run builds the backend). **Stop for
 approval of both.** No code before they are agreed.
 
 ### 3. Contract
 
 Before splitting work, fix the seam between backend and frontend — every endpoint, its DTO, and its
-response shape inside the envelope — and write it into the spec. It is what lets the two sides be
+response shape inside the envelope — and write it into the spec. When the app connects to a backend
+that already exists, the contract records what that backend offers instead of designing it. It is what lets the two sides be
 built independently without disagreeing when they meet.
 
 ### 4. Design system
@@ -179,10 +187,16 @@ Show the user the palette, the type scale, and one representative screen in ligh
 page, or a mockup through the `design` skill. **Stop for approval.** A look agreed now is cheap; a
 look changed after twenty screens is a rewrite.
 
+**For a mobile app, load `designing-mobile`** instead: native-first with the brand on top, tokens in
+NativeWind (shared with the web through `packages/shared` when both exist), and the React Native
+Reusables kit themed from them. The preview is the themed kit on a phone, in light and dark. With
+both platforms, one direction covers both and the preview shows a screen on each.
+
 ### 5. Plan
 
 Break the spec into tasks, each with a **class**, an area (`backend` / `frontend` / `infra`), and what
-it depends on — the dependencies decide what can run in parallel.
+it depends on — the dependencies decide what can run in parallel. Apps add the area `mobile`, which is
+independent of `frontend` once the contract is fixed.
 
 **Every `logic` task lists its edge cases before any code**, drawn from the business doc first, then
 the contract, then the stack checklist — each written with its expected outcome and its source. `ui`
@@ -201,8 +215,12 @@ Before the first task, set up what every later check depends on:
 4. **Graft** — wired in before the first task, if the repo doesn't have it yet: [graft.md](graft.md).
 5. **Lint and typecheck** — every app gets its stack's house config and `lint` / `typecheck` scripts:
    `building-backends` → [lint.md](../building-backends/lint.md), `building-frontends` →
-   [lint.md](../building-frontends/lint.md). A repo that already exists gets it too, with its current
+   [lint.md](../building-frontends/lint.md), `building-mobile` → [lint.md](../building-mobile/lint.md). A repo that already exists gets it too, with its current
    violations frozen — lint is a check, not a stack change.
+6. **For a mobile app** — the official `expo` plugin installed (`claude plugin install
+   expo@claude-plugins-official`; `building-mobile` loads its skills), EAS project and channels set up
+   per `building-mobile` → [release.md](../building-mobile/release.md), and Maestro smoke flows that
+   sign in as the seeded accounts ([testing.md](../building-mobile/testing.md)).
 
 Every task then happens on a `feature/<name>` branch cut from `dev` — or, when it depends on a task
 that isn't merged yet, from that task's branch. Backend tasks load
@@ -222,7 +240,10 @@ subagents, in parallel waves wherever the plan's dependencies allow — see Stay
    and any failures in full, never the whole log.
 2. **Each planned edge case is ticked off** against its test, by name. A case with no matching test
    fails verification, however green the suite is.
-3. **The smoke check passes locally** — the specs sign in as the seeded accounts, walk the main flows,
+3. **For a mobile app, the Maestro flows pass** and every changed screen is screenshotted on iPhone and
+   iPad, LTR and RTL, light and dark, at the largest Dynamic Type — by the main thread after the wave,
+   one simulator at a time ([testing.md](../building-mobile/testing.md)).
+4. **The smoke check passes locally** — the specs sign in as the seeded accounts, walk the main flows,
    and screenshot every changed screen at mobile and tablet, LTR and RTL, light and dark. Look at the
    screenshots; a passing spec doesn't prove a screen looks right.
 
@@ -239,6 +260,12 @@ Everything reaches users by one path — details in [shipping.md](shipping.md):
    the last release, open a release PR, then **stop** — merging it is the production deploy.
 3. **Smoke-check production after every deploy.** If the read-only specs fail, roll back first, then
    fix forward through `dev`.
+
+**A mobile app ships through EAS** — [release.md](../building-mobile/release.md): `feature → dev` is an
+OTA update to the `preview` channel; `dev → production` is an OTA update to `production` for JS-only
+changes, checked with `expo:eas-update-insights`, or a store build for native changes. **A store build
+or submission always waits for the user's go-ahead, in every run mode** — it spends EAS credits and
+starts a store review.
 
 Migrations run deliberately against each environment's database before its merge, and
 `CREDENTIALS.local.md` gets every new URL or test account.

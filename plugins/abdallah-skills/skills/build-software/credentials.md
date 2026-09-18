@@ -35,6 +35,9 @@ Last updated: YYYY-MM-DD
 | Owner | …     | …        | pre-launch test account — remove at launch |
 ```
 
+For a mobile app, add a `## Mobile` section: the EAS project, the iOS bundle id and Android package,
+the store app ids, and which channel each build listens on — never keystores, signing keys, or API keys.
+
 ## Rules
 
 - **Test accounts only**, one per role. Never a real user's password.

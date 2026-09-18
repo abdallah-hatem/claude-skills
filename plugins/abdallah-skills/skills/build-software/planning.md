@@ -1,7 +1,7 @@
 # Planning: classes and edge cases
 
 Break the spec into tasks. Each gets a **class** (`logic` / `ui` / `surface` — see Task classes in
-`SKILL.md`), an area (`backend` / `frontend` / `infra`), and what it depends on. The dependency marks
+`SKILL.md`), an area (`backend` / `frontend` / `mobile` / `infra`), and what it depends on. The dependency marks
 decide what can run in parallel.
 
 ## Shared building blocks

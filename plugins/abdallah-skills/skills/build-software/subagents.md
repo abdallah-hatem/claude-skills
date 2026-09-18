@@ -54,7 +54,8 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Goal and done-criteria** — the task from the plan, and what proves it is finished.
 - **Scope** — the repo path, the `feature/<name>` branch or worktree it works in, the files or
   domain it owns, and what it must not touch.
-- **The skill to load first** — `building-backends` or `building-frontends`. It won't know to.
+- **The skill to load first** — `building-backends`, `building-frontends`, or `building-mobile`. It
+  won't know to.
 - **Existing code first** — before writing a component, hook, helper, service method, guard, or DTO,
   search for one with `graft ask "<concept>"` and extend it; extract on the second use, as the stack
   skill says. List every shared piece it creates (`common/`, `lib/`, `components/ui/`) by path in the
@@ -71,7 +72,9 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   - End the report with the tokens-saved line from `DO_NOT_TRACK=1 graft stats`.
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
 - **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
-  Screens use tokens only; no new colours, sizes, or curves.
+  Screens use tokens only; no new colours, sizes, or curves. **For mobile tasks**, `docs/DESIGN.md`, the
+  NativeWind tokens, and the kit in `src/ui/` — screens are built from the kit, never raw React Native
+  controls.
 - **The contract** it builds against, pasted in rather than pointed at.
 - **The task's class and its tests** — `logic`: unit and full-flow tests plus **the edge-case list
   from the plan, pasted in**, one test per case named after it · `ui`: component tests for the
@@ -107,7 +110,8 @@ merge them into one — and switch both callers to it — before the next wave.
 - A brief that doesn't say which skill to load, or has no Graft block
 - A brief without the existing-code-first line
 - Two agents in one wave each adding the same helper or component, left unmerged
-- A frontend brief that doesn't point the subagent at the design system
+- A frontend or mobile brief that doesn't point the subagent at the design system and the kit
+- A mobile subagent starting a simulator, Metro, or an EAS build — those belong to the main thread
 - A brief that contains a credential value
 - A subagent running its tests in the background
 - A subagent that pushes, opens a PR, or merges
