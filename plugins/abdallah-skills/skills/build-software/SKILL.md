@@ -1,7 +1,6 @@
 ---
 name: build-software
-description: Use when the user runs /build-software to build a new app from idea to deployed — intake, spec, business doc, API contract, design system, plan, build, verify, ship — or to add a feature to an existing app through the lighter feature mode — guided, or fully autonomous — on the NestJS + Next.js + Expo (React Native) stack.
-disable-model-invocation: true
+description: Use when the user asks to build an app, a product, or named phases or milestones of one ("build Aesthetica phases 1–2", "build me a booking app", "continue the build"), to add a whole feature to an app through the full pipeline, or runs /build-software — web, mobile, or both, on the NestJS + Next.js + Expo stack. Not for a bug fix, a small change, a refactor, or a question.
 ---
 
 # Build Software
