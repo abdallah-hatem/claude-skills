@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """Stop + PreToolUse — write the handoff BEFORE auto-compaction, while the full context exists.
 
-Sessions auto-compact at CLAUDE_AUTOCOMPACT_PCT_OVERRIDE (70% here). When the main session's
-context passes HANDOFF_AT_PCT (default 60%) of the window, this hook interrupts once — the next
+Sessions auto-compact at CLAUDE_AUTOCOMPACT_PCT_OVERRIDE (30% here). When the main session's
+context passes HANDOFF_AT_PCT (default 25%) of the window, this hook interrupts once — the next
 tool call is denied, or the stop is held — with the instruction to write the state down: the
 docs/BUILD_LOG.md in a /build-software run, otherwise ~/.claude/handoffs/<repo>.md. Then work
 continues; nothing waits for the user, so unattended runs keep going.
 
-Fires once per compaction cycle: it re-arms when the context drops below 40% (after a compaction
-or /clear). Skips subagents (agent_id set) and sessions with no transcript. Never blocks on error.
+Fires once per compaction cycle: it re-arms when the context drops below two thirds of the
+trigger (after a compaction or /clear). Skips subagents (agent_id set) and sessions with no transcript. Never blocks on error.
 
 Window size: HANDOFF_CONTEXT_WINDOW (tokens), else 1,000,000 once the transcript has passed
 200k, else 200,000.
 """
 import json, os, subprocess, sys
 
-REARM_BELOW = 0.40
+REARM_FRACTION_OF_TRIGGER = 2 / 3
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
     if ctx <= 0:
         return
     window = int(os.environ.get("HANDOFF_CONTEXT_WINDOW") or (1_000_000 if peak > 200_000 else 200_000))
-    at = float(os.environ.get("HANDOFF_AT_PCT") or 60) / 100
+    at = float(os.environ.get("HANDOFF_AT_PCT") or 25) / 100
     frac = ctx / window
 
     state_dir = os.path.expanduser("~/.claude/handoffs/.state")
@@ -48,7 +48,7 @@ def main():
     except Exception:
         pass
 
-    if frac < REARM_BELOW and fired:
+    if frac < at * REARM_FRACTION_OF_TRIGGER and fired:
         json.dump({"fired": False}, open(state, "w"))
         return
     if frac < at or fired:
