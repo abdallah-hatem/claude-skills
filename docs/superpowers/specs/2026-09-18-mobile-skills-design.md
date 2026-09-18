@@ -1,4 +1,4 @@
-# Mobile skills: `building-mobile`, `designing-mobile`, and mobile in `build-software`
+# Mobile skills, and lint for every stack
 
 Date: 2026-09-18 · Status: draft for review
 
@@ -23,6 +23,8 @@ release path — for a mobile app alone or next to a web app, on any backend.
 | Component library | React Native Reusables (the shadcn/ui port) | User decision; same component names and API as the web's shadcn, copied into the repo, NativeWind-based |
 | Native vs kit | Navigation chrome is native (expo-router native tabs, stack headers, system sheets); every control comes from the kit | Native-first for structure, one consistent brand for controls |
 | Consistency enforcement | ESLint `no-restricted-imports` + a token check, not prose alone | Mechanical rules are automated; prose is for judgment calls |
+| Lint for web and backend | Added to `building-frontends` and `building-backends` too (none today) | User decision; same reasoning |
+| Parity with the web skill | Every `building-frontends` section gets a mobile counterpart or an explicit N/A | User decision; custom scrollbars are N/A on mobile |
 | Mobile design | New `designing-mobile` skill, the mobile counterpart of `frontend-design` | No existing skill found (`SuggestSkills` returned none) |
 | Existing repos | The repo's stack always wins, as in the web skill | Never migrate a working app to match a table |
 
@@ -78,8 +80,36 @@ release path — for a mobile app alone or next to a web app, on any backend.
   or helper shared by two features to `src/lib/` (or `packages/shared` when web needs it too).
   Features never import from another feature's folder; what two features share moves out.
 - **Screens**: safe areas; keyboard handling per platform (`KeyboardAvoidingView behavior="padding"`
-  on Android, `automaticallyAdjustKeyboardInsets` is iOS-only); tap targets ≥ 44pt; phone and tablet
-  layouts; design comes from `designing-mobile`.
+  on Android, `automaticallyAdjustKeyboardInsets` is iOS-only); phone (~375pt) and tablet
+  (768–1024pt) layouts with no horizontal overflow; design comes from `designing-mobile`.
+- **Pressables** (the mobile form of the web's `cursor-pointer` rule): every tappable thing has a
+  pressed state and a hit area ≥ 44pt (`hitSlop` when the visual is smaller); disabled looks disabled
+  and ignores taps.
+- **Forms** (parity with `building-frontends` → Forms, logic shared where it can be): required
+  asterisk on the label; placeholder **and** label, both translated; multiline for prose fields; the
+  right `keyboardType`/`inputMode` per field; `returnKeyType="next"` moves focus, the last field
+  submits; grouped numbers (`100,000`) with the form holding a number; Egyptian mobile numbers exactly
+  11 digits starting `01`, pasted `+20` normalised — the pure helpers live in `packages/shared` when
+  web exists; double submit impossible.
+- **Lists** (the mobile form of Tables and pagination): FlashList for long lists; infinite scroll
+  keeps the current rows while the next page loads; pull-to-refresh; search, filter, sort and tab
+  changes never jump the list to the top.
+- **Sheets and modals**: sized to content (detents), height capped with header and footer fixed and
+  only the body scrolling, the keyboard handled inside the sheet, scroll never escapes to the screen
+  behind.
+- **Loading**: skeletons that mirror the content, never a centred spinner; a spinner only inside a
+  submitting button; nothing under ~200ms; previous data stays visible while refetching.
+- **Errors**: the data layer returns the web's `{ success, data, message }` contract; a failure
+  shows a translated toast; no unhandled promise; an offline or slow-network state with retry.
+- **Accessibility**: AA contrast in both themes; `accessibilityLabel` and role on icon-only buttons;
+  a screen-reader pass (VoiceOver) on changed screens; Dynamic Type up to the largest size.
+- **Mobile-only**: permissions asked in context with the denied case handled; `expo-image` with
+  placeholders and caching; splash screen and app icon from the design tokens.
+- **Testing edge cases** (parity with the web list): empty, loading and error states; long content;
+  validation messages; double submit; permissions; RTL; input edge cases (pasted text, the 12th
+  phone digit).
+- **Before calling it done**: phone and tablet, LTR and RTL, light and dark, Reduce Motion on, the
+  largest Dynamic Type size, and the smallest supported phone (iPhone SE size).
 - **Red flags** section — including a raw control in a screen, a hex colour or one-off size outside the
   tokens, a hand-rolled dialog/sheet/toast, a feature importing another feature's internals, and a
   kit component copied and tweaked instead of given a variant.
@@ -157,7 +187,53 @@ and whenever a mobile screen's look is being decided.
 - **Credentials file**: EAS project, bundle id / package, store app ids — never keystores or signing
   keys.
 
-## 4. Setup
+## 4. Lint and typecheck — all three stacks
+
+Today no skill mentions ESLint, lint rules, or a typecheck. Mechanical rules belong in the linter,
+where they fail a build, not in prose an agent may skip. Each stack skill gets a `lint.md` with a
+flat `eslint.config.mjs` (ESLint 9) and the scripts `lint` and `typecheck` (`tsc --noEmit`).
+
+**Every stack**: `typescript-eslint` recommended with type information, `no-floating-promises` and
+`no-misused-promises` on, `no-explicit-any` as an error, Prettier for formatting (its Tailwind plugin
+on web and mobile for class order).
+
+**`building-frontends`** (Next.js) — `next/core-web-vitals`, `react-hooks`, `jsx-a11y`, and the house
+rules as lint:
+- `i18next/no-literal-string` in JSX — no hardcoded user-facing text
+- physical Tailwind utilities (`pl-`, `pr-`, `ml-`, `mr-`, `left-`, `right-`, `text-left`,
+  `text-right`, `rounded-l-`, `rounded-r-`, `border-l-`, `border-r-`) banned — logical ones only
+- raw colours banned in class names and styles: hex values and palette classes like `bg-blue-500`
+  — semantic tokens only
+- native controls banned outside `components/ui/`: `<select>`, `<input type="checkbox|radio|date|file">`,
+  `<progress>`, `<details>`
+- `fetch(` banned outside the API layer (`src/lib/api.ts`)
+- a feature never imports another feature's internals
+
+**`building-backends`** (NestJS) — the Red flags that a linter can see:
+- Prisma / `DatabaseService` imports banned in `*.controller.ts`; `@prisma/client` value imports
+  banned outside repositories and `database/`
+- `res.status(` / `@Res()` banned in controllers
+- `process.env` banned outside the config module
+- `$queryRawUnsafe` / `$executeRawUnsafe` banned
+- `console.*` banned — Nest `Logger`
+- a domain never imports another domain's repository
+
+**`building-mobile`** — the rules from section 1 (raw controls outside `src/ui/`, hex colours and raw
+pixel values in screens, `Alert.alert`), plus `i18next/no-literal-string`, physical style props and
+classes (`marginLeft`, `paddingRight`, `left`, `right`, `ml-`, `pr-`…) banned, and feature boundaries.
+
+**Existing repos without these rules** get them added — without reformatting the whole codebase in
+one go: the new rules run as errors on files a task touches and as warnings elsewhere, and the
+warning count only goes down. A repo with its own config keeps it; the house rules are added on top.
+
+**`build-software`**: Build setup adds the config to each app before the first task; every brief says
+`lint` and `typecheck` pass before the commit; Verify requires both green with their summary lines,
+next to the test suite.
+
+Each config is verified by running it on a scratch project of that stack — a file that breaks each
+rule must fail, a clean file must pass — before it goes into a skill.
+
+## 5. Setup
 
 - Install `expo@claude-plugins-official` at user scope.
 - `build-software` Build setup checks for it and says how to install it if missing.
@@ -179,4 +255,4 @@ no hand-rolled sheet) with shared code extracted instead of copied.
 
 ## Version
 
-Plugin `1.15.0` → `1.16.0`.
+Plugin `1.15.0` → `1.16.0`. Lint for web and backend can ship first, on its own, as `1.16.0`, with mobile following as `1.17.0`.
