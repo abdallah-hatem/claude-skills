@@ -35,7 +35,7 @@ requests=""
 if [ -n "$transcript" ] && [ -s "$transcript" ]; then
   requests=$(jq -r 'select(.type == "user" and (.message.content | type) == "string")
       | .message.content | gsub("\\s+"; " ") | .[0:200]' "$transcript" 2>/dev/null \
-    | grep -v -e '^<' -e '^Caveat:' -e '^\[Request interrupted' | tail -3 | sed 's/^/- /')
+    | grep -v -e '^<' -e '^Caveat:' -e '^\[Request interrupted' -e '^Stop hook feedback:' -e '^\[burn-monitor\]' | tail -3 | sed 's/^/- /')
 fi
 
 # Nothing happened and nothing to say: leave any existing note untouched.
