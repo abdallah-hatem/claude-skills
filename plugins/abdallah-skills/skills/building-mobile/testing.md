@@ -138,6 +138,21 @@ visible above the keyboard.
 Android: check the same screens on an emulator when the app ships to Android; the direction and
 text-size checks matter most there.
 
+## Tear down when done
+
+A booted simulator, emulator and Metro together hold several GB of memory. When the test pass is
+over and no more mobile work is coming in the next ~20 minutes, shut them all down; boot again
+when needed — a cold boot costs less than a slow machine.
+
+```bash
+xcrun simctl shutdown all && osascript -e 'quit app "Simulator"'
+adb devices | awk '/emulator-/{print $1}' | xargs -I{} adb -s {} emu kill
+pkill -f "expo start|react-native start|metro"
+```
+
+Stop only the servers you started — never a blanket `pkill node`, which takes down Claude's own
+tools.
+
 ## Red flags
 
 - `render(...)` not awaited under RNTL 14, or `react-test-renderer` added to the project
@@ -151,3 +166,4 @@ text-size checks matter most there.
 - A Maestro flow run against production
 - Screenshots from several simulators booted at once, or taken but never looked at
 - Checked only on one device, in English, in light mode, at the default text size
+- A simulator, emulator or Metro left running after the test pass with no mobile work coming next
