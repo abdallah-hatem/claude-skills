@@ -66,7 +66,6 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 | `pre-compact.sh` | `PreCompact` | tells the compaction summary what must survive — goal, finished work with hashes, work in progress, decisions, next step — and the build log's current stage |
 | `stop-handoff.sh` | `Stop` | after a reply that made real progress (a commit, or files changed with the note 30+ min old), has the model write the why / in-progress / next step into the repo's handoff note — silent otherwise, skipped in a `/build-software` run, can't loop |
 | `session-end-handoff.sh` | `SessionEnd` | writes the facts half of the handoff note when a session ends — branch, commits, uncommitted files, the user's last requests — keeping the model's summary above it |
-| `context-handoff.py` | `PreToolUse` + `Stop` | once the main session's context passes 25% of the window (before auto-compaction), interrupts once — the next tool call or the stop — to write the handoff note or bring `BUILD_LOG.md` up to date, then carries on; re-arms after a compaction; skips subagents |
 
 Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
 
@@ -84,14 +83,10 @@ Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/pre-compact.sh", "timeout": 5 }] }
     ],
     "Stop": [
-      { "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/context-handoff.py", "timeout": 5 }] },
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/stop-handoff.sh", "timeout": 10 }] }
     ],
     "SessionEnd": [
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-end-handoff.sh", "timeout": 10 }] }
-    ],
-    "PreToolUse": [
-      { "matcher": "*", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/context-handoff.py", "timeout": 5 }] }
     ]
   }
 }
@@ -102,7 +97,6 @@ input, so a broken hook can never block a prompt or a compaction. `session-state
 `jq` and `git`; `SessionStart` also fires after a compaction (source `compact`), which is when
 it asks for the build log or the handoff note to be brought up to date.
 
-`context-handoff.py` pairs with auto-compaction set early — `"env": { "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "30", "HANDOFF_AT_PCT": "25", "HANDOFF_CONTEXT_WINDOW": "1000000" }` — so the state is written with the full context at 25% and compaction at 30% keeps it — on long 1M-window sessions this cut effective tokens by an estimated 35–54% in a replay of real transcripts. Set the window to your model's (200000 or 1000000).
 
 ## Editing these
 
