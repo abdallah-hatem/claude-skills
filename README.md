@@ -64,6 +64,8 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 | `burn-warn.py` | `UserPromptSubmit` | warns when the 5-hour usage window is burning fast |
 | `session-state.sh` | `SessionStart` | loads the work's state into every new, resumed, cleared, or compacted session: a `/build-software` run's `docs/BUILD_LOG.md` header, or the repo's handoff note from `~/.claude/handoffs/` |
 | `pre-compact.sh` | `PreCompact` | tells the compaction summary what must survive — goal, finished work with hashes, work in progress, decisions, next step — and the build log's current stage |
+| `stop-handoff.sh` | `Stop` | after a reply that made real progress (a commit, or files changed with the note 30+ min old), has the model write the why / in-progress / next step into the repo's handoff note — silent otherwise, skipped in a `/build-software` run, can't loop |
+| `session-end-handoff.sh` | `SessionEnd` | writes the facts half of the handoff note when a session ends — branch, commits, uncommitted files, the user's last requests — keeping the model's summary above it |
 
 Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
 
@@ -79,6 +81,12 @@ Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
     ],
     "PreCompact": [
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/pre-compact.sh", "timeout": 5 }] }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/stop-handoff.sh", "timeout": 10 }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-end-handoff.sh", "timeout": 10 }] }
     ]
   }
 }
