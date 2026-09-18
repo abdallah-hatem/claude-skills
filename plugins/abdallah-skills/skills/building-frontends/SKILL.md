@@ -24,6 +24,8 @@ Abdallah's frontend conventions. Every screen ships reusable, generic, internati
 
 **The existing project's stack always wins.** In a repo that already picked Vite, Redux, or anything else, follow the repo. This table is for new projects and for gaps a repo hasn't filled. Never migrate a working project to match it.
 
+**Lint is not part of the stack.** Every app gets the house lint config — a repo without it gets it added, with existing violations frozen. See Lint.
+
 ## Design
 
 **Design comes from a design system, never screen by screen.** Before a project's first screen,
@@ -167,6 +169,13 @@ Screens with behavior are tested beyond the happy path:
 
 The full-flow test drives the feature end to end the way a user would, against a real backend.
 
+## Lint
+
+`lint` and `typecheck` pass before every commit. The house config turns the rules above into
+errors — physical direction utilities, raw colours, native controls, hardcoded JSX text, `fetch`
+outside the API layer, and one feature importing another. Setup, what each rule catches, and adding
+it to an existing repo: [lint.md](lint.md).
+
 ## Before calling it done
 
 Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL (Arabic), and in
@@ -176,6 +185,8 @@ matters depends on an animation.
 
 ## Red flags
 
+- A commit with `lint` or `typecheck` failing, or an `eslint-disable` with no `-- reason`
+- An app without the house lint config
 - Raw `fetch()` against the API anywhere — use `apiFetch`
 - A token read in client code — they are `httpOnly` by design
 - An endpoint awaited directly in a client component — use `callApi`

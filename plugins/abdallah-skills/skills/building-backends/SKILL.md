@@ -26,6 +26,8 @@ Abdallah's NestJS conventions. Every endpoint ships validated, envelope-wrapped,
 
 **The existing project's stack always wins.** In a repo that already picked TypeORM, Express, or a flat module layout, follow the repo. This table is for new backends and for gaps an existing one hasn't filled.
 
+**Lint is not part of the stack.** Every API gets the house lint config — a repo without it gets it added, with existing violations frozen. See Lint.
+
 ## Structure
 
 ```
@@ -162,7 +164,18 @@ Production is multi-stage: `npm ci`, a pruned dependency stage so devDependencie
 
 See [docker.md](docker.md).
 
+## Lint
+
+`lint` and `typecheck` pass before every commit. The house config turns the Red flags a linter can
+see into errors — Prisma or `DatabaseService` in a controller, `@Res()` and `res.status()`, Prisma
+value imports outside repositories, `process.env` outside config, `$queryRawUnsafe`, `console`, and
+one domain importing another's repository. Setup, what each rule catches, and adding it to an existing
+repo: [lint.md](lint.md).
+
 ## Red flags
+
+**Lint** — a commit with `lint` or `typecheck` failing · an `eslint-disable` with no `-- reason` · an
+API without the house lint config.
 
 **Reuse** — the same calculation in two services · a helper written without searching `common/`
 and the other domains first · another domain's private helper copied or called · a util that

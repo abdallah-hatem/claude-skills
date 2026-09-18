@@ -199,6 +199,10 @@ Before the first task, set up what every later check depends on:
 3. **Smoke specs** — the Playwright setup that signs in as the seeded accounts:
    [verification.md](verification.md).
 4. **Graft** — wired in before the first task, if the repo doesn't have it yet: [graft.md](graft.md).
+5. **Lint and typecheck** — every app gets its stack's house config and `lint` / `typecheck` scripts:
+   `building-backends` → [lint.md](../building-backends/lint.md), `building-frontends` →
+   [lint.md](../building-frontends/lint.md). A repo that already exists gets it too, with its current
+   violations frozen — lint is a check, not a stack change.
 
 Every task then happens on a `feature/<name>` branch cut from `dev` — or, when it depends on a task
 that isn't merged yet, from that task's branch. Backend tasks load
@@ -214,8 +218,8 @@ subagents, in parallel waves wherever the plan's dependencies allow — see Stay
 
 ### 7. Verify
 
-1. **The full test suite is green**, with the runner's real summary line shown — and any failures in
-   full, never the whole log.
+1. **The full test suite, `lint`, and `typecheck` are green**, each with its real summary line shown —
+   and any failures in full, never the whole log.
 2. **Each planned edge case is ticked off** against its test, by name. A case with no matching test
    fails verification, however green the suite is.
 3. **The smoke check passes locally** — the specs sign in as the seeded accounts, walk the main flows,
@@ -279,6 +283,7 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - A behavior change without a `docs/BUSINESS_LOGIC.md` update in the same PR
 - A business change made in code before it is made in the doc
 - Backend and frontend built in parallel before the API contract exists
+- An app built or changed without the house lint config, or a task committed with `lint` or `typecheck` failing
 - Independent tasks built one at a time because no parallel check was run
 - Frontend screens built before the design system is approved
 - A task with no class, or one classed down to avoid its tests

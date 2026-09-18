@@ -78,12 +78,13 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   behavior and a smoke spec · `surface`: no new tests.
 - **No credentials.** Never paste values from `CREDENTIALS.local.md`. Tests that need a signed-in
   user create one in their own setup.
-- **Run the test suite in the foreground and commit before reporting.** A subagent that starts a
-  long test run in the background stops mid-turn and leaves its work uncommitted.
+- **Run the tests, `lint`, and `typecheck` in the foreground, and commit only when all three pass.** A
+  subagent that starts a long test run in the background stops mid-turn and leaves its work
+  uncommitted. Lint errors are fixed, never disabled without a `-- reason`.
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
 - **Report back in ten lines or fewer:** the files changed, the test command with the runner's summary
-  line and any failures in full, the commit hash, the shared pieces it created, and the `graft stats`
-  tokens-saved line. No narrative, no recap of the brief.
+  line and any failures in full, the `lint` and `typecheck` result, the commit hash, the shared pieces it
+  created, and the `graft stats` tokens-saved line. No narrative, no recap of the brief.
 - **Keep test output quiet** — full log to a file, summary and failures only ([efficiency.md](efficiency.md)).
 
 ## After it reports

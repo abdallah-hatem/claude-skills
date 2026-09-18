@@ -8,6 +8,11 @@ rule in `SKILL.md` applies; the stages that set up the product are skipped becau
 Read `CLAUDE.md`, `docs/BUSINESS_LOGIC.md`, `docs/DESIGN.md`, and the code the feature touches. No
 intake interview — ask only what the docs and the code can't answer.
 
+**Add the house lint config** if an app lacks it — its own `chore/lint` commit, existing violations
+frozen with `eslint --suppress-all` ([building-frontends/lint.md](../building-frontends/lint.md),
+[building-backends/lint.md](../building-backends/lint.md)). Lint is a check, not a stack change, so
+"the existing stack wins" doesn't exempt a repo from it.
+
 **Wire Graft in first** if the repo doesn't have it ([graft.md](graft.md)). Then get oriented
 with `graft map` or `graft_repo_map`, find the code the feature touches with `graft ask`, and scope what
 it affects with `graft callers <symbol> --depth all` — instead of reading files broadly.
