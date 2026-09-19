@@ -146,7 +146,8 @@ In a guided run, each approval gate ends with a one-line suggestion to `/clear` 
 | 8 | Ship | `abdallah-skills:deploying-to-vercel`; `building-mobile` → `release.md` for an app | **dev: automatic · production: user says go · rollback on failure · a store build always waits for the user** |
 
 In an autonomous run, every gate that waits for the user is decided with the recommended default and
-logged in `docs/BUILD_LOG.md` instead.
+logged in `docs/BUILD_LOG.md` instead — **except the design look (stage 4), which always waits for
+the user's pick** ([autonomous.md](autonomous.md)).
 
 ### 1. Intake
 

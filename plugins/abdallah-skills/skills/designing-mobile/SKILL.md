@@ -14,6 +14,16 @@ them in their own idiom. Never add a second theme beside the first.
 
 ## Direction first
 
+**Aim bold, modern, and eye-catching** — rich colour, depth (glass, glow, gradient used with
+intent), big confident type, one or two signature moments. A "quiet", "minimal", or "let the
+content speak" direction reads as basic and generic; it was rejected outright once and cost a full
+restyle. When unsure, go further, not safer.
+
+**Show the direction before building on it — in every run mode, autonomous included.** Mock two or
+three clearly different directions as phone screens (welcome, the core screen, a list, a detail)
+on one page, let the user pick or mix, then build tokens. A look chosen by the agent alone is not
+approved.
+
 Before any token or screen, write the product's personality in one sentence and commit to it:
 "a calm, exact ledger for busy shop owners", "a loud, quick companion for a pickup football
 game". Every later choice — hue, typeface, radius, how much things move — is checked against that
@@ -38,15 +48,24 @@ the app's.
 
 **Stays native:**
 
-- iOS: large titles that collapse into the nav bar, native tabs (`NativeTabs`), stack headers,
-  system sheets (`presentation: 'formSheet'` with detents), context menus (`Link.Menu`), the
-  swipe-back gesture, the system share sheet.
+- iOS: native tabs (`NativeTabs`), stack headers on pushed screens, system sheets
+  (`presentation: 'formSheet'` with detents), context menus (`Link.Menu`), the swipe-back gesture,
+  the system share sheet.
 - Android: Material behaviour — the system back gesture and predictive back, Material top app
   bar and navigation bar, edge-to-edge insets. No iOS chevrons or large-title text on Android; no
   FAB or ripple in an iOS layout.
 - Screen transitions are the platform default. Never rebuild one in JS.
 
 Mechanics for all of this: `expo:expo-router` and `expo:expo-native-ui`.
+
+**Top-level (tab) screens have no header bar.** The page title is a big bold heading drawn as the
+first thing in the screen's scroll content, so it scrolls away with it; a header action (settings)
+sits beside that heading. Not an iOS large title — its area stays clear, so content scrolled under
+it shows through the text — and not a frosted or solid bar across the top. The status bar is the
+only thing covered, by a strip painted with the **screen's own backdrop** (the same gradient or
+glows, lined up with the page) so it reads as transparent while scrolled content disappears under
+it. Never a black or flat band that differs from the page behind it. Pushed screens keep their
+native back header; a full-bleed photo screen draws its own floating back button.
 
 **Carries the brand:** colour, type, iconography, motion, and one or two **signature moments** per
 app — the completed-order check that springs in, the pull-to-refresh that is the logo. Name them in
@@ -66,9 +85,22 @@ A consistent app is built from few parts, each styled once.
   `BigButton`, `ButtonV2`. A new look is a new variant in `src/ui/`, never a className override at
   the call site and never a copied-and-tweaked component.
 - **One spacing scale** (Tailwind's 4-point steps), **one radius set** (`sm`/`md`/`lg` from
-  `--radius`, plus `full` for pills), **one elevation set** (two or three shadows, named), **one
-  icon family** at one stroke weight — `lucide-react-native`, which RNR already uses. Use SF
-  Symbols only in native chrome (tab bar, header items); there the platform icon is expected.
+  `--radius`, plus `full` for pills), **one elevation set** (two or three shadows, named).
+- **The app draws its own icon set — no stock icons anywhere.** Not Lucide, SF Symbols, or
+  Material, not even in the tab bar: stock glyphs (hourglass, pin, clock, flip camera) read as
+  generic "native" icons and were rejected. One style for every icon — a 24pt grid, one stroke
+  weight with round caps and joins, soft generous radii, a small friendly detail where it fits —
+  with an **outline default and a filled variant for the active/selected state**, Instagram-style.
+  In-app icons are `react-native-svg` components in `src/ui/icons/` (one data file of glyphs, one
+  component per icon, the kit's `Icon` wrapper takes them); tab icons are the same drawings
+  rendered to template PNGs at 1x/2x/3x (`src={{ default, selected }}`, `renderingMode="template"`)
+  so the native bar tints them. Uninstall `lucide-react-native` and ban it with
+  `no-restricted-imports`. A new icon is drawn in the same style — preview a sheet of the set
+  before wiring it in. Replacing an icon means checking every screen that shows it.
+- **Rounded means all four corners.** A card, photo frame, or viewfinder is rounded on every
+  corner — never rounded only at the bottom with a flat top against the screen edge. Photos sit
+  in one shared frame component (inset from the screen sides, `borderCurve: 'continuous'`) used
+  by the camera viewfinder, drafts, and posts alike, so every photo frame matches.
 - **The same situation looks the same everywhere.** Every list's empty state uses one
   `EmptyState` (icon, one line, one action). Every destructive action uses one confirmation (an
   `AlertDialog` naming the thing destroyed, with the destructive variant on the confirm button).
@@ -169,12 +201,17 @@ keyboard, toggles in settings never animate beyond the platform default.
 - A screen built before the personality sentence, the tokens and the approved kit preview exist
 - The brand colour is the platform default blue, or no one can say why it is that colour
 - Cards around every row, everything centred, emoji as icons, or two icon families
+- A stock icon (Lucide, SF Symbol, Material) anywhere in the app, tab bar included
+- A card or photo frame rounded on some corners only
+- An iOS large title or a header bar on a tab screen; a status-bar strip that doesn't match the
+  page backdrop behind it
+- A quiet/minimal direction, or a direction the user never saw mocked up
 - A radius, shadow, or spacing value that is not in the set
 - A className override on a kit component to get a new look — that is a missing variant
 - Two empty states, confirmations, or form errors that look different
 - A raw RN `Switch`, `Button`, `TextInput` or `Alert.alert` in a screen
 - iOS chrome hand-built on Android, or a FAB and ripple in an iOS layout
-- A screen transition, tab bar, or large-title header rebuilt in JS
+- A screen transition or tab bar rebuilt in JS
 - A token missing from dark, or text below AA in either theme
 - A Latin-only font in an app that renders Arabic
 - `allowFontScaling={false}`, or a fixed-height row that clips at large text

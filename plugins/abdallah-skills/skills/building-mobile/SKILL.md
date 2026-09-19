@@ -130,9 +130,10 @@ A control the kit lacks is built into `src/ui/` first, token-styled, with varian
 
 Layout primitives are fine: `View`, `ScrollView`, `FlatList`, `Pressable`, `KeyboardAvoidingView`.
 
-**Navigation chrome stays native** — expo-router native tabs, stack headers and large titles,
+**Navigation chrome stays native** — expo-router native tabs, stack headers on pushed screens,
 `formSheet` presentation, header search bars, link context menus. These follow `expo:expo-router`
-exactly; the kit never imitates them.
+exactly; the kit never imitates them. Tab screens have no header at all (`headerShown: false`) —
+their big title is part of the content, per `designing-mobile`; never iOS large titles.
 
 ## Reuse
 
@@ -153,11 +154,23 @@ The rule that erodes under deadline, so it is spelled out:
 
 - **Safe areas** through stack headers, native tabs, or `contentInsetAdjustmentBehavior="automatic"`
   on the root scroll view, per `expo:expo-native-ui`. A screen whose root is a list has no outer
-  `ScrollView`.
-- **Keyboard:** the primary action never sits under the keyboard. `automaticallyAdjustKeyboardInsets`
-  on a `ScrollView` is iOS-only; Android needs `KeyboardAvoidingView behavior="padding"`. UI that
-  tracks the keyboard frame follows `expo:expo-animation`'s keyboard recipe.
-  `keyboardShouldPersistTaps="handled"` on every scrollable form.
+  `ScrollView`. **Check them yourself before showing the user any screen:** nothing under the
+  status bar — at rest, while scrolled, and with the keyboard open — and nothing under the home
+  indicator (a bottom-anchored button or caption clears `insets.bottom`). Get the numbers from the
+  element bounds (`maestro hierarchy`), not from eyeballing a screenshot.
+- **Headerless screens cover only the status bar**, with a strip painted in the screen's own
+  backdrop (see `designing-mobile`), so scrolled content never runs under the clock.
+- **A transparent header over a nested scroll view is not inset by iOS.** When the scroll view
+  isn't the screen's first view (it sits inside a backdrop wrapper), reserve the height yourself:
+  a spacer of `insets.top + 44` at the top and `insets.bottom` at the end.
+- **NativeWind's `contentContainerClassName` replaces `contentContainerStyle`** — put inset-based
+  spacing in a spacer `<View style={{ height }} />`, never in `contentContainerStyle`.
+- **Keyboard:** the focused field stays above the keyboard and the rest of the form stays
+  reachable by scrolling — `automaticallyAdjustKeyboardInsets` on a `ScrollView` (iOS); Android
+  needs `KeyboardAvoidingView behavior="padding"`. Don't pin the primary button above the keyboard
+  in a sticky footer; the user chose plain scrolling forms. UI that tracks the keyboard frame
+  follows `expo:expo-animation`'s keyboard recipe. `keyboardShouldPersistTaps="handled"` on every
+  scrollable form.
 - **Phone and tablet:** ~375pt and 768–1024pt, portrait and landscape where the app allows it; no
   horizontal overflow; `useWindowDimensions`, never `Dimensions.get()`. A tablet gets a real layout
   (two columns, a wider form), not a stretched phone.
@@ -256,7 +269,9 @@ refetch keeps the data already on screen. See [data-layer.md](data-layer.md).
 `designing-mobile` and establish one: direction, tokens (colour roles for light and dark, type
 scale covering Arabic and Latin, spacing, radius, elevation, motion), and the kit themed from them.
 Screens use tokens by name — `bg-primary`, `text-muted-foreground`, `gap-4` — never a hex value or
-a one-off size.
+a one-off size. **Every custom type step and font family goes into `cn`'s `extendTailwindMerge`**
+(`src/lib/utils.ts`) the moment it is added: tailwind-merge reads an unknown `text-display` as a
+colour and drops `text-foreground` beside it, so the text renders black.
 
 ## Lint
 
@@ -292,6 +307,11 @@ the happy path:
 
 ## Before calling it done
 
+**Restart Metro with `--clear` before anyone looks at a change.** Without watchman, Metro misses
+file edits and new NativeWind class names, and keeps serving the old code even across app
+relaunches — a fix can look broken, or a stale screen can be reported as fixed. Check the served
+bundle when in doubt (`curl` the bundle URL and grep for the change).
+
 Check the changed screen on a phone and a tablet, in **both** LTR (English) and RTL (Arabic), in
 **both** light and dark, with Reduce Motion on, at the **largest** Dynamic Type size, and on the
 **smallest** supported phone (iPhone SE size). Matrix in [testing.md](testing.md).
@@ -311,7 +331,8 @@ Check the changed screen on a phone and a tablet, in **both** LTR (English) and 
 - A list that jumps to the top or collapses to skeletons on search, filter, or page change
 - A submit button that stays enabled while its request is pending
 - A pressable with no pressed state or a hit area under 44pt
-- A form's primary action hidden under the keyboard
+- A focused field hidden under the keyboard, or a form that can't scroll to its primary action
+- Content running under the status bar or the home indicator — checked by bounds, not by eye
 - A string literal rendered to the user, or a physical-direction style in new code
 - A directional icon or `translateX` animation that doesn't flip in RTL
 - A permission asked on launch, or no state for the denied case

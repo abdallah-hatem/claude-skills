@@ -40,7 +40,8 @@ test("two taps on Save send one request", async () => {
 ```
 
 `Providers` is one test wrapper in `src/test/` with a fresh `QueryClient` (retries off), i18n
-loaded, and the safe-area provider. Mock at the data layer (`src/features/<name>/api.ts` or the
+loaded, and the safe-area provider (`SafeAreaProvider` with `initialMetrics` for an iPhone frame —
+without it, any screen that reads insets throws in tests). Mock at the data layer (`src/features/<name>/api.ts` or the
 client), never `fetch` in a screen test.
 
 **Quiet output, one summary line.** Run with `--silent` and read the runner's final
@@ -108,6 +109,15 @@ tags:
 - Run flows against a local build and a local backend (Docker or the dev API — see
   [data-layer.md](data-layer.md) for reaching it), never against production data.
 - Run a flow against a release-configuration build when the dev client's overlays get in the way.
+- **After a change, run only the flows that cover the changed screens.** The whole folder runs
+  once before the PR, not after every fix.
+- **Maestro treats an element under the keyboard as visible**: `scrollUntilVisible` won't scroll
+  and `tapOn` lands on the keyboard. Swipe the form up first (`swipe: start: 50%, 45% end: 50%,
+  15%`); `hideKeyboard` is unreliable on iOS.
+- Right after Metro restarts, the first `openLink` into the dev client can land before the
+  launcher is ready — re-run once before debugging the flow.
+- With a dev client, `launchApp: clearState: true` forgets the Metro URL: a shared `open-app`
+  subflow opens the bundle with `openLink` and dismisses the dev menu's first-run sheet.
 
 ## Appearance: simulator screenshots
 

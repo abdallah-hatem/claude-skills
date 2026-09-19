@@ -53,6 +53,25 @@ EAS cloud builds come from a monthly allowance. **Test on a local development bu
 never start a `preview` cloud build to see whether something works. A cloud build is for
 distributing work that was already verified locally.
 
+**A development build on the user's own iPhone, over a cable:**
+
+1. Build for any device, not the phone itself —
+   `xcodebuild -workspace ios/<App>.xcworkspace -scheme <App> -configuration Debug
+   -destination 'generic/platform=iOS' -allowProvisioningUpdates build`. Targeting the phone's id
+   fails when its iOS is newer than the installed Xcode ("the developer disk image could not be
+   mounted"); a generic build still signs for it.
+2. Install and launch with CoreDevice —
+   `xcrun devicectl device install app --device <UDID> <path>/<App>.app`, then
+   `xcrun devicectl device process launch --device <UDID> --terminate-existing
+   --payload-url '<scheme>://expo-development-client/?url=http%3A%2F%2F<mac-lan-ip>%3A8081' <bundle id>`.
+   The phone must be unlocked with Developer Mode on; "device is locked" means unlock and retry.
+3. Point the app at the Mac, not `localhost`: start Metro with `EXPO_PUBLIC_API_URL=http://<lan-ip>:3000`
+   and the API with any storage endpoint on the LAN ip too (signed photo URLs must be reachable
+   from the phone). Override on the command line; don't edit the `.env` files. Turn off any
+   simulator-only switch (a fake camera) the same way.
+4. After the install the cable isn't needed: JavaScript reloads over Wi-Fi from Metro. Only a
+   native change needs a new install.
+
 ## Keep the default branch OTA-shippable
 
 `dev` and `production` must always be publishable as an OTA to the builds already installed. Native
@@ -66,6 +85,13 @@ The iOS bundle identifier and the Android package name are chosen **once, togeth
 first build**, and kept identical where the platforms allow (`com.company.app` on both). Changing
 or diverging them later breaks signing credentials, push configuration, and every OAuth client
 (Google, Apple) registered against the old id — each has to be recreated per platform.
+
+**Check the id is free before anything depends on it.** Bundle ids are global across every Apple
+developer: `com.<product>.app` is often already taken, and it only shows up at the first device
+build ("cannot be registered to your development team because it is not available"). Build once
+for `generic/platform=iOS` with `-allowProvisioningUpdates` right after choosing it. When the
+product name isn't final, prefer the developer's own reverse domain
+(`com.<developer>.<product>`), which can't collide.
 
 ## Environment values
 
