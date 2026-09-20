@@ -41,6 +41,11 @@ async function main() {
 - **Local and preview only.** Production gets at most one pre-launch test account, created on
   purpose and removed at launch — never the sample data.
 - **A new role in the business doc gets its seeded account** in the same change.
+- **Re-seed before every flow, not once per run**, whenever a suite signs in repeatedly. Sign-in
+  is rate limited — a code every 60 s, a handful an hour, per address — and a suite where most
+  flows sign in as the same seeded member runs out partway through, failing the later flows for a
+  reason that has nothing to do with the code. Clearing those accounts' sign-in codes is part of
+  what the seed does, so a re-seed per flow costs a second and makes the suite order-independent.
 
 ```bash
 npx prisma db seed                                          # local
@@ -145,3 +150,4 @@ BASE_URL=https://<app>.vercel.app npx playwright test --grep @readonly          
 - Smoke specs pointed at a protected preview without the bypass header
 - Screenshots produced and never looked at
 - Production smoke specs that create data
+- A suite that seeds once and then fails its later flows on a sign-in rate limit

@@ -118,6 +118,52 @@ tags:
   launcher is ready — re-run once before debugging the flow.
 - With a dev client, `launchApp: clearState: true` forgets the Metro URL: a shared `open-app`
   subflow opens the bundle with `openLink` and dismisses the dev menu's first-run sheet.
+- **Maestro taps where an element *is*, without scrolling it into view.** A part-scrolled list
+  means a tap at a point off the screen, and the step still reports COMPLETED. When a header
+  scrolls with its list, scroll it back (`scrollUntilVisible` on a header element) before touching
+  anything positioned relative to it.
+- **A text selector is matched against the element's whole accessibility label, and iOS merges a
+  row's children into one label.** `"Held photo"` never matches a row reading "Held photo, @omar,
+  scan was unsure". Use `".*Held photo.*"`, or a `testID`.
+- **`clearState: true` does not clear the app's Documents directory.** Anything the app persists
+  there — a chosen language, an onboarding flag — survives into the next flow. Don't try to reset
+  it from the runner either: the *next* flow's `clearState` wipes the reset, and the app then falls
+  back to the device's own setting.
+- **The app follows the device language until the member picks one**, so a flow that taps a native
+  tab by its English label breaks on a machine set to anything else. Match both
+  (`tapOn: "Profile|الملف الشخصي"`) rather than pinning the device.
+- **A handler that defers — a double-tap window, a debounce — plus Maestro's tap retry reads as a
+  second tap.** Maestro taps again when the screen doesn't change, which inside the window is a
+  double tap. Set `retryTapIfNoChange: false` on that tap.
+- **Never edit source while a suite is running.** Metro hot-reloads into the flows mid-run and the
+  result means nothing. Let it finish, or stop it.
+
+### What only a flow can see
+
+A green unit suite says nothing about the runtime the app actually ships on. Jest runs on Node,
+which has full ICU and every web API; Hermes does not. `Intl.RelativeTimeFormat` is missing on
+iOS — a feed built on it threw *"undefined cannot be used as a constructor"* on every card while
+237 unit tests passed. The same goes for `Intl.PluralRules`, newer `Intl` options, and anything
+polyfilled by the test environment but not by the engine.
+
+This is the reason the smoke run is not optional, and the reason it runs before the PR rather than
+after it.
+
+**A regression test for a platform gap must remove the capability before asserting**, or Node
+hides the bug again:
+
+```ts
+const withoutRelativeTimeFormat = <T,>(run: () => T): T => {
+  const intl = Intl as unknown as Record<string, unknown>;
+  const real = intl.RelativeTimeFormat;
+  delete intl.RelativeTimeFormat;
+  try {
+    return run();
+  } finally {
+    intl.RelativeTimeFormat = real;
+  }
+};
+```
 
 ## Appearance: simulator screenshots
 
@@ -173,6 +219,10 @@ tools.
 - Only the happy path tested on a screen that has empty, error, and validation states
 - RTL covered only by the English render
 - A Maestro flow that relies on an existing session, a hardcoded password, or tap coordinates
+- A bare text selector in a flow, where iOS merges the row into one label
+- Source edited while a suite is running, so the result describes neither version
+- A platform gap "fixed" with a test that still passes on the old code, because Node has the
+  API the phone lacks
 - A Maestro flow run against production
 - Screenshots from several simulators booted at once, or taken but never looked at
 - Checked only on one device, in English, in light mode, at the default text size

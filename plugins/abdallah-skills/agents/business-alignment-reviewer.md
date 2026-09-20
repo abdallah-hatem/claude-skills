@@ -53,6 +53,24 @@ Read the whole range with `git diff <range>`, and check it as you would a task �
 edge cases, which were checked task by task. Look hardest at the `ui` and `surface` changes: they
 skipped per-task review, and none of them may change business behavior.
 
+## Checking the doc itself
+
+Consistency is not completeness. A diff can agree with every word in the doc while the doc says
+nothing about the feature being built — and then nothing in the pipeline objects to a behavior
+invented on the spot. On a **release** check, read the doc against itself and report each of these
+as `DOC OUT OF DATE`:
+
+- **A feature listed under "In" scope with no flow.** The scope list and the flows in §4 name the
+  same things, or one of them is lying. Seen in practice: a product's headline differentiator
+  carried eleven approved decisions and no flow at all, which left it buildable from guesswork.
+- **A flow with no invariant.** Every flow has at least one rule that must never break; a flow
+  without one has nothing for a later task to be checked against.
+- **An invariant naming a decision that no longer exists**, or a decision superseded without its
+  replacement being named.
+
+**Where:** `docs/BUSINESS_LOGIC.md — §5 "In" lists X, §4 has no flow`. This check needs no diff;
+run it even when the range is empty.
+
 ## Not your job
 
 - Style, naming, architecture, or test quality.
