@@ -25,7 +25,11 @@ Run it before the first task and again every time a subagent reports back — no
 work looks likely:
 
 1. **Ready tasks** — every task whose dependencies are committed and checked (and, for frontend work,
-   whose contract exists).
+   whose contract exists). **Derive this from each task's own inputs, never from the plan's wave
+   table.** The table is a planner's guess and is wrong in both directions: it can group tasks that
+   collide, and it can park a task in a later wave that is already free. A task whose inputs exist
+   is ready *now*, whatever wave it was written into — and a free slot while one is waiting is the
+   failure this check exists to prevent. Don't wait for the user to ask why nothing else is running.
 2. **Separate the ones that collide.** Two ready tasks can't run side by side when they edit the same
    files. The usual shared ones: `prisma/schema.prisma` and migrations, `package.json` and the
    lockfile, shared layouts and navigation, the i18n locale files, the generated API client — and a
@@ -45,7 +49,10 @@ review loop for each task, but let the parallel check decide what is dispatched 
 **Parallel agents share one machine.** Inside a worktree, a subagent runs its unit and component
 tests only. Anything that binds a port, starts a dev server, or migrates the local database — e2e and
 smoke specs, `prisma migrate` — waits until the wave is back, and the main thread runs it once on the
-merged result.
+merged result. **The exception is a repo whose e2e setup takes a per-agent database** (for example, a
+test setup that keeps any `DATABASE_URL` naming a `<app>_test*` database): create and migrate one
+database per parallel agent first, name it in each brief, and they can run e2e side by side without
+truncating each other's rows.
 
 ## Briefing a subagent
 
@@ -104,6 +111,8 @@ merge them into one — and switch both callers to it — before the next wave.
 
 - A dispatch with no parallel check and no wave line in the build log before it
 - Ready, independent tasks sent one per message, one after another
+- A ready task left waiting because the plan's wave table put it in a later wave
+- A task landing with no fresh parallel check straight after it
 - A subagent spawned for one tiny task that could have been batched with others
 - Parallel subagents editing the same files, or sharing one worktree
 - Parallel subagents each running e2e specs, dev servers, or migrations on the same machine

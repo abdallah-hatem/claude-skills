@@ -58,6 +58,11 @@ grows. During Verify, each case is ticked off against the test named for it.
 
 - A task with no class, or one classed down to avoid its tests
 - Two tasks that each build the same component or helper, instead of a shared task both depend on
+- A wave built from logical dependencies alone. **Compare the tasks' file lists**: a task that
+  *creates* a file another task *modifies* must land first, however unrelated the two sound (a
+  module, a controller or a layout one task creates and two others extend is the usual case). Two
+  tasks that both modify a file can share a wave only when their edits are purely additive — routes,
+  providers, locale keys in separate namespaces.
 - A `logic` task with no edge-case list, or one drawn only from the generic checklist
 - A rule in the business doc that must never break, with no case that tries to break it
 - An edge case without an expected outcome or a source
