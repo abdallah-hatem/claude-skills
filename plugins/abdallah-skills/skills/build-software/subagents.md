@@ -54,6 +54,31 @@ test setup that keeps any `DATABASE_URL` naming a `<app>_test*` database): creat
 database per parallel agent first, name it in each brief, and they can run e2e side by side without
 truncating each other's rows.
 
+**A fresh worktree is missing everything generated.** No `node_modules`, no built workspace
+packages (`packages/*/dist`), no generated Prisma client. Every worktree brief says: `npm install`
+at the root, build the shared package, and `prisma generate` — otherwise `tsc` resolves the shared
+package *up into the main checkout's build* and reports phantom errors against a different branch.
+The same trap runs the other way: after switching the main checkout to another branch, rebuild the
+shared package, or the API typechecks against the old one.
+
+**Keep the bundler out of agent worktrees.** Worktrees live under `.claude/worktrees/`, inside the
+workspace that Metro (and Jest's haste map) watch in a monorepo — each a full copy of the app. With
+the same module on disk in several places, Metro can serve the phone a **stale copy from a
+worktree** while the main tree's code, the API and the served bundle are all correct. Before the
+first mobile wave, add the path to Metro's resolver blockList:
+
+```js
+const blockList = config.resolver.blockList;
+config.resolver.blockList = [
+  ...(Array.isArray(blockList) ? blockList : blockList ? [blockList] : []),
+  /[/\\]\.claude[/\\]worktrees[/\\].*/,
+];
+```
+
+When a device shows something the code says it can't, put a `console.log` in the file you believe
+is running. If it never fires, the phone is running another copy — check this before debugging the
+feature.
+
 ## Briefing a subagent
 
 A subagent starts with none of this conversation, so the brief has to stand alone:
@@ -116,6 +141,7 @@ merge them into one — and switch both callers to it — before the next wave.
 - A subagent spawned for one tiny task that could have been batched with others
 - Parallel subagents editing the same files, or sharing one worktree
 - Parallel subagents each running e2e specs, dev servers, or migrations on the same machine
+- A device check with agent worktrees on disk and Metro not blocking `.claude/worktrees/`
 - A brief that doesn't say which skill to load, or has no Graft block
 - A brief without the existing-code-first line
 - Two agents in one wave each adding the same helper or component, left unmerged
