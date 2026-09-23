@@ -3,6 +3,7 @@
 
 Silent unless the pace is actually bad, so it costs nothing on a normal day.
 Re-warns at most every 10 minutes, or immediately if severity gets worse.
+"Usual" and "heavy" are learned from his own recent blocks by statusline-burn.py.
 """
 import os, sys, json, time, importlib.util
 
@@ -17,6 +18,7 @@ try:
     spec.loader.exec_module(burn)
 
     events, session_last, fresh = burn.scan()
+    burn.refresh_thresholds(burn.record_blocks(events))
     blk = burn.current_block(events)
     if not blk:
         sys.exit(0)
@@ -55,8 +57,11 @@ try:
     big_ctx = [c for _, (ep, c) in session_last.items() if ep > now - 900 and c >= burn.CTX_WARN]
 
     m = lambda v: f"{v/1e6:.0f}M"
+    usual = (f"your usual block lately is ~{m(burn.MEDIAN)}, median of the last "
+             f"{burn.N_BLOCKS} over {burn.HISTORY_DAYS} days" if burn.LEARNED
+             else f"a usual block is ~{m(burn.MEDIAN)}")
     bits = [f"5h window {word}: {m(burned)} burned, on pace for ~{m(projected)} by "
-            f"{time.strftime('%H:%M', time.localtime(end))} (a usual block is ~{m(burn.MEDIAN)})."]
+            f"{time.strftime('%H:%M', time.localtime(end))} ({usual})."]
     if n_active > 1:
         bits.append(f"{n_active} sessions running at once.")
     if big_ctx:

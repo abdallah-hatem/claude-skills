@@ -61,7 +61,8 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 |---|---|---|
 | `capture-correction.sh` | `UserPromptSubmit` | notices correction-shaped messages and asks the model to record the rule |
 | `load-learnings.sh` | `SessionStart` | force-loads `~/.claude/LEARNINGS.md` (every project) and `<repo>/.claude/LEARNINGS.md` (that repo) so the record is actually read |
-| `burn-warn.py` | `UserPromptSubmit` | warns when the 5-hour usage window is burning fast |
+| `burn-warn.py` | `UserPromptSubmit` | warns when the 5-hour usage window is burning fast, compared with your own usual block — the median of your last 45 days, learned, not a fixed number |
+| `statusline-burn.py` | `statusLine` | the 5-hour burn in the status line; also the engine `burn-warn.py` imports, so it must sit at `~/.claude/statusline-burn.py`. Run it once with `--rebuild-history` to learn from past transcripts; `--stats` shows what it has learned |
 | `session-state.sh` | `SessionStart` | loads the work's state into every new, resumed, cleared, or compacted session: a `/build-software` run's `docs/BUILD_LOG.md` header, or the repo's handoff note from `~/.claude/handoffs/` |
 | `pre-compact.sh` | `PreCompact` | tells the compaction summary what must survive — goal, finished work with hashes, work in progress, decisions, next step — and the build log's current stage |
 | `stop-handoff.sh` | `Stop` | after a reply that made real progress (a commit, or files changed with the note 30+ min old), has the model write the why / in-progress / next step into the repo's handoff note — silent otherwise, skipped in a `/build-software` run, can't loop |
