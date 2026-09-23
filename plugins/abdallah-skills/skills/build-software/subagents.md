@@ -33,7 +33,7 @@ work looks likely:
 2. **Separate the ones that collide.** Two ready tasks can't run side by side when they edit the same
    files. The usual shared ones: `prisma/schema.prisma` and migrations, `package.json` and the
    lockfile, shared layouts and navigation, the i18n locale files, the generated API client — and a
-   signature change to a symbol another ready task calls (`graft callers <symbol> --depth all`). Colliding
+   signature change to a symbol another ready task calls (grep for its callers). Colliding
    tasks go into one subagent together, or one waits for the next wave.
 3. **Dispatch the rest in one message** — one `Agent` call per task (or batch), each with
    `isolation: "worktree"` and its own `feature/<name>` branch, at most five at once. A task that
@@ -89,19 +89,10 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **The skill to load first** — `building-backends`, `building-frontends`, or `building-mobile`. It
   won't know to.
 - **Existing code first** — before writing a component, hook, helper, service method, guard, or DTO,
-  search for one with `graft ask "<concept>"` and extend it; extract on the second use, as the stack
+  grep for one and extend it; extract on the second use, as the stack
   skill says. List every shared piece it creates (`common/`, `lib/`, `components/ui/`) by path in the
   report.
-- **The Graft block** — subagents don't get the repo map or the per-prompt pointers Graft injects
-  into the main session, so without it they explore file by file ([graft.md](graft.md)):
-  - In a worktree, run `DO_NOT_TRACK=1 graft build` at its root first, then use the CLI there
-    (`graft ask`, `graft skeleton <file>`) — not the `graft_*` MCP tools, which read the main checkout.
-    Outside a worktree, `graft_repo_map` and `graft_find_code` work.
-  - Query Graft before reading a file.
-  - Before changing a symbol other code uses: `graft callers <symbol> --depth all`, and update every
-    caller it returns.
-  - Prefix every `graft` command with `DO_NOT_TRACK=1`. Never `graft build --deep`.
-  - End the report with the tokens-saved line from `DO_NOT_TRACK=1 graft stats`.
+- **Before changing a symbol other code uses,** grep for every caller and update each one.
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
 - **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
   Screens use tokens only; no new colours, sizes, or curves. **For mobile tasks**, `docs/DESIGN.md`, the
@@ -118,8 +109,8 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   uncommitted. Lint errors are fixed, never disabled without a `-- reason`.
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
 - **Report back in ten lines or fewer:** the files changed, the test command with the runner's summary
-  line and any failures in full, the `lint` and `typecheck` result, the commit hash, the shared pieces it
-  created, and the `graft stats` tokens-saved line. No narrative, no recap of the brief.
+  line and any failures in full, the `lint` and `typecheck` result, the commit hash, and the shared pieces it
+  created. No narrative, no recap of the brief.
 - **Keep test output quiet** — full log to a file, summary and failures only ([efficiency.md](efficiency.md)).
 
 ## After it reports
@@ -142,7 +133,7 @@ merge them into one — and switch both callers to it — before the next wave.
 - Parallel subagents editing the same files, or sharing one worktree
 - Parallel subagents each running e2e specs, dev servers, or migrations on the same machine
 - A device check with agent worktrees on disk and Metro not blocking `.claude/worktrees/`
-- A brief that doesn't say which skill to load, or has no Graft block
+- A brief that doesn't say which skill to load
 - A brief without the existing-code-first line
 - Two agents in one wave each adding the same helper or component, left unmerged
 - A frontend or mobile brief that doesn't point the subagent at the design system and the kit

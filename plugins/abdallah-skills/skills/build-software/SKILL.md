@@ -38,9 +38,6 @@ Before anything else, ask one question with `AskUserQuestion`:
 - **Fully autonomous** — decides every gate itself and doesn't stop until the app is live in
   production.
 
-**Graft is always on** — not a question. Every run wires in a local code graph so agents find code
-with a query instead of reading file after file: [graft.md](graft.md).
-
 Skip the question when the invocation already answers it (`/build-software autonomous <goal>`), or
 when `docs/BUILD_LOG.md` already records it — then resume from the log. Autonomous runs log every
 decision in `docs/BUILD_LOG.md`, and still stop for money, missing access, and irreversible data loss:
@@ -60,8 +57,7 @@ Pick the mode from the repo, not from how the request is worded; if the two disa
 `docs/BUSINESS_LOGIC.md` and **stops for approval only when the feature changes a business rule, a
 role, money, or the data model**. Its Verify runs the whole suite and every smoke spec, not only the
 new ones. A feature that needs a new design direction, a new kind of user, or a change to how tenants
-are separated is architecture — use new-app mode. Its Context stage wires Graft in if the repo doesn't have it yet, and explores the code
-through it. Stage by stage: [feature-mode.md](feature-mode.md).
+are separated is architecture — use new-app mode. Its Context stage explores the code the feature touches before planning. Stage by stage: [feature-mode.md](feature-mode.md).
 
 ## The business doc
 
@@ -212,12 +208,11 @@ Before the first task, set up what every later check depends on:
    `CREDENTIALS.local.md`: [verification.md](verification.md).
 3. **Smoke specs** — the Playwright setup that signs in as the seeded accounts:
    [verification.md](verification.md).
-4. **Graft** — wired in before the first task, if the repo doesn't have it yet: [graft.md](graft.md).
-5. **Lint and typecheck** — every app gets its stack's house config and `lint` / `typecheck` scripts:
+4. **Lint and typecheck** — every app gets its stack's house config and `lint` / `typecheck` scripts:
    `building-backends` → [lint.md](../building-backends/lint.md), `building-frontends` →
    [lint.md](../building-frontends/lint.md), `building-mobile` → [lint.md](../building-mobile/lint.md). A repo that already exists gets it too, with its current
    violations frozen — lint is a check, not a stack change.
-6. **For a mobile app** — the official `expo` plugin installed (`claude plugin install
+5. **For a mobile app** — the official `expo` plugin installed (`claude plugin install
    expo@claude-plugins-official`; `building-mobile` loads its skills), EAS project and channels set up
    per `building-mobile` → [release.md](../building-mobile/release.md), and Maestro smoke flows that
    sign in as the seeded accounts ([testing.md](../building-mobile/testing.md)).

@@ -53,7 +53,6 @@ what lets any session pick the run back up.
 ```markdown
 # Build log
 Run mode: fully autonomous — chosen by the user on YYYY-MM-DD
-Graft: wired in YYYY-MM-DD
 Goal: <the goal, in the user's words>
 Current stage: 6 — Build (task 9 of 14)
 

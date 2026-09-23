@@ -140,9 +140,8 @@ their big title is part of the content, per `designing-mobile`; never iOS large 
 The rule that erodes under deadline, so it is spelled out:
 
 - **Search before writing.** Before a component, hook, or helper, look for an existing one with
-  `graft ask "<concept>"`. Grep `src/ui/`, `src/lib/`, and `packages/shared/` for the concept and
-  its synonyms only when the repo has no `graft/` folder. Extend what you find rather than writing a
-  sibling.
+  a grep of `src/ui/`, `src/lib/`, and `packages/shared/` for the concept and its synonyms. Extend
+  what you find rather than writing a sibling.
 - **Second use extracts,** in the same commit: a component to `src/ui/`, a hook or helper used by
   two features to `src/lib/` (or `packages/shared` when the web needs it too). The original caller
   switches to the shared version.

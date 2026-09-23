@@ -22,7 +22,7 @@ Restart the session afterwards; skills load at startup.
 | **designing-mobile** | the look of a mobile app — direction, native-first with the brand on top, tokens, motion and haptics, the themed kit |
 | **capturing-corrections** | a correction worth recording so it doesn't have to be given twice |
 | **deploying-to-vercel** | deploying a Nest/Express/Next app, and the failures that look like nothing is wrong |
-| **build-software** | `/build-software` only — a new app from idea to production, or a feature added to an existing app, run guided or fully autonomous, for web, mobile, or both, with Graft code search always on. Business doc, edge-case tests, house lint rules, a design approval, parallel subagent waves, git flow with PRs into `dev` and `production`, preview and production deploys on Vercel or EAS, and test logins kept in a gitignored file |
+| **build-software** | `/build-software` only — a new app from idea to production, or a feature added to an existing app, run guided or fully autonomous, for web, mobile, or both. Business doc, edge-case tests, house lint rules, a design approval, parallel subagent waves, git flow with PRs into `dev` and `production`, preview and production deploys on Vercel or EAS, and test logins kept in a gitignored file |
 
 Each keeps `SKILL.md` as a scannable contract and pushes detail into sibling files that load
 only when they're relevant.

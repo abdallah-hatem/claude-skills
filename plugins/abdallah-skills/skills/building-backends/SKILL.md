@@ -57,8 +57,7 @@ the copy. Import from `@prisma/client`. See [repository-layer.md](repository-lay
 The rule that erodes under deadline, so it is spelled out:
 
 - **Search before writing.** Before a helper, service method, guard, decorator, pipe, or DTO, look
-  for an existing one: `graft ask "<concept>"`, or grep `src/common/` and the other domains for the
-  concept and its synonyms. Extend what you find rather than writing a sibling.
+  for an existing one: grep `src/common/` and the other domains for the concept and its synonyms. Extend what you find rather than writing a sibling.
 - **Second use extracts.** When a second place needs logic that lives somewhere else, move it in the
   same commit: a pure calculation to `common/utils/<topic>.util.ts`, logic that needs injection to a
   provider in `common/`, a query to a repository method. The original caller switches to the shared
