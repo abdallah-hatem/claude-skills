@@ -46,11 +46,12 @@ Maestro smoke flows. Loads the official `expo` plugin's skills where they apply.
 platform-native navigation with the brand in colour, type, motion and a few signature moments, and
 tokens shared with the web.
 
-## Agent
+## Agents
 
 | Agent | Used by | Does |
 |---|---|---|
 | `business-alignment-reviewer` | `/build-software` | Checks a plan, or a task's diff, against `docs/BUSINESS_LOGIC.md` — including whether every business rule has an edge-case test that tries to break it. Reports conflicts, missing coverage, or a doc that's out of date. Read-only. |
+| `ui-auditor` | `/build-software` Verify, and before each release PR | Enumerates every screen, tab, modal, sheet, menu and empty/loading/error state from the code, drives the app to each (Maestro on the iOS simulator for Expo, Playwright for web) as the seeded accounts, and screenshots it in light/dark, LTR/RTL (Arabic), small and large device, plus the largest Dynamic Type. Then looks at every shot for overflow, overlap, misalignment, wrong arrow direction, cut-off sheets, safe-area bleed, untranslated text, Western digits in Arabic and anything out of place. Reports findings with severity and screenshot paths, and every screen it couldn't reach. Never edits app code; one simulator at a time, shut down when done. |
 
 ## Hooks
 

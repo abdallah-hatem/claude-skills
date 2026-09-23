@@ -138,7 +138,7 @@ In a guided run, each approval gate ends with a one-line suggestion to `/clear` 
 | 4 | Design system | `frontend-design` (or `epic-design` for a marketing site); `designing-mobile` for an app | **user approves the look** |
 | 5 | Plan | `superpowers:writing-plans` | **classes, edge cases, alignment review** |
 | 6 | Build | `abdallah-skills:building-backends` / `building-frontends` / `building-mobile`, per task | **tests by class · review for `logic`** |
-| 7 | Verify | `superpowers:verification-before-completion` | **all green + smoke check** |
+| 7 | Verify | `superpowers:verification-before-completion` | **all green + smoke check + UI audit** |
 | 8 | Ship | `abdallah-skills:deploying-to-vercel`; `building-mobile` → `release.md` for an app | **dev: automatic · production: user says go · rollback on failure · a store build always waits for the user** |
 
 In an autonomous run, every gate that waits for the user is decided with the recommended default and
@@ -235,12 +235,10 @@ subagents, in parallel waves wherever the plan's dependencies allow — see Stay
    and any failures in full, never the whole log.
 2. **Each planned edge case is ticked off** against its test, by name. A case with no matching test
    fails verification, however green the suite is.
-3. **For a mobile app, the Maestro flows pass** and every changed screen is screenshotted on iPhone and
-   iPad, LTR and RTL, light and dark, at the largest Dynamic Type — by the main thread after the wave,
-   one simulator at a time ([testing.md](../building-mobile/testing.md)).
-4. **The smoke check passes locally** — the specs sign in as the seeded accounts, walk the main flows,
-   and screenshot every changed screen at mobile and tablet, LTR and RTL, light and dark. Look at the
-   screenshots; a passing spec doesn't prove a screen looks right.
+3. **For a mobile app, the Maestro flows pass** ([testing.md](../building-mobile/testing.md)).
+4. **The smoke check passes locally** — the specs sign in as the seeded accounts and walk the main
+   flows.
+5. **For any app with a UI, the UI audit runs over every changed screen** — see UI audit below.
 
 Sign-in always happens inside the specs. Verification never waits on anyone typing a password into a
 login page.
@@ -287,6 +285,20 @@ range, or a release's range. It reports; it never edits. Run it:
 It finds disagreements; it doesn't decide who is right. When code and doc disagree because the
 business moved, the user decides.
 
+## UI audit
+
+The `ui-auditor` agent — subagent type `abdallah-skills:ui-auditor` — drives the app to every
+screen, overlay and state in scope, screenshots each in light and dark, LTR and RTL, on a small and a
+large device (and the largest Dynamic Type on mobile), and looks at every screenshot. It reports; it
+never edits. Run it from the main thread, after the wave, never beside another simulator user:
+
+- **at Verify** — scope: the changed screens
+- **once before each release PR** — scope: the whole app
+
+`FINDINGS`: every `blocker`, `major` and `minor` becomes a fix task in the plan (class `surface`, or
+`ui` when behavior changes), then the audit runs again on those screens. `nit`s go in the build log.
+Unreached screens in its coverage list are logged, and seeded when the gap is missing data.
+
 ## Subagents
 
 Build tasks run in subagents so each one's reading and test output is discarded when it reports:
@@ -312,6 +324,7 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - A test that checks appearance instead of behavior
 - A `CONFLICTS` verdict overridden without asking the user
 - The alignment review run on `ui` or `surface` tasks, or skipped before a release PR
+- A UI change shipped without a `ui-auditor` pass, or its findings left out of the plan
 - `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
 - A merge into `production` without the user's go-ahead, in a run that isn't fully autonomous
 - A production deploy with no smoke check afterwards, or a failed one left live

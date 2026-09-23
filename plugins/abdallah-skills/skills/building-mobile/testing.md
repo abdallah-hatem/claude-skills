@@ -167,7 +167,9 @@ const withoutRelativeTimeFormat = <T,>(run: () => T): T => {
 
 ## Appearance: simulator screenshots
 
-Screenshots are the visual check the unit tests deliberately skip. **One simulator at a time** —
+Screenshots are the visual check the unit tests deliberately skip. In a `/build-software` run the
+`abdallah-skills:ui-auditor` agent takes this matrix over every screen, sheet and state, looks at each
+shot, and shuts its simulator down. **One simulator at a time** —
 boot it, take the set, shut it down, then the next; several at once starve the machine and flake.
 
 The matrix for every changed screen:

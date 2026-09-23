@@ -73,8 +73,8 @@ A broken preview is fixed on a new branch and a new PR — never by pushing to `
 ## dev → production (on the user's go-ahead)
 
 When `dev` holds something worth releasing, run the alignment review once over everything since the
-last release — it covers the `ui` and `surface` tasks that skipped per-task review — then open the
-release PR:
+last release — it covers the `ui` and `surface` tasks that skipped per-task review — and the
+`ui-auditor` over the whole app, with its findings fixed through `dev`; then open the release PR:
 
 ```bash
 gh pr create --base production --head dev --title "release: <summary>" --body-file <release-body.md>

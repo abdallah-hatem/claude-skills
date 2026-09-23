@@ -193,8 +193,9 @@ keyboard, toggles in settings never animate beyond the platform default.
    a sheet, a toast, a list row, an empty state and a skeleton, in light and dark. The user approves
    it before screens are built.
 5. **Review by screenshot** on iPhone and iPad (and an Android device when Android ships), in LTR
-   and RTL, light and dark. Run `expo:expo-design-system`'s self-critique pass on each; a defect
-   that recurs is fixed in the token or the kit, not on the screen.
+   and RTL, light and dark — the `abdallah-skills:ui-auditor` agent takes and checks the set. Run
+   `expo:expo-design-system`'s self-critique pass on each; a defect that recurs is fixed in the
+   token or the kit, not on the screen.
 
 ## Red flags
 

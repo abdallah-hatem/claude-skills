@@ -45,7 +45,7 @@ goes in the same PR as the code that makes it true.
 
 As new-app stage 7 — edge cases matched to named tests, and the smoke check. Run the **whole** suite
 and **every** smoke spec, not only the new ones: a feature in an existing app is where unrelated flows
-break.
+break. The `ui-auditor` runs over the screens the feature touches.
 
 ## 6. Ship
 

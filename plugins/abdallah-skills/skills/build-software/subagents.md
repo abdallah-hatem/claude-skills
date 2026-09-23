@@ -138,6 +138,7 @@ merge them into one — and switch both callers to it — before the next wave.
 - Two agents in one wave each adding the same helper or component, left unmerged
 - A frontend or mobile brief that doesn't point the subagent at the design system and the kit
 - A mobile subagent starting a simulator, Metro, or an EAS build — those belong to the main thread
+  (or to `ui-auditor`, dispatched alone after the wave)
 - A brief that contains a credential value
 - A subagent running its tests in the background
 - A subagent that pushes, opens a PR, or merges

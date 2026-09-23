@@ -135,6 +135,7 @@ BASE_URL=https://<app>.vercel.app npx playwright test --grep @readonly          
   and integration tests, not here.
 - **Every `ui` and `surface` screen appears in a smoke spec**, so its screenshots exist to look at.
 - **Look at the screenshots.** A passing run proves the flow works, not that the screen looks right.
+  The `ui-auditor` agent does the looking, over every screen and state, at Verify and before a release.
 - **Locate by test id** (`data-testid`). Labels change with the locale, and classes change with the
   design.
 - **Production runs `@readonly` specs only.** A smoke check must never leave records real users see.
