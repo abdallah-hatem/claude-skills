@@ -6,8 +6,10 @@ what piles up in the conversation — not from the skill's own text.
 
 ## State on disk
 
-Every run keeps `docs/BUILD_LOG.md` — autonomous runs record the decisions made on the user's behalf,
-guided runs record the gates the user approved. Its format is in `autonomous.md`.
+Every run keeps a build log — a small index at `docs/BUILD_LOG.md` linking to small files under
+`docs/build-log/` (decisions per phase, one wave file per task). Autonomous runs record the decisions
+made on the user's behalf, guided runs the gates the user approved. Layout in `autonomous.md`. Read the
+index and only the files the work at hand needs; a brief names files, never the whole log.
 
 - **Update `Current stage` at every stage and task boundary**, before moving on.
 - **Anything the run will need later is written to a file first** — the build log, the plan's

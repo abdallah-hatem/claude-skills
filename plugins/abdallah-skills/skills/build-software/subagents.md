@@ -39,7 +39,8 @@ work looks likely:
    `isolation: "worktree"` and its own `feature/<name>` branch, at most five at once. A task that
    depends on an earlier wave's task is cut from that task's branch, or from a local merge of several,
    not from `dev` — nothing is pushed before Ship.
-4. **Log the wave** in the build log, including what waits and why:
+4. **Log the wave** in the feature's `docs/build-log/waves/<feature>/README.md`, including what waits
+   and why:
    `Wave 3: T4 T5 T6 T7 in parallel · T8 waits on T4 · T9 after T6 (both edit ar.json)`. One ready
    task is still a wave: `Wave 5: T11 alone — T10 not done`.
 
@@ -94,6 +95,10 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   report.
 - **Before changing a symbol other code uses,** grep for every caller and update each one.
 - **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
+- **The build-log files it needs, by path** — its phase's `docs/build-log/decisions/<phase>.md` and
+  any `notes/` file that applies — never "read the build log". It writes its own report to
+  `docs/build-log/waves/<feature>/<task>.md` and touches no other log file, so parallel tasks never
+  conflict there.
 - **For frontend tasks, the design system** — `docs/DESIGN.md` and the tokens in `globals.css`.
   Screens use tokens only; no new colours, sizes, or curves. **For mobile tasks**, `docs/DESIGN.md`, the
   NativeWind tokens, and the kit in `src/ui/` — screens are built from the kit, never raw React Native

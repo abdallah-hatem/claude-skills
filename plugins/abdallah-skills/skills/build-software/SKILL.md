@@ -40,7 +40,8 @@ Before anything else, ask one question with `AskUserQuestion`:
 
 Skip the question when the invocation already answers it (`/build-software autonomous <goal>`), or
 when `docs/BUILD_LOG.md` already records it — then resume from the log. Autonomous runs log every
-decision in `docs/BUILD_LOG.md`, and still stop for money, missing access, and irreversible data loss:
+decision in the build log (an index at `docs/BUILD_LOG.md` linking to small per-phase and per-task
+files under `docs/build-log/` — [autonomous.md](autonomous.md)), and still stop for money, missing access, and irreversible data loss:
 [autonomous.md](autonomous.md).
 
 ## Modes
