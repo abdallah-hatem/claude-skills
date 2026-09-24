@@ -128,6 +128,12 @@ Check, on every screen and overlay:
   tab bar covering the last row
 - **Alignment** — text and icons off the baseline or off-centre, leading/trailing edges that don't
   line up down a list, an icon not centred in its button, uneven gaps within one row
+- **Edge margins on overlays** — every pill, chip, badge, caption or button floating over a photo,
+  card or screen keeps a visible margin from **every** edge it sits near. One touching the
+  container's side or bottom with no gap is a `major` finding, even when nothing overlaps. Check
+  that an overlay meant to be centred is actually centred (compare its left and right gaps, in
+  LTR and RTL) — a component with a built-in `self-start` silently pins it to the start edge. This
+  was missed once: a centred hint pill on a photo sat flush against the photo's edge.
 - **Direction** — in RTL: back arrows point right, disclosure chevrons point left, drawers and
   sheets come from the mirrored edge, progress fills from the right; icons without a direction
   (check, clock, play, search, logos) do **not** flip. In LTR, the reverse. Text alignment follows
