@@ -68,6 +68,7 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 | `pre-compact.sh` | `PreCompact` | tells the compaction summary what must survive — goal, finished work with hashes, work in progress, decisions, next step — and the build log's current stage |
 | `stop-handoff.sh` | `Stop` | after a reply that made real progress (a commit, or files changed with the note 30+ min old), has the model write the why / in-progress / next step into the repo's handoff note — silent otherwise, skipped in a `/build-software` run, can't loop |
 | `session-end-handoff.sh` | `SessionEnd` | writes the facts half of the handoff note when a session ends — branch, commits, uncommitted files, the user's last requests — keeping the model's summary above it |
+| `subagent-sweep.sh` | `SubagentStop` | kills whatever a finished sub-agent left running, so nothing sits idle for hours: every process whose command line or working directory is inside that agent's worktree (`.claude/worktrees/agent-<id>/`, whole tree), orphaned worktree `jest`, and any node/npm `jest` whose whole tree has been idle 45+ min. Never touches Claude or MCP servers. Logs each kill to `~/.claude/logs/subagent-sweep.log` |
 
 Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
 
@@ -89,13 +90,17 @@ Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
     ],
     "SessionEnd": [
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-end-handoff.sh", "timeout": 10 }] }
+    ],
+    "SubagentStop": [
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/subagent-sweep.sh", "timeout": 30 }] }
     ]
   }
 }
 ```
 
 Use absolute paths if `~` doesn't expand in your shell. Every script exits 0 on unexpected
-input, so a broken hook can never block a prompt or a compaction. `session-state.sh` reads
+input, so a broken hook can never block a prompt or a compaction. `subagent-sweep.sh` needs `lsof`,
+`pgrep` and `python3` (all stock on macOS). `session-state.sh` reads
 `jq` and `git`; `SessionStart` also fires after a compaction (source `compact`), which is when
 it asks for the build log or the handoff note to be brought up to date.
 
