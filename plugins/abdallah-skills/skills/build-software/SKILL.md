@@ -92,6 +92,11 @@ git check-ignore -q CREDENTIALS.local.md && echo "ignored — safe to write"
 
 If that doesn't print, stop. Layout and rules: [credentials.md](credentials.md).
 
+The same file keeps the **integrations register** — every third-party account, resource, id,
+region, endpoint, bucket and key the project uses, and where each secret's value lives
+(`~/.config/<project>/`, mode 600, never the repo). It is written automatically, in the same step
+an account is chosen, a resource is created, or the user hands over a key or a setting.
+
 ## Task classes
 
 Not everything is worth testing, and not everything needs a business review. Every task in the plan
@@ -326,6 +331,7 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - The alignment review run on `ui` or `surface` tasks, or skipped before a release PR
 - A UI change shipped without a `ui-auditor` pass, or its findings left out of the plan
 - `CREDENTIALS.local.md` written before `git check-ignore` confirms it is ignored
+- A third-party account, key, bucket or endpoint that exists only in the conversation, not in the register
 - A merge into `production` without the user's go-ahead, in a run that isn't fully autonomous
 - A production deploy with no smoke check afterwards, or a failed one left live
 - Run state that exists only in the conversation, or Build tasks run inline on a long run

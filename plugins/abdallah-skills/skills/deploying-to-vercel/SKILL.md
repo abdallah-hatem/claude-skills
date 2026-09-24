@@ -124,6 +124,11 @@ advisory locks matter.
 Both of these create the resource, attach it to the linked project, and write the
 environment variables themselves — no credential is ever typed or pasted.
 
+Every resource created here — and every variable set with `vercel env add` — gets its entry in the
+project's integrations register (`CREDENTIALS.local.md`, see `build-software` → credentials.md) in
+the same step: the Vercel account and team, the project, the resource name and id, the region, the
+env vars it wrote, and which environments (preview / production) now have them.
+
 ```bash
 cd apps/api
 vercel link --yes --project <name> --scope <team-or-personal-scope>
