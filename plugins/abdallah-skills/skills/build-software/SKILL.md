@@ -122,7 +122,9 @@ rules keep it small — commands and examples in [efficiency.md](efficiency.md):
 
 1. **State lives in files, not in the conversation.** Every run — guided or autonomous — keeps
    `docs/BUILD_LOG.md`, the plan's checkboxes, and the business doc current, so a compaction or a new
-   session loses nothing.
+   session loses nothing. **Update the log the moment each step lands** — a merge, a fix, a review
+   verdict, a push, a PR, a hold lifted, a request queued — in the same commit as the work when there
+   is one. Never batch it for later: a log that lags even one step is how the user finds it stale.
 2. **The main thread coordinates; subagents do the heavy work.** Build tasks run in fresh subagents,
    whose file reads, test output, and debugging are discarded when they report back. This happens on
    its own in every run — no one has to clear anything.
