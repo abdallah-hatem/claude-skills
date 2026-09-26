@@ -172,7 +172,14 @@ Screenshots are the visual check the unit tests deliberately skip. In a `/build-
 shot, and shuts its simulator down. **One simulator at a time** —
 boot it, take the set, shut it down, then the next; several at once starve the machine and flake.
 
-The matrix for every changed screen:
+**Only the axes the change can affect.** The matrix is for new screens and visual changes. A
+behaviour-only change (scrolling, a gesture, a navigation fix) is checked once, in one theme and one
+language, plus only the axes it could actually break: for example text size and the small phone
+for "fits without scrolling". Flipping light/dark to screenshot a scroll fix is wasted work that the
+user notices on the simulator ("what does theme changing have to do with scrolling?", 2026-09-26).
+Before starting a matrix, say which axes this change touches and why.
+
+The matrix for a new or visually changed screen:
 
 | Axis | Values |
 |---|---|
