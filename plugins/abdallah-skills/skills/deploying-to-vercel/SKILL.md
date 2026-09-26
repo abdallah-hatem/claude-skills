@@ -110,6 +110,17 @@ function serverlessUrl(url: string): string {
 `pool_timeout` is the half that is usually forgotten, and it is the half that turns an
 unbounded hang into a fast, visible refusal.
 
+**One connection makes a query that goes around its transaction deadlock.** Inside
+`$transaction(async (tx) => …)` the transaction holds the only connection. Any query in the
+callback that uses the plain client instead of `tx` (a repository method called without `tx`, a
+helper that reads `this.prisma`) waits for a second connection that never comes, then fails with
+**P2024 after `pool_timeout`**. Locally the pool is bigger, so it passes every test and only breaks
+on Vercel. Aesthetica hit it on every post: a device-key read inside the posting transaction
+skipped `tx`, and the phone showed a timeout. Guard it in the test harness, not by reading code:
+**run the e2e suite with `connection_limit=1&pool_timeout=5` added to the test `DATABASE_URL`**,
+and the bypassing query fails fast in CI. Also make sure a 4xx/5xx logs its error code, or a
+failure like this leaves no trace in Runtime Logs.
+
 Also instantiate `PrismaClient` once at module scope, never per request.
 
 **This combines with Neon's pooler rather than replacing it.** `vercel integration add neon`
@@ -252,6 +263,7 @@ machine's working tree.
 | ESM-only dependency | Ready, then 500 on every request | Audit `"type": "module"`, verify by requiring |
 | NestJS adapter | Wasted work, new bugs | Native `nestjs` preset, keep `app.listen()` |
 | Prisma default pool | Requests hang 60s, no logs | `connection_limit=1&pool_timeout=20` when `VERCEL` |
+| A query outside its transaction on a 1-connection pool | P2024 after `pool_timeout`, only on Vercel | Pass `tx` everywhere; e2e with `connection_limit=1` |
 | `vercel redeploy` | Reuses build artifacts — new env vars **not** picked up | `vercel deploy --prod`, or push |
 | `vercel link` | Appends bare `.env*` to `.gitignore`, swallowing `.env.example` | Add `!.env.example` |
 | Blob public by default | User uploads readable by URL forever | `--access private`, verify with an anonymous fetch |

@@ -105,7 +105,8 @@ A consistent app is built from few parts, each styled once.
   `EmptyState` (icon, one line, one action), and **a page or sheet whose only content is an empty state
   does not scroll** (one with other content around an empty section, such as a profile with no
   photos, scrolls as usual) — nor does a sign-in or welcome screen: it fits one screen (the user, 2026-09-26). Keep
-  pull-to-refresh where the list has it, but no rubber-band scrolling of empty content. Every destructive action uses one confirmation (an
+  pull-to-refresh where the list has it (the user confirmed, 2026-09-26): a pull still refreshes,
+  but the empty content never scrolls away. Every destructive action uses one confirmation (an
   `AlertDialog` naming the thing destroyed, with the destructive variant on the confirm button).
   Every form error sits in the same place, in the same colour, with the same icon. Every success
   gets the same toast and the same haptic.
