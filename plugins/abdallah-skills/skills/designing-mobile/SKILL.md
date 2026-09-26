@@ -102,8 +102,9 @@ A consistent app is built from few parts, each styled once.
   in one shared frame component (inset from the screen sides, `borderCurve: 'continuous'`) used
   by the camera viewfinder, drafts, and posts alike, so every photo frame matches.
 - **The same situation looks the same everywhere.** Every list's empty state uses one
-  `EmptyState` (icon, one line, one action), and **a screen showing only an empty state does not
-  scroll** — nor does a sign-in or welcome screen: it fits one screen (the user, 2026-09-26). Keep
+  `EmptyState` (icon, one line, one action), and **a page or sheet whose only content is an empty state
+  does not scroll** (one with other content around an empty section, such as a profile with no
+  photos, scrolls as usual) — nor does a sign-in or welcome screen: it fits one screen (the user, 2026-09-26). Keep
   pull-to-refresh where the list has it, but no rubber-band scrolling of empty content. Every destructive action uses one confirmation (an
   `AlertDialog` naming the thing destroyed, with the destructive variant on the confirm button).
   Every form error sits in the same place, in the same colour, with the same icon. Every success
@@ -212,7 +213,7 @@ keyboard, toggles in settings never animate beyond the platform default.
 - A radius, shadow, or spacing value that is not in the set
 - A className override on a kit component to get a new look — that is a missing variant
 - Two empty states, confirmations, or form errors that look different
-- An empty-state screen, or a sign-in/welcome screen, that scrolls
+- A page or sheet with nothing but an empty state, or a sign-in/welcome screen, that scrolls
 - A raw RN `Switch`, `Button`, `TextInput` or `Alert.alert` in a screen
 - iOS chrome hand-built on Android, or a FAB and ripple in an iOS layout
 - A screen transition or tab bar rebuilt in JS
