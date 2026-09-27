@@ -128,6 +128,9 @@ Check, on every screen and overlay:
   tab bar covering the last row
 - **Alignment** — text and icons off the baseline or off-centre, leading/trailing edges that don't
   line up down a list, an icon not centred in its button, uneven gaps within one row
+- **Sheet height** — every sheet ends just below its content: grabber, content, buttons, the
+  home-indicator inset, and nothing else. Empty space below the last button is a finding (a fixed
+  detent instead of the content's height); so is content cut off at the bottom.
 - **Edge margins on overlays** — every pill, chip, badge, caption or button floating over a photo,
   card or screen keeps a visible margin from **every** edge it sits near. One touching the
   container's side or bottom with no gap is a `major` finding, even when nothing overlaps. Check

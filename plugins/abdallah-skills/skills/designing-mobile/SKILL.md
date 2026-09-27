@@ -49,7 +49,9 @@ the app's.
 **Stays native:**
 
 - iOS: native tabs (`NativeTabs`), stack headers on pushed screens, system sheets
-  (`presentation: 'formSheet'` with detents), context menus (`Link.Menu`), the swipe-back gesture,
+  (`presentation: 'formSheet'` with detents — **a short sheet is exactly as tall as its content**:
+  measure it and set the detent, never a fixed fraction like 0.5 that leaves dead space below the
+  buttons; the user, 2026-09-27), context menus (`Link.Menu`), the swipe-back gesture,
   the system share sheet.
 - Android: Material behaviour — the system back gesture and predictive back, Material top app
   bar and navigation bar, edge-to-edge insets. No iOS chevrons or large-title text on Android; no
@@ -215,6 +217,7 @@ keyboard, toggles in settings never animate beyond the platform default.
 - A className override on a kit component to get a new look — that is a missing variant
 - Two empty states, confirmations, or form errors that look different
 - A page or sheet with nothing but an empty state, or a sign-in/welcome screen, that scrolls
+- A sheet with empty space below its last button — a fixed detent instead of the content's height
 - A raw RN `Switch`, `Button`, `TextInput` or `Alert.alert` in a screen
 - iOS chrome hand-built on Android, or a FAB and ripple in an iOS layout
 - A screen transition or tab bar rebuilt in JS
