@@ -51,4 +51,19 @@ SKU (any unique string, e.g. `<slug>-ios`), User Access: Full Access.
 - Check the account menu top-right before creating: an account in several teams must create the app
   in the team that owns the bundle ID.
 
-## 2. … (next steps are added as the Aesthetica release goes)
+## 2. Store screenshots
+
+6.9" iPhone, 1320×2868 portrait, 3–6 shots (plus iPad 13" if `supportsTablet`). Take them on a
+simulator **running the current iOS**: the same app looks different per iOS (iOS 26's tab bar and
+sheets vs iOS 18's), and the store should show what users get. Before briefing, run
+`xcrun simctl list devices` and pick a 6.9" model on the newest runtime (e.g. iPhone 17 Pro Max on
+iOS 26.x), by UDID. A fresh simulator needs a dev client built locally (`npx expo run:ios --device
+<UDID>`), not EAS. Clean status bar: `xcrun simctl status_bar <UDID> override --time 9:41
+--batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3`.
+
+**Problems hit:**
+- An agent was pointed at "iPhone 16 Pro Max" by UDID without checking its runtime: it was iOS
+  18.5, so the screenshots would have shown the old UI. Check the runtime, not just the size.
+  (Aesthetica, 2026-10-01)
+
+## 3. … (next steps are added as the Aesthetica release goes)
