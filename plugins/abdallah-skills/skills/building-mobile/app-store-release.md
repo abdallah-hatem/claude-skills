@@ -157,4 +157,17 @@ that, `eas build --platform ios --profile production --non-interactive --auto-su
 submits with nobody at the keyboard. EAS then queues the upload ("waiting for an available
 submitter") — minutes, not an error.
 
-## 8. … (next steps are added as the Aesthetica release goes)
+## 8. Attach the build and submit
+
+After `eas submit` succeeds, Apple processes the build for 5–15 minutes before it appears in the
+version page's **Build → Add Build** picker. On EAS's free tier the submission itself can sit
+**Queued** ("Waiting for submission process to start") for 20+ minutes first — check the
+submission page on expo.dev, not the terminal. Pick the build whose version matches the App Store
+version, Save, then **Add for Review** → the Draft Submission panel → **Submit for Review**. Status
+becomes "Waiting for Review"; Apple says up to 48 hours. (Aesthetica, 2026-10-01: the first
+submission was made ~5 hours after the app record was created, most of it waiting on builds and the
+user's two interactive Apple logins.)
+
+## 9. After review
+
+(Next: add what happens on approval or rejection, the first time it does.)
