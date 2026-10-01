@@ -26,6 +26,8 @@ touching App Store Connect, and tell the user what's missing in one list:
 - **Store listing assets**: screenshots for the 6.9" iPhone (1320×2868 or 1290×2796) — at least 3;
   iPad screenshots too if the app supports iPad (`supportsTablet`).
 - Anything the product's own business doc marks "required before public launch".
+- **Collect from the user up front:** the review contact phone number, and an interactive Apple
+  login for the first production build (or an App Store Connect API key).
 
 TestFlight needs none of the listing work and no review for internal testers — offer it when the
 user wants the app on phones fast, but follow the user's call.
@@ -115,4 +117,25 @@ Later builds can run non-interactively. For many apps: create an **App Store Con
 `~/.config/<org>/`, and give it to EAS (`eas credentials` → App Store Connect API key) — then
 builds and `eas submit` never need an interactive Apple login. (Aesthetica, 2026-10-01)
 
-## 6. … (next steps are added as the Aesthetica release goes)
+## 6. App Privacy, pricing, review information
+
+**App Privacy** (Trust & Safety → App Privacy): set the Privacy Policy URL first, then "Yes, we
+collect data", tick each type, and for each one: purpose (App Functionality only, for an app with
+no ads or analytics), "linked to the user's identity" Yes, two explanation pages (Next, Next), then
+tracking No → Save. Then **Publish** at the top — the labels don't count until published. Derive the
+types from the published privacy policy so the two match. For a photo-social app: Email Address,
+Precise Location, Photos or Videos, Other User Content, User ID, Device ID (push token, App
+Attest), Product Interaction. Browser-tool tip: refs inside these dialogs are stable within a
+dialog — `find` the checkbox/radio/Next/Save each step rather than clicking coordinates.
+
+**Pricing and Availability**: Add Pricing → $0.00 → Next → Confirm; Set Up Availability → All
+countries → Next → Confirm.
+
+**App Review Information** (version page): untick "Sign-in required" when Sign in with Apple works
+for the reviewer, and say so in the notes; **the contact phone number is required** — ask the user
+for it at the start of the release, not at the end (the whole version page refuses to save without
+it). Notes: how to sign in, what needs a real device and why, where each main feature is, and the
+safety features (report, block, delete account) — Apple checks those for UGC apps. (Aesthetica,
+2026-10-01)
+
+## 7. … (next steps are added as the Aesthetica release goes)
