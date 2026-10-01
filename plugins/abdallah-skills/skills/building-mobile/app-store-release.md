@@ -66,4 +66,16 @@ iOS 26.x), by UDID. A fresh simulator needs a dev client built locally (`npx exp
   18.5, so the screenshots would have shown the old UI. Check the runtime, not just the size.
   (Aesthetica, 2026-10-01)
 
-## 3. … (next steps are added as the Aesthetica release goes)
+## 3. Listing text (version page)
+
+Fields and limits: Promotional Text 170, Description 4000, **Keywords 100 (commas count; no spaces
+needed after commas)**, Subtitle 30 and Name 30 (on App Information), Copyright (e.g. `2026 <Name>`),
+Support URL and Marketing URL. Count before typing — `printf %s "<keywords>" | wc -c` — the field
+only complains on save. Typing a long description with the browser tool can time out
+("Input.dispatchKeyEvent timed out") yet still land: screenshot and check the counter before retrying.
+
+**Problems hit:**
+- The keyword list was 101 characters and Apple refused it; dropped the weakest word. (Aesthetica,
+  2026-10-01)
+
+## 4. … (next steps are added as the Aesthetica release goes)
