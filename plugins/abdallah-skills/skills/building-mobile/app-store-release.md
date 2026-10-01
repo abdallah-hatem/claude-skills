@@ -86,4 +86,33 @@ only complains on save. Typing a long description with the browser tool can time
 - The keyword list was 101 characters and Apple refused it; dropped the weakest word. (Aesthetica,
   2026-10-01)
 
-## 4. … (next steps are added as the Aesthetica release goes)
+## 4. App Information page
+
+Subtitle (≤30 — the field says "less than 30" but 30 is accepted; the counter shows 0), Primary and
+Secondary category (click the select, type the visible text, Return), **Content Rights**: "No" —
+users' own uploads aren't "third-party content" in Apple's sense (that's licensed media).
+
+**Age rating questionnaire** (7 steps). Answer from what the app does, not what users might post —
+UGC is declared on its own line. For a moderated photo-social app with weekly competitions:
+parental controls No, age assurance No, unrestricted web No, **User-Generated Content Yes, Social
+Media Yes**, social media disabled under 13 No, messaging No (public comments aren't DMs),
+advertising No; all mature themes / medical / sexuality / violence None; **Contests: Frequent**,
+gambling and loot boxes No. Result: 13+ in 171 countries (16+ in 2, Brazil A16, Korea 15+), and the
+app isn't sold in Afghanistan and Morocco (local contest laws). Make the privacy policy's minimum age
+match the result.
+
+Set `ios.infoPlist.ITSAppUsesNonExemptEncryption: false` in app.json (HTTPS only) so App Store
+Connect doesn't ask about encryption on every build.
+
+## 5. Production build
+
+`eas build --platform ios --profile production` needs an **App Store** provisioning profile; the ad
+hoc one from preview builds doesn't count. **The first production build can't run
+`--non-interactive`** ("Credentials are not set up. Run this command again in interactive mode"): the
+user runs it once in a terminal, logs in to Apple and picks the team, and EAS creates the profile.
+Later builds can run non-interactively. For many apps: create an **App Store Connect API key**
+(Users and Access → Integrations → App Store Connect API, role App Manager), keep the .p8 under
+`~/.config/<org>/`, and give it to EAS (`eas credentials` → App Store Connect API key) — then
+builds and `eas submit` never need an interactive Apple login. (Aesthetica, 2026-10-01)
+
+## 6. … (next steps are added as the Aesthetica release goes)
