@@ -95,6 +95,22 @@ release PR and ends there.
 doesn't contain. The next release PR then shows changes that are already live, and the two branches
 drift further apart with every release.
 
+## Every deploy gets an entry in `docs/RELEASES.md`
+
+The user asked for this (2026-10-01): **each deploy is recorded in `docs/RELEASES.md` in the same
+step as the deploy**, newest first. A deploy is any store submission, EAS build, OTA update, or API
+deployment (preview or production). Each entry:
+
+- **Heading:** date · target · version and build number (e.g. `Store · App 1.0 (1.0.0, build 4)`).
+- **IDs that find it again:** EAS build / update group / submission ID, Vercel deployment URL,
+  commit or PR numbers, store status.
+- **What changed:** short bullets, in product terms.
+- **Issues and fixes:** every problem hit during that deploy and what fixed it — even when it was
+  solved in minutes. These are what the next deploy needs.
+
+The build log's "Other files" links to it. Create the file with the first deploy. A deploy without
+its entry isn't done.
+
 ## Rollback
 
 Straight after every production deploy, run the read-only smoke specs against production:

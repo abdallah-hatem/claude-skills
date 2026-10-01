@@ -141,3 +141,19 @@ found, record it before continuing:
 - A bundle id or package name changed after the first build, or different on the two platforms
 - An OTA to `production` with nobody checking `expo:eas-update-insights` afterwards
 - A release trap discovered and fixed without being recorded
+
+## Every build, OTA update and store submission gets an entry in `docs/RELEASES.md`
+
+The user asked for this (2026-10-01): **each deploy is recorded in `docs/RELEASES.md` in the same
+step as the deploy**, newest first. A deploy is any store submission, EAS build, OTA update, or API
+deployment (preview or production). Each entry:
+
+- **Heading:** date · target · version and build number (e.g. `Store · App 1.0 (1.0.0, build 4)`).
+- **IDs that find it again:** EAS build / update group / submission ID, Vercel deployment URL,
+  commit or PR numbers, store status.
+- **What changed:** short bullets, in product terms.
+- **Issues and fixes:** every problem hit during that deploy and what fixed it — even when it was
+  solved in minutes. These are what the next deploy needs.
+
+The build log's "Other files" links to it. Create the file with the first deploy. A deploy without
+its entry isn't done.

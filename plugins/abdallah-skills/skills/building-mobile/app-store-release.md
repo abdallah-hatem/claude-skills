@@ -168,6 +168,11 @@ becomes "Waiting for Review"; Apple says up to 48 hours. (Aesthetica, 2026-10-01
 submission was made ~5 hours after the app record was created, most of it waiting on builds and the
 user's two interactive Apple logins.)
 
-## 9. After review
+## 9. Record it
+
+Add the submission to `docs/RELEASES.md` (version, build number, EAS build and submission IDs,
+what's in it, every issue and fix) — see `release.md`.
+
+## 10. After review
 
 (Next: add what happens on approval or rejection, the first time it does.)
