@@ -66,7 +66,7 @@ them.
 | A native module, before a dev build | `expo:expo-dev-client` |
 | Publishing an OTA update | `expo:eas-update`, then [release.md](release.md) |
 | After an OTA reaches production | `expo:eas-update-insights` |
-| A store build or submission | `expo:eas-app-stores`, then [release.md](release.md) |
+| A store build or submission | `expo:eas-app-stores`, then [release.md](release.md); a first App Store release follows [app-store-release.md](app-store-release.md) and adds every problem hit to it |
 | The repo has `.eas/workflows/` | `expo:eas-workflows` |
 | SDK upgrade | `expo:expo-upgrade` |
 | Writing a native module or view | `expo:expo-module` |
