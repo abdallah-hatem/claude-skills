@@ -61,6 +61,14 @@ iOS 26.x), by UDID. A fresh simulator needs a dev client built locally (`npx exp
 <UDID>`), not EAS. Clean status bar: `xcrun simctl status_bar <UDID> override --time 9:41
 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3`.
 
+**Which slot App Store Connect actually asks for:** the version page's iPhone slot was **6.5"
+Display, accepting only 1242×2688 or 1284×2778** — a 1320×2868 (6.9") upload was rejected ("The
+dimensions of one or more screenshots are wrong"). Read the slot's stated sizes before uploading.
+Converting 6.9" shots: scale to width 1284 (→ 1284×2790) and centre-crop to 2778 tall — 12 px, nothing
+visible lost. Apple then uses the 6.5" set for every iPhone size. Uploads land in completion order,
+not file order: re-order by dragging, then **Save**. Upload with the browser tool's `file_upload` on
+the slot's file input (≤10 MB per call). (Aesthetica, 2026-10-01)
+
 **Problems hit:**
 - An agent was pointed at "iPhone 16 Pro Max" by UDID without checking its runtime: it was iOS
   18.5, so the screenshots would have shown the old UI. Check the runtime, not just the size.
