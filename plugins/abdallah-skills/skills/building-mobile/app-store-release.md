@@ -138,4 +138,23 @@ it). Notes: how to sign in, what needs a real device and why, where each main fe
 safety features (report, block, delete account) — Apple checks those for UGC apps. (Aesthetica,
 2026-10-01)
 
-## 7. … (next steps are added as the Aesthetica release goes)
+## 7. Version number, submit, attach
+
+**Set `expo.version` to the App Store version before the production build.** App Store Connect's
+first version is `1.0`; a build is attached to the version with the same `CFBundleShortVersionString`.
+An Expo app scaffolded at `0.1.0` produces a build that can't attach to `1.0` — Aesthetica's first
+store build was `0.1.0` and had to be rebuilt as `1.0.0`. Side effect with `runtimeVersion:
+{ policy: "appVersion" }`: OTA updates only reach installs of the same version, so the preview build
+on the user's phone (still `0.1.0`) stops receiving updates from `1.0.0` code — schedule a new
+preview build. (Aesthetica, 2026-10-01)
+
+**`eas submit`**: put `submit.production.ios.ascAppId` (the App Store Connect app ID) and
+`appleTeamId` in eas.json. The first submit needs an **App Store Connect API key** and can't create
+one in `--non-interactive` ("App Store Connect API Keys cannot be set up in --non-interactive
+mode"): the user runs it once and either picks an existing key (one key on the team serves every app
+— Aesthetica reused the `[Expo] EAS Submit` key Split Bite already had) or adds a new one. After
+that, `eas build --platform ios --profile production --non-interactive --auto-submit` builds and
+submits with nobody at the keyboard. EAS then queues the upload ("waiting for an available
+submitter") — minutes, not an error.
+
+## 8. … (next steps are added as the Aesthetica release goes)
