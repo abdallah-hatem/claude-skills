@@ -1,12 +1,12 @@
 ---
 name: build-software
-description: Use when the user asks to build an app, a product, or named phases or milestones of one ("build Aesthetica phases 1–2", "build me a booking app", "continue the build"), to add a whole feature to an app through the full pipeline, or runs /build-software — web, mobile, or both, on the NestJS + Next.js + Expo stack. Not for a bug fix, a small change, a refactor, or a question.
+description: Use when the user asks to build an app, a product, or named phases or milestones of one ("build Aesthetica phases 1–2", "build me a booking app", "continue the build"), to add a whole feature to an app through the full pipeline, to bring an existing app built without this skill into the pipeline, or runs /build-software — web, mobile, or both, on the NestJS + Next.js + Expo stack. Not for a bug fix, a small change, a refactor, or a question.
 ---
 
 # Build Software
 
-The pipeline from an idea to a deployed app, and a shorter one for adding a feature to an app that
-already exists. This skill owns the **order**, the **gates**, and **which skill to load when** — not
+The pipeline from an idea to a deployed app, a shorter one for adding a feature to an app that
+already exists, and an adopt step for an app that was built without it. This skill owns the **order**, the **gates**, and **which skill to load when** — not
 the rules. Those live in the stack skills and in the reference files beside this one, loaded at the
 stage that needs them.
 
@@ -46,13 +46,16 @@ files under `docs/build-log/` — [autonomous.md](autonomous.md)), and still sto
 
 ## Modes
 
-| | New app | Feature |
-|---|---|---|
-| **Use when** | the repo has no `docs/BUSINESS_LOGIC.md` yet | the repo already has a business doc and a design system |
-| **Stages** | all eight, below | Context → Feature spec → Plan → Build → Verify → Ship |
-| **Skips** | — | intake, the full contract, and the design system — it uses what exists |
+| | New app | Adopt | Feature |
+|---|---|---|---|
+| **Use when** | the repo has no app code yet | the repo has a working app but no `docs/BUSINESS_LOGIC.md` — built without this skill | the repo has a business doc and a design system |
+| **Stages** | all eight, below | Survey → Business + design docs → Confirm → Checks → then Feature | Context → Feature spec → Plan → Build → Verify → Ship |
+| **Skips** | — | intake and the design direction — it writes down what exists | intake, the full contract, and the design system — it uses what exists |
 
-Pick the mode from the repo, not from how the request is worded; if the two disagree, ask.
+Pick the mode from the repo, not from how the request is worded; if the two disagree, ask. **Code
+without a business doc is never new-app mode** — running intake and a design stage over a finished app
+redesigns it. Adopt it first: it describes the app as it is, confirms that with the user, adds the
+checks, and hands over to feature mode: [adopt-mode.md](adopt-mode.md).
 
 **Feature mode follows every rule below.** Its spec includes the exact edit to
 `docs/BUSINESS_LOGIC.md` and **stops for approval only when the feature changes a business rule, a
@@ -288,7 +291,7 @@ range, or a release's range. It reports; it never edits. Run it:
 | `ALIGNED` | continue |
 | `CONFLICTS` | stop the task; fix the code — or, if the code is right and the doc is wrong, ask the user |
 | `DOC OUT OF DATE` | update the doc in the same commit and review again |
-| `NO BUSINESS DOC` | go back to stage 2 |
+| `NO BUSINESS DOC` | go back to stage 2 — or, in a repo that already has an app, adopt it ([adopt-mode.md](adopt-mode.md)) |
 
 It finds disagreements; it doesn't decide who is right. When code and doc disagree because the
 business moved, the user decides.
@@ -321,6 +324,7 @@ rather than trusted: [subagents.md](subagents.md).
 Each reference file ends with the red flags for its own stage. These cut across all of them:
 
 - A bug fix, small change, or refactor run through the full pipeline
+- An existing app without a business doc run through new-app mode instead of adopt
 - Code written before the spec and business doc are approved, in a guided run
 - A behavior change without a `docs/BUSINESS_LOGIC.md` update in the same PR
 - A business change made in code before it is made in the doc

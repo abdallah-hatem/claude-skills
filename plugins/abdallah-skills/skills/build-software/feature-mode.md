@@ -60,7 +60,7 @@ area of the product, or a change to how tenants are separated. Those are archite
 
 ## Red flags
 
-- Feature mode used in a repo with no business doc or design system
+- Feature mode used in a repo with no business doc or design system — adopt it first ([adopt-mode.md](adopt-mode.md))
 - A feature that changes a business rule, role, money, or the data model built without approval
 - A business doc edit in a different PR from the code that makes it true
 - Only the new tests and smoke specs run, not the whole suite
