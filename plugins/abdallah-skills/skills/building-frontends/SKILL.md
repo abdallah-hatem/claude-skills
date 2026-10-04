@@ -142,12 +142,19 @@ rendering a page and then bouncing:
   A returning user never sees the landing page or a login form again until they sign out.
 - **Home depends on the role** — each role has one home (e.g. the dashboard for staff, the main
   screen for customers); one `homeFor(role)` decides it, and every redirect uses it.
-- **Expired access token with a valid refresh token** → refresh first, then continue to where the
-  user was going. Only a failed refresh lands on login.
+- **Expired access token with a valid refresh token** → refresh **in place** in middleware (forward the
+  new access token to the same request and set both cookies on its response), never by redirecting
+  the browser to a refresh URL — that URL flashes in the address bar. Only a failed refresh lands on
+  login.
+- **Concurrent refreshes are normal**: a page load plus its `<Link>` prefetches all arrive with the same
+  refresh token. With rotation, the API must accept a reused token within a short grace window
+  (≈30 s) by issuing a pair in the same family; reuse after the window revokes that family. Without
+  it, the parallel requests read as token theft and sign the user out.
 - **After login** → the kept return path, else `homeFor(role)`.
 - **A role on a page it can't use** → its own home, not the landing page.
 
-These are `ui` test cases on every app: one test per rule, in the middleware's tests.
+These are `ui` test cases on every app: one test per rule, in the middleware's tests — including
+several requests refreshing at once with the same refresh token.
 
 ## Loading states
 
