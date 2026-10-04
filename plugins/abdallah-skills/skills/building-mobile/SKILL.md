@@ -236,6 +236,21 @@ submitting button. Below ~200ms render nothing. Previous data stays on screen wh
 **The skeleton rule wins over `expo:expo-data-fetching`'s first-fetch spinner,** because a
 skeleton keeps the layout from jumping when data lands.
 
+**Every wait has feedback — no exceptions.** Any time the UI waits on a response, the user sees it:
+- **Content** being loaded or *replaced* — a skeleton in its shape. When the request changes what the
+  content is (a فصحى/عامية or language toggle, another tab, another item), skeleton it; when it only
+  refreshes the same content, keep it on screen, dimmed ("previous data stays" applies to refreshes, not to a switch).
+- **Actions** — the control that started it shows busy (spinner or "جارِ…"-style label) and is
+  disabled, and so is anything that would send a conflicting request (tapping one quiz option
+  locks all options until the verdict).
+- **Waits over ~1.5s** (AI calls, uploads, grading) — add a one-line status ("searching your book…")
+  so a slow answer never looks frozen.
+- An error always ends the loading state and shows the error.
+
+Before calling a screen done (and on every pressable that calls the API), list every request it awaits and check each has one of these. Abdallah
+found a missing one on a style toggle and a quiz answer in Azhar Tutor and made this a standing rule
+(2026-10-04).
+
 ## Errors
 
 The data layer returns the web's `{ success, data, message }` contract whichever backend is behind
@@ -316,6 +331,9 @@ Check the changed screen on a phone and a tablet, in **both** LTR (English) and 
 **smallest** supported phone (iPhone SE size). Matrix in [testing.md](testing.md).
 
 ## Red flags
+
+- A request the UI awaits with no skeleton, busy state, or status line — a toggle that silently
+  refetches, a pressable with no feedback, a submit that can be tapped twice
 
 - A commit with `lint` or `typecheck` failing, or an `eslint-disable` with no `-- reason`
 - A raw `Button`, `Switch`, `TextInput`, `ActivityIndicator`, or `Alert.alert` in a screen

@@ -141,6 +141,21 @@ A spinner is only ever inside a button that is mid-submit. Never a centered spin
 
 Below ~200ms, render nothing rather than a skeleton — a flash of placeholder reads as jank.
 
+**Every wait has feedback — no exceptions.** Any time the UI waits on a response, the user sees it:
+- **Content** being loaded or *replaced* — a skeleton in its shape. When the request changes what the
+  content is (a فصحى/عامية or language toggle, another tab, another item), skeleton it; when it only
+  refreshes the same content, keep it on screen, dimmed.
+- **Actions** — the control that started it shows busy (spinner or "جارِ…"-style label) and is
+  disabled, and so is anything that would send a conflicting request (tapping one quiz option
+  locks all options until the verdict).
+- **Waits over ~1.5s** (AI calls, uploads, grading) — add a one-line status ("searching your book…")
+  so a slow answer never looks frozen.
+- An error always ends the loading state and shows the error.
+
+Before calling a screen done, list every request it awaits and check each has one of these. Abdallah
+found a missing one on a style toggle and a quiz answer in Azhar Tutor and made this a standing rule
+(2026-10-04).
+
 ## Scrollbars
 
 Never ship the native scrollbar. Every scroll container gets the `scrollbar-clean` utility — thin, rounded, transparent track, theme-aware. Implementation in [ui-patterns.md](ui-patterns.md).
@@ -184,6 +199,9 @@ that works on white can disappear on dark. Turn reduced motion on once and confi
 matters depends on an animation.
 
 ## Red flags
+
+- A request the UI awaits with no skeleton, busy state, or status line — a toggle that silently
+  refetches, an answer tap with no feedback, a submit button that can be pressed twice
 
 - A commit with `lint` or `typecheck` failing, or an `eslint-disable` with no `-- reason`
 - An app without the house lint config
