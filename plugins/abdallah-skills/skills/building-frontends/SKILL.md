@@ -133,6 +133,22 @@ Use logical Tailwind utilities so layouts mirror under Arabic:
 
 CSS transforms do not auto-flip. `translateX`, chevrons, and progress animations need an explicit `[dir="rtl"]` override.
 
+## Auth routing
+
+Every app with sign-in routes visitors by session, in middleware, on the first request — never by
+rendering a page and then bouncing:
+- **Signed out on a protected page** → the login page, keeping the path to return to.
+- **Signed in on a guest-only page** (landing, login, register, forgot-password) → the user's home.
+  A returning user never sees the landing page or a login form again until they sign out.
+- **Home depends on the role** — each role has one home (e.g. the dashboard for staff, the main
+  screen for customers); one `homeFor(role)` decides it, and every redirect uses it.
+- **Expired access token with a valid refresh token** → refresh first, then continue to where the
+  user was going. Only a failed refresh lands on login.
+- **After login** → the kept return path, else `homeFor(role)`.
+- **A role on a page it can't use** → its own home, not the landing page.
+
+These are `ui` test cases on every app: one test per rule, in the middleware's tests.
+
 ## Loading states
 
 **Skeletons, not spinners.** A skeleton mirrors the shape of what it replaces — same heights, same gaps, same count — so nothing shifts when data lands. Use shadcn's `<Skeleton>`; see [ui-patterns.md](ui-patterns.md).
@@ -197,6 +213,9 @@ that works on white can disappear on dark. Turn reduced motion on once and confi
 matters depends on an animation.
 
 ## Red flags
+
+- A signed-in user who can still reach the landing, login or register page, or a role sent to a
+  home that isn't its own
 
 - A request the UI awaits with no skeleton, busy state, or status line — a toggle that silently
   refetches, a choice tap with no feedback, a submit button that can be pressed twice

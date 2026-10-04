@@ -227,6 +227,20 @@ native chrome, a URL, and back handling for free.
 - **Confirmations** are the kit's `AlertDialog`, never `Alert.alert`. Destructive ones say what
   will be lost and use the destructive variant.
 
+## Auth routing
+
+The root layout decides the first screen from the stored session before the splash hides — never
+render a screen and then bounce:
+- **No session** → the auth stack; protected screens are unreachable.
+- **Session present** → the user's home; the onboarding/login screens are not shown again until
+  they sign out.
+- **Home depends on the role** — one `homeFor(role)` decides it, used by every redirect.
+- **Expired access token with a valid refresh token** → refresh silently, then continue. Only a
+  failed refresh returns to login.
+- **A deep link into a protected screen while signed out** → login, then that screen.
+
+One test per rule.
+
 ## Loading
 
 **Skeletons that mirror the content** — same heights, gaps, and count — using the kit's `Skeleton`.
@@ -329,6 +343,9 @@ Check the changed screen on a phone and a tablet, in **both** LTR (English) and 
 **smallest** supported phone (iPhone SE size). Matrix in [testing.md](testing.md).
 
 ## Red flags
+
+- A signed-in user who sees the login or onboarding screens on launch, or a role sent to a home
+  that isn't its own
 
 - A request the UI awaits with no skeleton, busy state, or status line — a toggle that silently
   refetches, a pressable with no feedback, a submit that can be tapped twice
