@@ -238,18 +238,16 @@ skeleton keeps the layout from jumping when data lands.
 
 **Every wait has feedback — no exceptions.** Any time the UI waits on a response, the user sees it:
 - **Content** being loaded or *replaced* — a skeleton in its shape. When the request changes what the
-  content is (a فصحى/عامية or language toggle, another tab, another item), skeleton it; when it only
+  content is (a toggle or filter that swaps the content, another tab, another item), skeleton it; when it only
   refreshes the same content, keep it on screen, dimmed ("previous data stays" applies to refreshes, not to a switch).
-- **Actions** — the control that started it shows busy (spinner or "جارِ…"-style label) and is
-  disabled, and so is anything that would send a conflicting request (tapping one quiz option
-  locks all options until the verdict).
-- **Waits over ~1.5s** (AI calls, uploads, grading) — add a one-line status ("searching your book…")
+- **Actions** — the control that started it shows busy (a spinner or a "working…" label) and is
+  disabled, and so is anything that would send a conflicting request (choosing one option
+  locks its siblings until the response arrives).
+- **Waits over ~1.5s** (AI calls, uploads, grading) — add a one-line status describing what is happening
   so a slow answer never looks frozen.
 - An error always ends the loading state and shows the error.
 
-Before calling a screen done (and on every pressable that calls the API), list every request it awaits and check each has one of these. Abdallah
-found a missing one on a style toggle and a quiz answer in Azhar Tutor and made this a standing rule
-(2026-10-04).
+Before calling a screen done (and on every pressable that calls the API), list every request it awaits and check each has one of these.
 
 ## Errors
 

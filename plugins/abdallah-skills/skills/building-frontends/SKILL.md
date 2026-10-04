@@ -143,18 +143,16 @@ Below ~200ms, render nothing rather than a skeleton — a flash of placeholder r
 
 **Every wait has feedback — no exceptions.** Any time the UI waits on a response, the user sees it:
 - **Content** being loaded or *replaced* — a skeleton in its shape. When the request changes what the
-  content is (a فصحى/عامية or language toggle, another tab, another item), skeleton it; when it only
+  content is (a toggle or filter that swaps the content, another tab, another item), skeleton it; when it only
   refreshes the same content, keep it on screen, dimmed.
-- **Actions** — the control that started it shows busy (spinner or "جارِ…"-style label) and is
-  disabled, and so is anything that would send a conflicting request (tapping one quiz option
-  locks all options until the verdict).
-- **Waits over ~1.5s** (AI calls, uploads, grading) — add a one-line status ("searching your book…")
+- **Actions** — the control that started it shows busy (a spinner or a "working…" label) and is
+  disabled, and so is anything that would send a conflicting request (choosing one option
+  locks its siblings until the response arrives).
+- **Waits over ~1.5s** (AI calls, uploads, grading) — add a one-line status describing what is happening
   so a slow answer never looks frozen.
 - An error always ends the loading state and shows the error.
 
-Before calling a screen done, list every request it awaits and check each has one of these. Abdallah
-found a missing one on a style toggle and a quiz answer in Azhar Tutor and made this a standing rule
-(2026-10-04).
+Before calling a screen done, list every request it awaits and check each has one of these.
 
 ## Scrollbars
 
@@ -201,7 +199,7 @@ matters depends on an animation.
 ## Red flags
 
 - A request the UI awaits with no skeleton, busy state, or status line — a toggle that silently
-  refetches, an answer tap with no feedback, a submit button that can be pressed twice
+  refetches, a choice tap with no feedback, a submit button that can be pressed twice
 
 - A commit with `lint` or `typecheck` failing, or an `eslint-disable` with no `-- reason`
 - An app without the house lint config
