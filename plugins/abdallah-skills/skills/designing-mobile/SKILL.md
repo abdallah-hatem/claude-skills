@@ -24,6 +24,15 @@ three clearly different directions as phone screens (welcome, the core screen, a
 on one page, let the user pick or mix, then build tokens. A look chosen by the agent alone is not
 approved.
 
+**Every visual change after that is shown too, not only the direction.** The user judges by
+looking, not by reading — a yes to a look described in prose is not a yes to the result. Before
+building a new screen, a restyle, a new sheet or component with a visible look, or any choice
+between visual options (fill vs. letterbox, one animation style vs. another), mock it as a phone
+screen in light and dark, show it, and wait for the user's OK. Mock each option, not a menu of
+descriptions; for a named reference app, mock what that app actually does. In an autonomous
+`/build-software` run the stop is the direction and kit-preview approval; screens built on them
+are screenshotted from the simulator and shown as they land, not held for a reply.
+
 Before any token or screen, write the product's personality in one sentence and commit to it:
 "a calm, exact ledger for busy shop owners", "a loud, quick companion for a pickup football
 game". Every later choice — hue, typeface, radius, how much things move — is checked against that
@@ -213,6 +222,8 @@ keyboard, toggles in settings never animate beyond the platform default.
 - An iOS large title or a header bar on a tab screen; a status-bar strip that doesn't match the
   page backdrop behind it
 - A quiet/minimal direction, or a direction the user never saw mocked up
+- A new screen, restyle, or visual choice built from a prose description the user never saw
+  mocked up
 - A radius, shadow, or spacing value that is not in the set
 - A className override on a kit component to get a new look — that is a missing variant
 - Two empty states, confirmations, or form errors that look different

@@ -45,6 +45,15 @@ landing pages and anything scroll-driven, `epic-design` sets the direction inste
 
 See [design-system.md](design-system.md).
 
+**Show it before you build it.** The user judges visuals by looking, not by reading — a yes to a
+look described in prose is not a yes to the result. Before building a new page, a new component
+with a visible look, a restyle, or any choice between visual options, render a mockup (an HTML
+preview page or the `design` skill) in light and dark, show it, and wait for the user's OK. When
+choosing between approaches, mock each one — a sample, not a menu of descriptions. When the user
+names a reference app ("like Instagram"), mock what that app actually does. In an autonomous
+`/build-software` run the stop is the design-system approval; screens built on an approved system
+are screenshotted and shown as they land, not held for a reply.
+
 ## Components
 
 **shadcn/ui first.** If shadcn has the primitive, install it and compose. Never hand-roll a dialog, select, popover, toast, or table.
@@ -220,6 +229,9 @@ that works on white can disappear on dark. Turn reduced motion on once and confi
 matters depends on an animation.
 
 ## Red flags
+
+- A new page, restyle, or visual choice built from a prose description the user never saw
+  mocked up
 
 - A signed-in user who can still reach the landing, login or register page, or a role sent to a
   home that isn't its own
