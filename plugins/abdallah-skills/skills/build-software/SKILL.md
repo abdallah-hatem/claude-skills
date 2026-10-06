@@ -250,6 +250,12 @@ subagents, in parallel waves wherever the plan's dependencies allow — see Stay
 4. **The smoke check passes locally** — the specs sign in as the seeded accounts and walk the main
    flows.
 5. **For any app with a UI, the UI audit runs over every changed screen** — see UI audit below.
+6. **Every changed web screen that renders user data gets a `break-ui` pass** — worst-case data
+   through the seed or fixture, at 320px, 200% zoom, dark and RTL. Its findings become fix tasks like
+   the UI audit's; the ones it lists as decisions are the user's in a guided run, the recommended
+   default (logged) in an autonomous one. The worst-case toggle stays dev-only.
+7. **Changed motion gets a `review-animations` pass** before it ships; its blocks are fixed, not
+   argued.
 
 Sign-in always happens inside the specs. Verification never waits on anyone typing a password into a
 login page.

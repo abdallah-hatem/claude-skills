@@ -42,6 +42,10 @@ landing pages and anything scroll-driven, `epic-design` sets the direction inste
 - **Motion explains change and never delays it.** 150–250ms, transform and opacity only, exits
   faster than entrances, reduced motion respected, horizontal motion flipped in RTL. `motion` for
   choreography, Tailwind transitions for state.
+- **Motion craft comes from Emil Kowalski's skills.** Building an animation → load `animate`;
+  reviewing one → `review-animations`; the principles behind both → `emil-design-eng`. They decide
+  whether something animates and how it feels; this skill's tokens, RTL flipping and Arabic rules
+  still win where they disagree. Rules and curves: [design-system.md](design-system.md#motion).
 
 See [design-system.md](design-system.md).
 
@@ -228,6 +232,15 @@ Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL
 that works on white can disappear on dark. Turn reduced motion on once and confirm nothing that
 matters depends on an animation.
 
+**A screen that renders user data** — names, emails, amounts, counts, lists — gets a `break-ui` pass:
+realistic worst-case data (long Arabic names, unbreakable emails, `1` and `1,284` items, empty
+lists, missing optional fields) through the same fixture or seed the demo data uses, checked at
+320px, 200% zoom, dark and RTL. Its worst-case toggle is dev-only and never ships.
+
+**A web app people use on phones** — any PWA, or a flow customers open on mobile — gets the
+`mobile-native` checklist once: sticky hover, tap flashes, `100dvh`, inputs that zoom, safe areas,
+pull-to-refresh, status bar colour. Test it on a real phone.
+
 ## Red flags
 
 - A new page, restyle, or visual choice built from a prose description the user never saw
@@ -296,5 +309,9 @@ matters depends on an animation.
 - A Latin-only font in a UI that renders Arabic
 - Animating width, height, top, or margin instead of transform and opacity
 - Motion that ignores `prefers-reduced-motion`
+- `ease-in` on any UI animation, an entrance from `scale(0)`, or `transition: all`
+- Hover motion not gated by `@media (hover: hover) and (pointer: fine)` — it sticks on touch
+- A trigger-anchored popover or dropdown that grows from its centre instead of its trigger
+- Animation on a keyboard shortcut or an action done many times a day
 - A horizontal slide that doesn't flip in RTL
 - An app-UI animation over ~300ms, or one the user has to wait through

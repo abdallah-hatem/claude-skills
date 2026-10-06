@@ -181,16 +181,22 @@ never makes the user wait.
 |---|---|---|
 | Hover, press, colour change | 150ms | ease-out |
 | Dropdown, popover, tooltip | 150–200ms | ease-out |
-| Dialog, sheet, toast | 200–250ms in, 150ms out | ease-out in, ease-in out |
-| List stagger, section reveal | 250–300ms, 40ms apart | ease-out |
+| Button press feedback | 100–160ms | ease-out |
+| Dialog, sheet, toast | 200–250ms in, 150ms out | ease-out both ways |
+| List stagger, section reveal | 250–300ms, 30–80ms apart | ease-out |
+| Something moving or morphing on screen | 200–300ms | ease-in-out (strong curve) |
 
-Exits are faster than entrances: the user has already decided to move on.
+Exits are faster than entrances: the user has already decided to move on. **Never `ease-in` in
+UI** — it starts slow, so the moment the user is watching most closely is the moment nothing
+moves. Built-in CSS easings are too weak; use the shared curves below.
 
 One source for the curve, shared by CSS and JavaScript:
 
 ```css
 @theme inline {
-  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);   /* → the ease-snappy utility */
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);       /* enter, exit, press → ease-snappy */
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1); /* moving or morphing on screen */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);       /* sheets and drawers, iOS-like */
 }
 ```
 
@@ -246,3 +252,17 @@ export function RevealList({ items }: { items: Item[] }) {
 - **Don't animate what changes constantly** — live counters, rows on refetch, typing. Motion
   there reads as flicker.
 - **Stagger only the first ten or so items.** Beyond that the total delay becomes waiting.
+- **Should it animate at all?** Anything done many times a day, or from a keyboard shortcut, gets
+  no animation — it was charming once and is in the way by the hundredth time.
+- **Never enter from `scale(0)`.** Start at `scale(0.95)` with `opacity: 0`; nothing real appears
+  out of a point.
+- **Popovers grow from their trigger** — `transform-origin: var(--radix-popover-content-transform-origin)`
+  (Radix sets it). Only centred modals scale from the centre.
+- **Interruptible beats choreographed.** Toggles, toasts, and anything triggered rapidly use CSS
+  transitions, which retarget mid-flight; keyframes restart from zero.
+- **Name the properties.** `transition-[transform,opacity]`, never `transition-all`.
+- **Gate hover motion** with `@media (hover: hover) and (pointer: fine)` (Tailwind v4's `hover:`
+  already does) — on touch, hover states stick after the tap.
+- **Craft beyond this list** — springs and momentum for drag, `@starting-style`, `clip-path`
+  reveals, blur to hide a rough crossfade, origin-aware tooltips: `emil-design-eng`. Building a new
+  animation: `animate`. Reviewing existing motion: `review-animations`.

@@ -105,6 +105,15 @@ input, so a broken hook can never block a prompt or a compaction. `subagent-swee
 it asks for the build log or the handoff note to be brought up to date.
 
 
+## Companion skills
+
+`building-frontends` and `build-software` lean on five of Emil Kowalski's skills for web motion
+craft and worst-case data — install them once:
+
+```bash
+npx skills add emilkowalski/skill -g -a claude-code -s emil-design-eng -s animate -s review-animations -s break-ui -s mobile-native
+```
+
 ## Editing these
 
 Edit here, not in `~/.claude/skills/` — the plugin install is what your machines read.

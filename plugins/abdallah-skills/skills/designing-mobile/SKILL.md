@@ -160,7 +160,9 @@ in both themes, never a one-off.
 ## Motion and haptics
 
 Mechanics, spring configs and recipes: `expo:expo-animation`. Its gate applies — tab switches,
-keyboard, toggles in settings never animate beyond the platform default.
+keyboard, toggles in settings never animate beyond the platform default. Emil Kowalski's
+`animate`, `review-animations` and `emil-design-eng` are for the **web** (CSS, `motion/react`) — on
+React Native their principles hold but their code doesn't, so build with `expo:expo-animation`.
 
 - **Springs for anything that moves** — position, scale, sheets, snapping. Timing curves only for
   opacity and colour. House rule, stricter than `expo:expo-animation` (springs only when a finger
