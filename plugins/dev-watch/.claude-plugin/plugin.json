@@ -1,0 +1,6 @@
+{
+  "name": "dev-watch",
+  "version": "0.3.0",
+  "description": "Shows a band above the prompt when a turn ends with Docker, simulators or dev servers still running, with a button to stop them all. Adds /stopdev for the full teardown.",
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "burn-meter",
+  "version": "0.2.0",
+  "description": "Shows the 5-hour usage burn (from ~/.claude/statusline-burn.py) as a band above the prompt on surfaces that don't run the statusLine command, refreshed every minute and after each turn.",
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "control-watch",
+  "version": "0.1.0",
+  "description": "A band above the prompt showing what Claude is controlling right now or in the last minute: your Chrome, the built-in browser, desktop apps, Docker, simulators, terminals. A toast when it takes over your real Chrome or a desktop app.",
+  "types": "./types/index.d.ts"
+}

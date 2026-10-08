@@ -1,0 +1,5 @@
+{
+  "name": "learnings",
+  "version": "0.1.0",
+  "description": "Puts the whole of ~/.claude/LEARNINGS.md (and the project's .claude/LEARNINGS.md) into the main session's system prompt, so no rule is lost to the SessionStart hook's preview cut."
+}

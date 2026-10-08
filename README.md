@@ -114,6 +114,44 @@ craft and worst-case data — install them once:
 npx skills add emilkowalski/skill -g -a claude-code -s emil-design-eng -s animate -s review-animations -s break-ui -s mobile-native
 ```
 
+## Mods
+
+Function-hook plugins that change Claude Code itself (bands above the prompt, commands, tool guards).
+They need a Claude Code build with function hooks (early access; written against 2.1.289), and each
+installs on its own:
+
+```bash
+claude plugin install dev-watch@abdallah-hatem
+```
+
+| Mod | What it does | Tokens |
+| --- | --- | --- |
+| `dev-watch` | When a turn ends with Docker, simulators, the Android emulator or dev servers (Next, Nest, Vite, Metro, Playwright…) still running, a band lists them with **Stop all** / **Keep running**. `/stopdev` runs the full teardown, including force-closing terminal apps. | none |
+| `safe-guard` | Denies risky Bash before it runs: `pkill/killall node`, `git push` unless your latest message says "push" or the remote is allow-listed, commits as a blocked identity or with conflict markers in tracked files, Docker volume wipes, `rm -rf` outside a project or temp folder (or on a path built from a variable). | none |
+| `burn-meter` | A band with your 5-hour usage: burned, projected by reset, easy/normal/heavy against your own learned history. Uses `~/.claude/statusline-burn.py` if you have one, else its bundled copy. Hidden in the terminal, where a statusline does the job. | none |
+| `learnings` | Puts `~/.claude/LEARNINGS.md` and the project's `.claude/LEARNINGS.md` in full into the main session's system prompt (subagents skipped), so no recorded correction is cut off. | the file's size, cached |
+| `agent-watch` | A band of running subagents with elapsed time, red when one has been quiet 5 min or sits on a background run 2 min. | none |
+| `control-watch` | A band of what Claude is controlling right now or in the last minute — your Chrome, desktop apps, the built-in browser, Docker, simulators, terminals — and a macOS notification with sound when it takes over your Chrome or an app. | none |
+
+`safe-guard` reads optional personal settings from `~/.claude/safe-guard.json`:
+
+```json
+{
+  "blockedCommitEmails": ["old@work.example"],
+  "commitEmail": "me@example.com",
+  "pushAllowed": ["you/dotfiles"],
+  "projectRoots": [{ "path": "~/Desktop/Projects", "depth": 2 }]
+}
+```
+
+`depth` is how many folders down a project root sits (`~/code/app` is 1). Without the file it blocks
+every push you didn't ask for and treats `~/Desktop/Projects`, `~/Projects`, `~/code`, `~/dev` and
+`~/src` as depth-1 project folders.
+
+The Code tab doesn't show a mod's toasts, which is why `control-watch` uses a macOS notification.
+To run a mod from a working copy instead of installing it, list its folder in
+`CLAUDE_CODE_PLUGIN_DIRS` (colon-separated) in the `env` block of `~/.claude/settings.json`.
+
 ## Editing these
 
 Edit here, not in `~/.claude/skills/` — the plugin install is what your machines read.
