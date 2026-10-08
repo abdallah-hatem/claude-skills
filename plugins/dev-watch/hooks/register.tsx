@@ -27,6 +27,16 @@ async function sh($: EngineInterface, argv: string[], timeoutMs = 10_000): Promi
   }
 }
 
+/** A macOS notification with a sound: the Code tab doesn't show a mod's toasts. */
+async function notify($: EngineInterface, text: string, sound: string): Promise<void> {
+  const quoted = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  try {
+    await $.process.run(['osascript', '-e', `display notification "${quoted}" with title "Claude Code" sound name "${sound}"`], { timeoutMs: 5_000 })
+  } catch {
+    // No notification is better than a failed hook.
+  }
+}
+
 async function scan($: EngineInterface): Promise<Item[]> {
   const [dockerUp, sims, emu, servers] = await Promise.all([
     sh($, ['pgrep', '-f', 'Docker.app/Contents/MacOS/com.docker.backend|Docker Desktop.app']),
@@ -161,6 +171,7 @@ export const register: Register = on => {
     const summary = stopped.length ? `Stopped: ${stopped.join(', ')}.` : 'Nothing was running.'
     const rest = left.length ? ` Still up: ${left.map(i => i.label).join(', ')}.` : ''
     $.ui.toast(left.length ? 'Some dev tools are still up' : 'Dev tools stopped')
+    void notify($, summary + rest, left.length ? 'Basso' : 'Glass')
     return { text: summary + rest }
   })
 
@@ -209,11 +220,12 @@ export const register: Register = on => {
                 await $.state.set(STOPPING, false)
               }
               const { value: left = [] } = await $.state.get(RUNNING)
-              $.ui.toast(
+              const done =
                 left.length === 0
                   ? `Stopped ${before.length} thing${before.length === 1 ? '' : 's'}`
-                  : `Still up: ${left.map(i => i.label).join(', ')}`,
-              )
+                  : `Still up: ${left.map(i => i.label).join(', ')}`
+              $.ui.toast(done)
+              void notify($, done, left.length ? 'Basso' : 'Glass')
             }}
           />
           <Button

@@ -12,6 +12,16 @@ async function sh($: EngineInterface, argv: string[], cwd: string): Promise<stri
   }
 }
 
+/** A macOS notification with a sound: the Code tab doesn't show a mod's toasts. */
+async function notify($: EngineInterface, text: string, sound: string): Promise<void> {
+  const quoted = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  try {
+    await $.process.run(['osascript', '-e', `display notification "${quoted}" with title "Claude Code" sound name "${sound}"`], { timeoutMs: 5_000 })
+  } catch {
+    // No notification is better than a failed hook.
+  }
+}
+
 async function guard($: EngineInterface, command: string, cwd: string, lastPrompt: string): Promise<string | null> {
   const home = (await $.env.get('HOME')) ?? ''
   let json: string | null = null
@@ -53,7 +63,9 @@ export const register: Register = on => {
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
     const reason = await guard($, e.command, cwd || '.', lastPrompt)
     if (!reason) return next(e)
-    $.ui.toast(`safe-guard blocked: ${e.command.slice(0, 60)}`)
+    const short = e.command.replace(/\s+/g, ' ').slice(0, 60)
+    $.ui.toast(`safe-guard blocked: ${short}`)
+    void notify($, `safe-guard blocked: ${short}`, 'Basso')
     return { deny: `Blocked by the safe-guard mod: ${reason}` }
   })
 }
