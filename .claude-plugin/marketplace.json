@@ -16,11 +16,6 @@
       "description": "Band above the prompt when a turn ends with Docker, simulators or dev servers still running, with Stop all / Keep running; /stopdev for a full teardown."
     },
     {
-      "name": "safe-guard",
-      "source": "./plugins/safe-guard",
-      "description": "Blocks dangerous shell commands before they run: pkill node, git push without a go-ahead, commits as a blocked identity or with conflict markers, Docker volume wipes, rm -rf outside a project. Configure in ~/.claude/safe-guard.json."
-    },
-    {
       "name": "burn-meter",
       "source": "./plugins/burn-meter",
       "description": "Band with your 5-hour usage burn and pace, coloured easy/normal/heavy, refreshed every minute."
@@ -41,5 +36,5 @@
       "description": "Band showing what Claude is controlling (your Chrome, desktop apps, Docker, simulators, terminals), with a macOS notification when it takes over your browser or an app."
     }
   ],
-  "description": "Abdallah's Claude Code skills and mods: opinionated Next.js and NestJS + Prisma conventions, a hook-backed loop that records corrections, and function-hook mods for dev-tool hygiene, safety and visibility."
+  "description": "Abdallah's Claude Code skills and mods: opinionated Next.js and NestJS + Prisma conventions, a hook-backed loop that records corrections, and function-hook mods for dev-tool hygiene and visibility."
 }

@@ -1,5 +1,0 @@
-{
-  "name": "safe-guard",
-  "version": "0.3.0",
-  "description": "Blocks dangerous shell commands before they run: pkill node, git push without a go-ahead, commits as a blocked identity or with conflict markers, Docker volume wipes, rm -rf outside a project or temp folder. Personal settings in ~/.claude/safe-guard.json."
-}
