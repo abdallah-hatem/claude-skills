@@ -14,6 +14,7 @@ import {
 const RUNNING = { plugin: 'dev-watch', key: 'running' } as const
 const KEPT = { plugin: 'dev-watch', key: 'kept' } as const
 const STOPPING = { plugin: 'dev-watch', key: 'stopping' } as const
+const TASKS_OPEN = { plugin: 'dev-watch', key: 'tasksOpen' } as const
 
 const DOCKER = '/usr/local/bin/docker'
 
@@ -152,6 +153,16 @@ async function stopEverything($: EngineInterface): Promise<string[]> {
   return stopped
 }
 
+/** Opens the desktop app's background-tasks pane, or closes it when it is already open. */
+async function toggleTasks($: EngineInterface): Promise<void> {
+  const layout = await $.tool.call({ tool: 'mcp__ccd_view__get_layout' })
+  const raw = 'text' in layout && typeof layout.text === 'string' ? layout.text : JSON.stringify('result' in layout ? layout.result : {})
+  const isOpen = /"open_panes"\s*:\s*\[[^\]]*"tasks"/.test(raw)
+  if (isOpen) await $.tool.call({ tool: 'mcp__ccd_view__close_pane', pane: 'tasks' })
+  else await $.tool.call({ tool: 'mcp__ccd_view__show_pane', pane: 'tasks' })
+  await $.state.set(TASKS_OPEN, !isOpen)
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const result = await next(e)
@@ -184,62 +195,83 @@ export const register: Register = on => {
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     // Other plugins' bands (burn-meter) draw beneath; keep them.
     const below = await next(e)
+    if (e.props.hasSurvey) return below
     const { value: items = [] } = await $.state.get(RUNNING)
     const { value: isStopping = false } = await $.state.get(STOPPING)
     const { value: keptSig = null } = await $.state.get(KEPT)
+    const { value: tasksOpen = false } = await $.state.get(TASKS_OPEN)
 
-    if (e.props.hasSurvey || items.length === 0 || (!isStopping && keptSig === signature(items))) {
-      return below
-    }
+    const showRunning = items.length > 0 && (isStopping || keptSig !== signature(items))
+    // The tasks pane is the desktop app's; the terminal has no such pane.
+    const showTasks = e.surface !== 'terminal'
+    if (!showRunning && !showTasks) return below
 
     const { Box, Button, Text } = $.ui.resolve(e)
 
     return (
       <Box flexDirection="column">
-      <Box flexDirection="row" flexWrap="wrap" columnGap={2}>
-        <Text>
-          <Text color="yellow" bold>
-            Still running:{' '}
-          </Text>
-          {items.map(i => i.label).join(' · ')}
-        </Text>
-        <Box flexDirection="row" columnGap={1}>
-          <Button
-            key="stop"
-            label={isStopping ? 'Stopping…' : 'Stop all'}
-            variant="primary"
-            hotkey="s"
-            onPress={async () => {
-              if ((await $.state.get(STOPPING)).value) return
-              await $.state.set(STOPPING, true)
-              const { value: before = [] } = await $.state.get(RUNNING)
-              try {
-                await stopAll($)
-                await refresh($)
-              } finally {
-                await $.state.set(STOPPING, false)
-              }
-              const { value: left = [] } = await $.state.get(RUNNING)
-              const done =
-                left.length === 0
-                  ? `Stopped ${before.length} thing${before.length === 1 ? '' : 's'}`
-                  : `Still up: ${left.map(i => i.label).join(', ')}`
-              $.ui.toast(done)
-              void notify($, done, left.length ? 'Basso' : 'Glass')
-            }}
-          />
-          <Button
-            key="keep"
-            label="Keep running"
-            hotkey="k"
-            onPress={async () => {
-              const { value: now = [] } = await $.state.get(RUNNING)
-              await $.state.set(KEPT, signature(now))
-            }}
-          />
-        </Box>
-      </Box>
-      {below}
+        {showRunning ? (
+          <Box flexDirection="row" flexWrap="wrap" columnGap={2}>
+            <Text>
+              <Text color="yellow" bold>
+                Still running:{' '}
+              </Text>
+              {items.map(i => i.label).join(' · ')}
+            </Text>
+            <Box flexDirection="row" columnGap={1}>
+              <Button
+                key="stop"
+                label={isStopping ? 'Stopping…' : 'Stop all'}
+                variant="primary"
+                hotkey="s"
+                onPress={async () => {
+                  if ((await $.state.get(STOPPING)).value) return
+                  await $.state.set(STOPPING, true)
+                  const { value: before = [] } = await $.state.get(RUNNING)
+                  try {
+                    await stopAll($)
+                    await refresh($)
+                  } finally {
+                    await $.state.set(STOPPING, false)
+                  }
+                  const { value: left = [] } = await $.state.get(RUNNING)
+                  const done =
+                    left.length === 0
+                      ? `Stopped ${before.length} thing${before.length === 1 ? '' : 's'}`
+                      : `Still up: ${left.map(i => i.label).join(', ')}`
+                  $.ui.toast(done)
+                  void notify($, done, left.length ? 'Basso' : 'Glass')
+                }}
+              />
+              <Button
+                key="keep"
+                label="Keep running"
+                hotkey="k"
+                onPress={async () => {
+                  const { value: now = [] } = await $.state.get(RUNNING)
+                  await $.state.set(KEPT, signature(now))
+                }}
+              />
+            </Box>
+          </Box>
+        ) : null}
+        {showTasks ? (
+          <Box flexDirection="row">
+            <Button
+              key="tasks"
+              label={tasksOpen ? 'Hide background tasks' : 'Background tasks'}
+              hotkey="t"
+              onPress={async () => {
+                try {
+                  await toggleTasks($)
+                } catch {
+                  $.ui.toast('Could not toggle the tasks pane')
+                }
+              }}
+            />
+          </Box>
+        ) : null}
+        {below}
       </Box>
     )
   })

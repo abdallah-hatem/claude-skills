@@ -1,6 +1,6 @@
 {
   "name": "dev-watch",
-  "version": "0.4.0",
-  "description": "Shows a band above the prompt when a turn ends with Docker, simulators or dev servers still running, with a button to stop them all. Adds /stopdev for the full teardown.",
+  "version": "0.5.0",
+  "description": "Shows a band above the prompt when a turn ends with Docker, simulators or dev servers still running, with a button to stop them all. Adds /stopdev for the full teardown. In the desktop app, a Background tasks button toggles the tasks pane.",
   "types": "./types/index.d.ts"
 }

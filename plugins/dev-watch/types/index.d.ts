@@ -15,6 +15,8 @@ declare module 'claude-code' {
       /** Signature of the set the person chose to keep running; the band hides until it changes. */
       kept: string | null
       stopping: boolean
+      /** Whether the app's background-tasks pane is open, as last seen. */
+      tasksOpen: boolean
     }
   }
 }
