@@ -1,7 +1,7 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import { toRows } from './rows'
-import type { Seen } from './rows'
+import { progressText, toRows } from './rows'
+import type { Seen, Step, StepStatus } from './rows'
 
 const EVERY_MS = 15_000
 const ROWS = { plugin: 'agent-watch', key: 'rows' } as const
@@ -9,6 +9,17 @@ const ROWS = { plugin: 'agent-watch', key: 'rows' } as const
 const firstSeen = new Map<string, number>()
 const lastActivity = new Map<string, number>()
 const lastBackground = new Map<string, boolean>()
+/** Per agent: its TodoWrite list (replaced whole on each call). */
+const todoSteps = new Map<string, Step[]>()
+/** Per agent: tasks made with TaskCreate, by id, kept current by TaskUpdate. */
+const taskSteps = new Map<string, Map<string, Step>>()
+
+const STATUSES: readonly StepStatus[] = ['pending', 'in_progress', 'completed']
+const isStatus = (v: unknown): v is StepStatus => STATUSES.includes(v as StepStatus)
+
+function stepsOf(agentId: string): Step[] {
+  return todoSteps.get(agentId) ?? [...(taskSteps.get(agentId)?.values() ?? [])]
+}
 // Module state: a reload starts these over, which only resets the timers shown.
 let shown = '[]'
 
@@ -27,6 +38,7 @@ async function poll($: EngineInterface): Promise<void> {
         firstSeenAt: firstSeen.get(a.id) ?? now,
         lastActivityAt: lastActivity.get(a.id) ?? null,
         lastWasBackground: lastBackground.get(a.id) ?? false,
+        steps: stepsOf(a.id),
       }
     })
   const rows = toRows(seen, now)
@@ -47,10 +59,43 @@ export const register: Register = on => {
   })
 
   on('tool.call', async ($, e, next) => {
-    if (e.agentId) {
-      lastActivity.set(e.agentId, await $.clock.now())
-      lastBackground.set(e.agentId, e.tool === 'Bash' && e.run_in_background === true)
+    const agentId = e.agentId
+    if (!agentId) return next(e)
+    lastActivity.set(agentId, await $.clock.now())
+    lastBackground.set(agentId, e.tool === 'Bash' && e.run_in_background === true)
+
+    if (e.tool === 'TodoWrite') {
+      todoSteps.set(
+        agentId,
+        e.todos.filter(t => isStatus(t.status)).map(t => ({ status: t.status, label: t.activeForm || t.content })),
+      )
+      return next(e)
     }
+
+    if (e.tool === 'TaskCreate') {
+      const ran = await next(e)
+      const id = ran.deny === undefined && !ran.isError ? (ran.result as { task?: { id?: string } } | undefined)?.task?.id : undefined
+      if (id) {
+        const tasks = taskSteps.get(agentId) ?? new Map<string, Step>()
+        tasks.set(id, { status: 'pending', label: e.activeForm || e.subject })
+        taskSteps.set(agentId, tasks)
+      }
+      return ran
+    }
+
+    if (e.tool === 'TaskUpdate') {
+      const task = taskSteps.get(agentId)?.get(e.taskId)
+      if (task) {
+        if (e.status === 'deleted') taskSteps.get(agentId)?.delete(e.taskId)
+        else
+          taskSteps.get(agentId)?.set(e.taskId, {
+            status: isStatus(e.status) ? e.status : task.status,
+            label: e.activeForm || e.subject || task.label,
+          })
+      }
+      return next(e)
+    }
+
     return next(e)
   })
 
@@ -67,7 +112,8 @@ export const register: Register = on => {
           <Text dimColor>Subagents ({rows.length}):</Text>
           {rows.map(r => (
             <Text key={r.id} color={r.flag ? 'red' : undefined}>
-              {r.label} · {r.elapsedMin}m{r.flag ? ` ⚠ ${r.flag}` : ''}
+              {r.label} · {r.elapsedMin}m{r.progress ? ` · ${progressText(r.progress)}` : ''}
+              {r.flag ? ` ⚠ ${r.flag}` : ''}
             </Text>
           ))}
         </Box>

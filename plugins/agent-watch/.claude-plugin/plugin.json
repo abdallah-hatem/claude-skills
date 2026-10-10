@@ -1,6 +1,6 @@
 {
   "name": "agent-watch",
-  "version": "0.1.0",
-  "description": "A band above the prompt listing running subagents with their task and elapsed time, flagged red when one has gone quiet or is sitting on a background run.",
+  "version": "0.2.0",
+  "description": "A band above the prompt listing running subagents with their task, elapsed time and step progress from their to-do list, flagged red when one has gone quiet or is sitting on a background run.",
   "types": "./types/index.d.ts"
 }

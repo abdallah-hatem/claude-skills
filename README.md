@@ -129,7 +129,7 @@ claude plugin install dev-watch@abdallah-hatem
 | `dev-watch` | When a turn ends with Docker, simulators, the Android emulator or dev servers (Next, Nest, Vite, Metro, Playwright…) still running, a band lists them with **Stop all** / **Keep running**. `/stopdev` runs the full teardown, including force-closing terminal apps. In the desktop app, a **Background tasks** button toggles the tasks pane. | none |
 | `burn-meter` | A band with your 5-hour usage: burned, projected by reset, easy/normal/heavy against your own learned history. Uses `~/.claude/statusline-burn.py` if you have one, else its bundled copy. Hidden in the terminal, where a statusline does the job. | none |
 | `learnings` | Puts `~/.claude/LEARNINGS.md` and the project's `.claude/LEARNINGS.md` in full into the main session's system prompt (subagents skipped), so no recorded correction is cut off. | the file's size, cached |
-| `agent-watch` | A band of running subagents with elapsed time, red when one has been quiet 5 min or sits on a background run 2 min. | none |
+| `agent-watch` | A band of running subagents with elapsed time and step progress from their to-do list ("step 3 of 7: Writing tests"), red when one has been quiet 5 min or sits on a background run 2 min. | none |
 | `control-watch` | A band of what Claude is controlling right now or in the last minute — your Chrome, desktop apps, the built-in browser, Docker, simulators, terminals — and a macOS notification with sound when it takes over your Chrome or an app. | none |
 
 The Code tab doesn't show a mod's toasts, which is why `control-watch` uses a macOS notification.
