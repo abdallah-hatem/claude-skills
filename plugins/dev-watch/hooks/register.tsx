@@ -256,7 +256,7 @@ export const register: Register = on => {
           </Box>
         ) : null}
         {showTasks ? (
-          <Box flexDirection="row">
+          <Box flexDirection="row" justifyContent="flex-end" width="100%" marginBottom={1}>
             <Button
               key="tasks"
               label={tasksOpen ? 'Hide background tasks' : 'Background tasks'}
