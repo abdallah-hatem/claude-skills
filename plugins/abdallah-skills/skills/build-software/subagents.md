@@ -47,13 +47,26 @@ work looks likely:
 **`superpowers:subagent-driven-development` dispatches implementers one at a time.** Use its brief and
 review loop for each task, but let the parallel check decide what is dispatched together.
 
-**Parallel agents share one machine.** Inside a worktree, a subagent runs its unit and component
-tests only. Anything that binds a port, starts a dev server, or migrates the local database — e2e and
-smoke specs, `prisma migrate` — waits until the wave is back, and the main thread runs it once on the
-merged result. **The exception is a repo whose e2e setup takes a per-agent database** (for example, a
-test setup that keeps any `DATABASE_URL` naming a `<app>_test*` database): create and migrate one
-database per parallel agent first, name it in each brief, and they can run e2e side by side without
-truncating each other's rows.
+**Parallel agents each get their own database and ports — set this up before the first wave.** One shared
+test database turns a parallel build into a queue: every task's e2e run waits for the one before it, and a long
+project spends hours waiting rather than building. So, at Build setup (SKILL.md, step 6), make the e2e harness
+take everything that collides from the environment — the database URL, the API, web and any other app ports, and
+any snapshot/restore paths — never a hard-coded `localhost:3001` in a spec. Then, per parallel agent:
+
+1. create its own database from the migrated template (`CREATE DATABASE <app>_<task> TEMPLATE <app>_template`),
+2. give it its own port block (e.g. API `31N1`, web `31N3` for agent N),
+3. name both in its brief, and tell it to start its servers on them and tear down only those.
+
+With that in place, agents run their e2e side by side. Until a repo has it, a subagent in a worktree runs unit
+and component tests only, and anything that binds a port, starts a dev server or migrates the database waits
+for the main thread to run it once on the merged result. Adding the isolation is the first infra task in a repo
+that lacks it, not a later improvement.
+
+**Run the tests a task touches; the whole suite runs once before each deploy.** A task's agent runs its new and
+changed specs plus the e2e groups covering the areas it changed. The full suite runs on the merged result before
+a push that deploys — and again after a cross-cutting change (a shared component, a guard, a money rule, a
+migration that rewrites data). A full run per task, repeated after every fixture fix, is most of a long build's
+wall-clock time.
 
 **A fresh worktree is missing everything generated.** No `node_modules`, no built workspace
 packages (`packages/*/dist`), no generated Prisma client. Every worktree brief says: `npm install`
@@ -136,7 +149,8 @@ merge them into one — and switch both callers to it — before the next wave.
 - A task landing with no fresh parallel check straight after it
 - A subagent spawned for one tiny task that could have been batched with others
 - Parallel subagents editing the same files, or sharing one worktree
-- Parallel subagents each running e2e specs, dev servers, or migrations on the same machine
+- Parallel subagents running e2e on one shared database or on the same ports
+- A full e2e run per task, when only the touched groups were needed before the deploy run
 - A device check with agent worktrees on disk and Metro not blocking `.claude/worktrees/`
 - A brief that doesn't say which skill to load
 - A brief without the existing-code-first line

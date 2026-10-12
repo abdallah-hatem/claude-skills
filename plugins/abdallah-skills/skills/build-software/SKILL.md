@@ -219,11 +219,14 @@ Before the first task, set up what every later check depends on:
    `CREDENTIALS.local.md`: [verification.md](verification.md).
 3. **Smoke specs** — the Playwright setup that signs in as the seeded accounts:
    [verification.md](verification.md).
-4. **Lint and typecheck** — every app gets its stack's house config and `lint` / `typecheck` scripts:
+4. **Isolated e2e** — the e2e harness takes its database URL and app ports from the environment, and a script
+   creates one database and one port block per parallel agent, so agents run e2e side by side instead of
+   queuing on one database: [subagents.md](subagents.md).
+5. **Lint and typecheck** — every app gets its stack's house config and `lint` / `typecheck` scripts:
    `building-backends` → [lint.md](../building-backends/lint.md), `building-frontends` →
    [lint.md](../building-frontends/lint.md), `building-mobile` → [lint.md](../building-mobile/lint.md). A repo that already exists gets it too, with its current
    violations frozen — lint is a check, not a stack change.
-5. **For a mobile app** — the official `expo` plugin installed (`claude plugin install
+6. **For a mobile app** — the official `expo` plugin installed (`claude plugin install
    expo@claude-plugins-official`; `building-mobile` loads its skills), EAS project and channels set up
    per `building-mobile` → [release.md](../building-mobile/release.md), and Maestro smoke flows that
    sign in as the seeded accounts ([testing.md](../building-mobile/testing.md)).
@@ -337,6 +340,7 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - Backend and frontend built in parallel before the API contract exists
 - An app built or changed without the house lint config, or a task committed with `lint` or `typecheck` failing
 - Independent tasks built one at a time because no parallel check was run
+- Parallel tasks queuing for one shared test database, or a full e2e run per task instead of once per deploy
 - Frontend screens built before the design system is approved
 - A task with no class, or one classed down to avoid its tests
 - A test that checks appearance instead of behavior
