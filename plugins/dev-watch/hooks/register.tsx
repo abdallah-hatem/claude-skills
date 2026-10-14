@@ -15,6 +15,40 @@ const RUNNING = { plugin: 'dev-watch', key: 'running' } as const
 const KEPT = { plugin: 'dev-watch', key: 'kept' } as const
 const STOPPING = { plugin: 'dev-watch', key: 'stopping' } as const
 const TASKS_OPEN = { plugin: 'dev-watch', key: 'tasksOpen' } as const
+const NUDGED = { plugin: 'dev-watch', key: 'nudged' } as const
+
+/** Agents that are still working: the dev tools may be theirs. */
+const BUSY = new Set(['pending', 'running', 'waiting'])
+
+/**
+ * The words the agent is handed when its turn ends with dev tools still up.
+ * Exported for the test; one place, so the band and the nudge never disagree.
+ */
+export function nudgeText(items: Item[]): string {
+  return (
+    `dev-watch: your turn ended with these still running: ${items.map(i => i.label).join(', ')}. ` +
+    'Close everything you started and are not using now (servers by PID or port, ' +
+    '`docker compose stop` then quit Docker Desktop, background watch loops, the browser pane tab), ' +
+    'unless an agent you dispatched is still using them. Then reply in one line saying what you closed.'
+  )
+}
+
+/**
+ * Whether to tell the agent: something is up, the person did not choose to keep
+ * it, the agent was not already told about this exact set, and no agent is still
+ * working (whose tools these may be).
+ */
+export function shouldNudge(args: {
+  items: Item[]
+  kept: string | null
+  nudged: string | null
+  agentStatuses: string[]
+}): boolean {
+  if (args.items.length === 0) return false
+  const sig = signature(args.items)
+  if (sig === args.kept || sig === args.nudged) return false
+  return !args.agentStatuses.some(s => BUSY.has(s))
+}
 
 const DOCKER = '/usr/local/bin/docker'
 
@@ -188,7 +222,29 @@ export const register: Register = on => {
 
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
-    void refresh($)
+    // Only the main loop's own finished answer: not a subagent's turn, not an interrupt.
+    if (e.agentId || e.reason !== 'answer') {
+      void refresh($)
+      return result
+    }
+    await refresh($)
+    const { value: items = [] } = await $.state.get(RUNNING)
+    const { value: kept = null } = await $.state.get(KEPT)
+    const { value: nudged = null } = await $.state.get(NUDGED)
+    if (items.length === 0) {
+      if (nudged !== null) await $.state.set(NUDGED, null)
+      return result
+    }
+    let agentStatuses: string[] = []
+    try {
+      agentStatuses = (await $.agent.list()).map(a => a.status)
+    } catch {
+      // No agent list: treat as none running.
+    }
+    if (shouldNudge({ items, kept, nudged, agentStatuses })) {
+      await $.state.set(NUDGED, signature(items))
+      void $.prompt.submit({ text: nudgeText(items) })
+    }
     return result
   })
 

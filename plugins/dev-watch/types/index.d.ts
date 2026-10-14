@@ -17,6 +17,8 @@ declare module 'claude-code' {
       stopping: boolean
       /** Whether the app's background-tasks pane is open, as last seen. */
       tasksOpen: boolean
+      /** Signature of the set the agent was last told to close; it is told again only when the set changes. */
+      nudged: string | null
     }
   }
 }

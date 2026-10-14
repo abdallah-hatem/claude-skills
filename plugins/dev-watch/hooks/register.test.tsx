@@ -35,3 +35,25 @@ test('reads booted simulators and docker containers', async () => {
   expect(dockerItem('abc\ndef\n').label).toBe('Docker (2 containers)')
   expect(dockerItem('').label).toBe('Docker Desktop')
 })
+
+import { nudgeText, shouldNudge } from './register'
+import { signature } from './scan'
+
+const docker = { id: 'docker:0', kind: 'docker' as const, label: 'Docker Desktop', ids: [] }
+
+test('tells the agent to close what is still up when nothing is working', async () => {
+  expect(shouldNudge({ items: [docker], kept: null, nudged: null, agentStatuses: ['completed'] })).toBe(true)
+  expect(nudgeText([docker])).toContain('Docker Desktop')
+})
+
+test('stays quiet when nothing is up, the person kept it, or it already said so', async () => {
+  expect(shouldNudge({ items: [], kept: null, nudged: null, agentStatuses: [] })).toBe(false)
+  expect(shouldNudge({ items: [docker], kept: signature([docker]), nudged: null, agentStatuses: [] })).toBe(false)
+  expect(shouldNudge({ items: [docker], kept: null, nudged: signature([docker]), agentStatuses: [] })).toBe(false)
+})
+
+test('stays quiet while an agent is still working — the tools may be its', async () => {
+  for (const s of ['running', 'pending', 'waiting']) {
+    expect(shouldNudge({ items: [docker], kept: null, nudged: null, agentStatuses: ['completed', s] })).toBe(false)
+  }
+})
