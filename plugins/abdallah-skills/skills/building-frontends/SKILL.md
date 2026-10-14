@@ -276,7 +276,8 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 - A bare `<select>`, checkbox, radio, date, or file input — style it or use shadcn
 - A required field with no asterisk on its label
 - An asterisk without `aria-hidden`, or an input without `required`
-- An input with no placeholder, or a placeholder that just repeats the label
+- An input, picker, search box or textarea with no placeholder, a placeholder that just repeats the label,
+  or one that isn't a valid example of the field's type and rules (a password field showing `••••••••`)
 - A placeholder used instead of a label
 - A hardcoded placeholder string
 - `router.push` or `<Link>` without `scroll: false` on any list control — pagination, search, sort, filter, page size, tabs

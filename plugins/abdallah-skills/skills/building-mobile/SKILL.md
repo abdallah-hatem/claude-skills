@@ -40,7 +40,10 @@ These rules are defined once, in `building-frontends`, and apply here unchanged.
 
 - **Reusability contract** — applied to this layout in Reuse.
 - **Forms** — zod schemas, required asterisk, placeholder and label, grouped numbers, Egyptian
-  mobile numbers ([forms.md](../building-frontends/forms.md)).
+  mobile numbers ([forms.md](../building-frontends/forms.md)). Every `Input`, `Textarea`, picker and
+  search bar shows a placeholder that is a **valid example of that field's type and rules**
+  (`StrongPassword@123`, `name@company.com`, `01012345678`, `1,250.00`) — never empty, never the label
+  repeated; set `placeholderTextColor` from the muted token so it can't be mistaken for a value.
 - **i18n and RTL** — no hardcoded user-facing string; `en` and `ar` keep identical key sets.
 - **Testing** — behavior, not appearance.
 
@@ -343,6 +346,9 @@ Check the changed screen on a phone and a tablet, in **both** LTR (English) and 
 **smallest** supported phone (iPhone SE size). Matrix in [testing.md](testing.md).
 
 ## Red flags
+
+- A `TextInput`/`Input`, picker or search bar with no placeholder, or one that isn't a valid
+  example of the field's type and rules
 
 - A signed-in user who sees the login or onboarding screens on launch, or a role sent to a home
   that isn't its own

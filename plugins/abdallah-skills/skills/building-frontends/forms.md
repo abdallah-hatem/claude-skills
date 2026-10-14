@@ -30,6 +30,33 @@ identity exactly when someone is checking what they typed.
 So the placeholder never restates the label. `Phone` / `"Phone"` is wasted space;
 `Phone` / `"01xxxxxxxxx"` answers the question the label raises.
 
+**The placeholder is a real example of a valid value, chosen for that field's type and rules** —
+so it teaches the format and the constraints at a glance, not just "something goes here". It
+must pass the field's own validation; if it wouldn't, it is teaching the wrong rule.
+
+| Field | Placeholder | Not |
+|---|---|---|
+| Password (8+ chars, upper, digit, symbol) | `StrongPassword@123` | `••••••••`, `Password` |
+| Email | `name@company.com` | `Email`, `Enter your email` |
+| Egyptian mobile | `01012345678` | `Phone number` |
+| Money | `1,250.00` | `0`, `Amount` |
+| Quantity | `12` | `0` (reads as a filled value) |
+| Exchange rate | `13.8500` (the precision it accepts) | `Rate` |
+| Code / SKU with a pattern | `PRD-000123` | `SKU` |
+| Date (picker trigger) | `Pick a day` / the format, e.g. `12 Oct 2026` | blank |
+| Select / picker trigger | `Choose a supplier` | blank, `Select…` |
+| Search | what it searches: `Search by name, SKU or phone` | `Search` |
+| Free text / reason | a realistic sentence: `Damaged in transit — box crushed` | `Notes` |
+
+- **No input, picker trigger, search box or textarea renders empty.** An empty box on a grey page
+  reads as decoration, not a field; the placeholder is what says "type here, like this".
+- **Derive it from the same rule the validator uses.** Where the schema says min 8 + a symbol, the
+  example has both; where an amount allows 2 decimals, the example shows 2. Change the rule, change
+  the example — keep them next to each other (the schema file or the field's locale keys).
+- **Never a value that could be mistaken for a real one.** `0` in a quantity field looks filled in;
+  the example sits in the muted placeholder colour and disappears on focus/typing.
+- **Translated** like every other string (both locales), with numbers kept left-to-right in RTL.
+
 ```tsx
 <FormLabel>{t('customers.phone')}<span aria-hidden="true" className="ms-0.5 text-destructive">*</span></FormLabel>
 <Input placeholder={t('customers.phonePlaceholder')} {...field} />
