@@ -55,6 +55,16 @@ must pass the field's own validation; if it wouldn't, it is teaching the wrong r
   the example — keep them next to each other (the schema file or the field's locale keys).
 - **Never a value that could be mistaken for a real one.** `0` in a quantity field looks filled in;
   the example sits in the muted placeholder colour and disappears on focus/typing.
+
+### A picker with nothing in it
+
+An open dropdown, combobox or select with no options is never a blank strip. The shared picker
+renders an empty state in its list: what is missing ("Nothing to choose from yet", translated) and,
+where the page knows, why and where the first one is made ("Start an import cycle first"). That is
+a different message from a search that matches nothing ("No matches"), and both live in the shared
+component, not in each page. When the record can be made from the form, the picker's `+`
+quick-create is the way out; otherwise the hint names the page that makes it. Test it: open each
+picker with an empty list, and with a search that matches nothing.
 - **Translated** like every other string (both locales), with numbers kept left-to-right in RTL.
 
 ```tsx

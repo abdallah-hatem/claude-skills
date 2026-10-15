@@ -294,6 +294,9 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 - A scrollbar on a rounded edge, or a dialog whose actions scroll away with its content
 
+- A dropdown that opens empty — no "nothing to choose yet" message, no hint where the first one is
+  made
+
 - A header, menu or role-gated button that is missing for a moment on refresh — the server rendered
   signed out because the session lived only in client storage
 
