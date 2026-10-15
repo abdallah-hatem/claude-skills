@@ -226,6 +226,10 @@ Before calling a screen done, list every request it awaits and check each has on
 
 Never ship the native scrollbar. Every scroll container gets the `scrollbar-clean` utility — thin, rounded, transparent track, theme-aware. Implementation in [ui-patterns.md](ui-patterns.md).
 
+The bar stays inside its container: a scroll region never touches a rounded border, so its bar
+never runs over the edge or past the corners. In a dialog only the body scrolls, inset from the
+card's sides, with the title and the actions fixed above and below it.
+
 Never a JS scrollbar library. They break keyboard scrolling, momentum, and screen readers, and they cost a dependency for something CSS does in twenty lines.
 
 ## Responsive
@@ -287,6 +291,8 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 - A `<table>`, dialog, form field, empty state or list row written by hand in a page while a shared
   one exists — or two near-identical ones with no shared component at all
+
+- A scrollbar on a rounded edge, or a dialog whose actions scroll away with its content
 
 - A header, menu or role-gated button that is missing for a moment on refresh — the server rendered
   signed out because the session lived only in client storage

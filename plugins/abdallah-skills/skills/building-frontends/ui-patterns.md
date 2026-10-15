@@ -123,6 +123,9 @@ Apply it to the scroll container, and to `html` for the page itself:
   as static content — people don't discover it.
 - RTL needs nothing: browsers move the scrollbar to the left edge automatically under
   `dir="rtl"`. Don't hand-position it.
+- Never on a rounded edge. A scroll region that fills a rounded container draws its bar over the
+  border and past the corners; inset the region from the container's edge so the bar sits inside
+  (see Modals, "The bar stays inside its container").
 - `scrollbar-gutter: stable` matters most on dynamic lists — without it, the layout shifts
   the moment content grows past one screen.
 
@@ -188,6 +191,18 @@ Four details, each load-bearing:
   only the content moves. A Save button that scrolls out of view is one nobody finds.
 - **`overscroll-contain`.** Reaching the end of the body doesn't chain the scroll to the
   page underneath.
+- **The bar stays inside its container.** The scrollbar is drawn on the scrolling element's own
+  edge, so a scroll region that touches the card's border puts the bar on that border and runs it
+  past the rounded corners. Keep the region off every rounded edge: the header and footer cap its
+  ends, and it sits inset from the card's side (`mx-1.5` on the body, its padding reduced to
+  match, so content stays where it was). The same holds for any rounded scroll area — a dropdown,
+  a sheet, a card with a scrolling list: the bar never sits on the rounded border.
+
+```tsx
+  <div className="scrollbar-clean mx-1.5 min-h-0 flex-1 overflow-y-auto overscroll-contain px-[1.125rem] py-6">
+    {children}
+  </div>
+```
 
 ### Scroll never escapes to the page
 
