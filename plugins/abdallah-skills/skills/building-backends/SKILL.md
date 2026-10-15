@@ -66,6 +66,14 @@ The rule that erodes under deadline, so it is spelled out:
   both fork the rule the moment one side changes. Another domain's *exported* service, injected
   through its module, is fine.
 - **Utils are pure.** Arguments in, a value out — no `DatabaseService`, no request, no current user.
+- **The usual repeats live in one place from the start**: a rule's constants (the set of categories
+  that are not expenses, the roles allowed an action, a status's allowed next states), money
+  rounding and currency conversion, date-range and "business day" handling, pagination, the
+  coded-error helpers, ownership checks, the audit write. A second service asking the same question
+  imports the answer; it never re-states it — two copies drift on the first change, and the drift
+  shows up as a wrong figure on one screen and a right one on another.
+- **Before calling a change done**, search it for anything written twice or that already exists in
+  `common/` or another domain, and extract it in the same commit.
 
 ## Bootstrap
 
@@ -178,7 +186,9 @@ API without the house lint config.
 
 **Reuse** — the same calculation in two services · a helper written without searching `common/`
 and the other domains first · another domain's private helper copied or called · a util that
-injects a service or reads the request.
+injects a service or reads the request · a business constant (a role list, a category set, a
+status transition) declared in two files · a guard's role list and the client's permission map
+kept by hand with nothing checking they agree.
 
 **Layering** — Prisma in a controller · `res.status().json()` in a controller · an `entities/`
 folder mirroring a Prisma model · a raw client call outside a repository.
