@@ -169,6 +169,31 @@ rendering a page and then bouncing:
 These are `ui` test cases on every app: one test per rule, in the middleware's tests — including
 several requests refreshing at once with the same refresh token.
 
+## Signed-in UI at first paint
+
+The server knows who is signed in when it renders, so the first paint is already that person's
+screen: their name in the header, their menu, the buttons their role may use. Nothing signed-in
+appears a moment after the page does.
+- **The session is a cookie the server reads.** The layout reads it (`cookies()` in a Server
+  Component) and hands the user to the client auth provider as its initial state; client and
+  server then render the same thing and nothing changes when the scripts load.
+- **Never derive who is signed in only from `localStorage` or a client effect.** The server cannot
+  read storage, so every page renders signed out first and the account card, role-gated buttons
+  and role menus vanish on each refresh, then come back.
+- **A token that must stay in client storage** (an app not yet on `httpOnly` cookies) still gets a
+  cookie: a display-only copy of id, name and role, written at sign-in, cleared at sign-out, on a
+  401 and on a sign-out in another tab, and rewritten from storage on every load. It is never a
+  credential — the API authorises from the token — so a hand-edited value changes what is drawn,
+  never what is allowed.
+- **Reading the cookie makes those routes dynamic.** That is the price of a correct first paint;
+  pay it in the layout once rather than gating each control.
+- **Until the session is known** (no cookie yet), the account card is a skeleton of its own size;
+  role-gated controls are never simply absent and then present.
+
+Test it by freezing the server's paint: block the page's scripts, reload, and assert the account
+card shows the right name, the role's menu is complete, and the role's buttons are present (and
+absent for a role without them).
+
 ## Loading states
 
 **Skeletons, not spinners.** A skeleton mirrors the shape of what it replaces — same heights, same gaps, same count — so nothing shifts when data lands. Use shadcn's `<Skeleton>`; see [ui-patterns.md](ui-patterns.md).
@@ -248,6 +273,9 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 - A signed-in user who can still reach the landing, login or register page, or a role sent to a
   home that isn't its own
+
+- A header, menu or role-gated button that is missing for a moment on refresh — the server rendered
+  signed out because the session lived only in client storage
 
 - A request the UI awaits with no skeleton, busy state, or status line — a toggle that silently
   refetches, a choice tap with no feedback, a submit button that can be pressed twice
