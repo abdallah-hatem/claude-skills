@@ -130,6 +130,13 @@ The rule that matters most, because it is the one that erodes under deadline.
 
 **Second occurrence extracts.** The moment near-identical JSX or logic exists in two places, extract it — do not wait for a third. Copy-paste-and-tweak is never the smaller change; it is the same change made twice, forever.
 
+**The usual repeats are shared from the start**, not after the second copy: the data table (columns,
+widths, header, skeleton rows, empty state, overflow rules), list rows and cards, dialogs and
+confirm prompts, form fields with their label/hint/error, pickers, empty states, page headers with
+their actions, status badges, money and date display. A page describes what varies — its columns,
+its fields, its copy — and the shared component owns everything that should look and behave the
+same. Hand-writing a `<table>` in a page is how one layout fix becomes the same edit on every screen.
+
 
 ## i18n and RTL
 
@@ -252,6 +259,10 @@ it to an existing repo: [lint.md](lint.md).
 
 ## Before calling it done
 
+Search the change for a second copy: any JSX, hook or logic you wrote that already exists, or
+that you wrote twice. Extract it before finishing — a duplicate shipped is a fix that will have to
+be made in every place it was pasted.
+
 Check the changed screen at mobile and tablet, in **both** LTR (English) and RTL (Arabic), and in
 **both** light and dark mode. Mirroring breaks layouts the LTR pass looks fine in, and a colour
 that works on white can disappear on dark. Turn reduced motion on once and confirm nothing that
@@ -273,6 +284,9 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 - A signed-in user who can still reach the landing, login or register page, or a role sent to a
   home that isn't its own
+
+- A `<table>`, dialog, form field, empty state or list row written by hand in a page while a shared
+  one exists — or two near-identical ones with no shared component at all
 
 - A header, menu or role-gated button that is missing for a moment on refresh — the server rendered
   signed out because the session lived only in client storage
