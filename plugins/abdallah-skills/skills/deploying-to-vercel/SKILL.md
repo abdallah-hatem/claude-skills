@@ -271,6 +271,7 @@ machine's working tree.
 | Root Directory unset | Builds from repo root, fails | Set per project |
 | `NEXT_PUBLIC_*` | Baked in at build time | Set before building; changing it needs a rebuild |
 | Local disk writes | Gone on next deploy | Object storage behind an adapter interface |
+| Vercel CLI in a git worktree | No project link: `vercel env pull`/`env ls`/`ls` fail, and a `set -e` script exits with no output | Copy `.vercel/project.json` from the main checkout into the same app folder |
 
 ## Common Mistakes
 
@@ -281,6 +282,11 @@ machine's working tree.
   is per-app — checking one app proves nothing about its siblings.
 - **Fixing env vars with `vercel redeploy`.** It reuses artifacts. The variable changes and
   the behaviour does not, which reads as the variable being ignored.
+- **Running the CLI from a git worktree.** A worktree has none of the gitignored files —
+  each app's `.vercel/` link and its `.env*` — so every Vercel CLI call there has no project.
+  A deploy or migration script wrapped in `set -e` then stops on `vercel env pull` and prints
+  nothing. Copy `.vercel/project.json` from the main checkout into the same folder of the
+  worktree (it stays ignored), or pass `--project` and `--scope` explicitly.
 - **Testing a frontend before the API has a stable URL.** Deploy the API first, then set
   `NEXT_PUBLIC_API_URL`, then build the frontends — or point them at a custom domain from
   the start so a later API redeploy never requires rebuilding them.
