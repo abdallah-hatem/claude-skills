@@ -83,3 +83,28 @@ export function dockerItem(psOut: string | null): Item {
 export function signature(items: Item[]): string {
   return items.map(i => i.id).sort().join('|')
 }
+
+/**
+ * What identifies an item across scans, for "who started it": process ids, container ids, a simulator's
+ * UDID. Docker Desktop itself counts as one key, so a session that started Docker owns it too.
+ */
+export function ownKeys(item: Item): string[] {
+  if (item.kind === 'docker') return ['docker-desktop', ...item.ids.map(id => `ctr:${id}`)]
+  if (item.kind === 'simulator') return item.ids.map(id => `sim:${id}`)
+  return item.ids.map(id => `pid:${id}`)
+}
+
+/** Keys present now that were not present before the turn: what appeared while the turn ran. */
+export function newKeys(before: Item[], after: Item[]): string[] {
+  const had = new Set(before.flatMap(ownKeys))
+  return after.flatMap(ownKeys).filter(k => !had.has(k))
+}
+
+const LAUNCH =
+  /\b(npm|pnpm|yarn|bun)\s+(run\s+)?(dev|start|serve|storybook|preview)\b|\bnext\s+(dev|start)\b|\bvite\b|\bnest\s+start\b|\bnodemon\b|\bexpo\s+(start|run:)|\breact-native\s+(start|run-)|\bdocker(\s+compose|-compose)?\s+(up|run|start)\b|\bopen\s+(?:-\w+\s+)*-a\s+["']?(Docker|Simulator)|\bsimctl\s+boot\b|\bemulator\s+(-avd|@)|\b(playwright|maestro|ngrok|cloudflared)\b|\bturbo\s+(run|dev)\b/
+
+/** Whether a tool call can start a dev tool: a launching Bash command, any background Bash, a preview server or simulator tool. */
+export function isLaunch(tool: string, args: Record<string, unknown>): boolean {
+  if (tool === 'Bash') return args.run_in_background === true || LAUNCH.test(typeof args.command === 'string' ? args.command : '')
+  return /preview_start$|iOS_Simulator__|terminal__run_in_terminal$/.test(tool)
+}

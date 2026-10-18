@@ -7,6 +7,9 @@ import {
   groupServers,
   parseCwd,
   parseServers,
+  isLaunch,
+  newKeys,
+  ownKeys,
   parseSimulators,
   signature,
 } from './scan'
@@ -33,22 +36,36 @@ export function nudgeText(items: Item[]): string {
   )
 }
 
+/** The items this session started: any of whose keys it owns. */
+export function mine(items: Item[], owned: ReadonlySet<string>): Item[] {
+  return items.filter(i => ownKeys(i).some(k => owned.has(k)))
+}
+
 /**
- * Whether to tell the agent: something is up, the person did not choose to keep
- * it, the agent was not already told about this exact set, and no agent is still
- * working (whose tools these may be).
+ * Whether to tell the agent: this session started something still up, the person did
+ * not choose to keep it, at least one of those items is new since the last nudge
+ * (things closing never nudge again), and no agent is still working (whose tools
+ * these may be). `items` here are this session's own.
  */
 export function shouldNudge(args: {
   items: Item[]
   kept: string | null
-  nudged: string | null
+  nudged: readonly string[]
   agentStatuses: string[]
+  all: Item[]
 }): boolean {
   if (args.items.length === 0) return false
-  const sig = signature(args.items)
-  if (sig === args.kept || sig === args.nudged) return false
+  if (signature(args.all) === args.kept) return false
+  const told = new Set(args.nudged)
+  if (!args.items.some(i => ownKeys(i).some(k => !told.has(k)))) return false
   return !args.agentStatuses.some(s => BUSY.has(s))
 }
+
+// Who started what: keys of items that appeared during this session's turns after a launching call.
+// Module state: a reload forgets it, so tools started before a reload are never nudged about.
+const owned = new Set<string>()
+let turnBefore: Promise<Item[]> | null = null
+let launchedThisTurn = false
 
 const DOCKER = '/usr/local/bin/docker'
 
@@ -220,6 +237,18 @@ export const register: Register = on => {
     return { text: summary + rest }
   })
 
+  on('prompt.submit', async ($, e, next) => {
+    // What was up before this turn: anything new by its end, after a launching call, is this session's.
+    turnBefore = scan($)
+    launchedThisTurn = false
+    return next(e)
+  })
+
+  on('tool.call', async ($, e, next) => {
+    if (isLaunch(e.tool, e as unknown as Record<string, unknown>)) launchedThisTurn = true
+    return next(e)
+  })
+
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
     // Only the main loop's own finished answer: not a subagent's turn, not an interrupt.
@@ -228,11 +257,16 @@ export const register: Register = on => {
       return result
     }
     await refresh($)
-    const { value: items = [] } = await $.state.get(RUNNING)
+    const { value: all = [] } = await $.state.get(RUNNING)
+    if (launchedThisTurn && turnBefore) for (const k of newKeys(await turnBefore, all)) owned.add(k)
+    launchedThisTurn = false
+    const items = mine(all, owned)
     const { value: kept = null } = await $.state.get(KEPT)
-    const { value: nudged = null } = await $.state.get(NUDGED)
+    // 0.6.0 stored a signature string here; anything that isn't a list counts as nothing told yet.
+    const { value: rawNudged } = await $.state.get(NUDGED)
+    const nudged: string[] = Array.isArray(rawNudged) ? rawNudged : []
     if (items.length === 0) {
-      if (nudged !== null) await $.state.set(NUDGED, null)
+      if (nudged.length) await $.state.set(NUDGED, [])
       return result
     }
     let agentStatuses: string[] = []
@@ -241,8 +275,8 @@ export const register: Register = on => {
     } catch {
       // No agent list: treat as none running.
     }
-    if (shouldNudge({ items, kept, nudged, agentStatuses })) {
-      await $.state.set(NUDGED, signature(items))
+    if (shouldNudge({ items, kept, nudged, agentStatuses, all })) {
+      await $.state.set(NUDGED, [...new Set([...nudged, ...items.flatMap(ownKeys)])])
       void $.prompt.submit({ text: nudgeText(items) })
     }
     return result

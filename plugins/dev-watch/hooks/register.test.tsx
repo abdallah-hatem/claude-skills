@@ -36,24 +36,47 @@ test('reads booted simulators and docker containers', async () => {
   expect(dockerItem('').label).toBe('Docker Desktop')
 })
 
-import { nudgeText, shouldNudge } from './register'
-import { signature } from './scan'
+import { mine, nudgeText, shouldNudge } from './register'
+import { isLaunch, newKeys, ownKeys, signature } from './scan'
 
-const docker = { id: 'docker:0', kind: 'docker' as const, label: 'Docker Desktop', ids: [] }
+const docker = { id: 'docker:1', kind: 'docker' as const, label: 'Docker (1 container)', ids: ['c1'] }
+const web = { id: 'server:Next.js dev:proj/web', kind: 'server' as const, label: 'Next.js dev (proj/web)', ids: ['100', '101'] }
+const vite = { id: 'server:Vite:proj/web', kind: 'server' as const, label: 'Vite (proj/web)', ids: ['200'] }
+const base = { kept: null, nudged: [] as string[], agentStatuses: ['completed'] }
 
-test('tells the agent to close what is still up when nothing is working', async () => {
-  expect(shouldNudge({ items: [docker], kept: null, nudged: null, agentStatuses: ['completed'] })).toBe(true)
-  expect(nudgeText([docker])).toContain('Docker Desktop')
+test('nudges about what this session started', async () => {
+  expect(shouldNudge({ ...base, items: [web], all: [docker, web] })).toBe(true)
+  expect(nudgeText([web])).toContain('Next.js dev (proj/web)')
 })
 
-test('stays quiet when nothing is up, the person kept it, or it already said so', async () => {
-  expect(shouldNudge({ items: [], kept: null, nudged: null, agentStatuses: [] })).toBe(false)
-  expect(shouldNudge({ items: [docker], kept: signature([docker]), nudged: null, agentStatuses: [] })).toBe(false)
-  expect(shouldNudge({ items: [docker], kept: null, nudged: signature([docker]), agentStatuses: [] })).toBe(false)
+test('only items whose keys this session owns are its own', async () => {
+  const owned = new Set(newKeys([docker], [docker, web]))
+  expect(mine([docker, web], owned).map(i => i.id)).toEqual([web.id])
+})
+
+test('never nudges again for things already named, even when the set shrinks or something else closes', async () => {
+  const nudged = [...ownKeys(web), ...ownKeys(vite)]
+  expect(shouldNudge({ ...base, nudged, items: [web], all: [docker, web] })).toBe(false)
+  expect(shouldNudge({ ...base, nudged: ownKeys(web), items: [web, vite], all: [web, vite] })).toBe(true)
+})
+
+test('stays quiet when nothing of its own is up, or the person kept the set', async () => {
+  expect(shouldNudge({ ...base, items: [], all: [docker] })).toBe(false)
+  expect(shouldNudge({ ...base, kept: signature([docker, web]), items: [web], all: [docker, web] })).toBe(false)
 })
 
 test('stays quiet while an agent is still working — the tools may be its', async () => {
   for (const s of ['running', 'pending', 'waiting']) {
-    expect(shouldNudge({ items: [docker], kept: null, nudged: null, agentStatuses: ['completed', s] })).toBe(false)
+    expect(shouldNudge({ ...base, agentStatuses: ['completed', s], items: [web], all: [web] })).toBe(false)
   }
+})
+
+test('recognises calls that start dev tools', async () => {
+  expect(isLaunch('Bash', { command: 'cd apps/web && npm run dev' })).toBe(true)
+  expect(isLaunch('Bash', { command: 'docker compose up -d' })).toBe(true)
+  expect(isLaunch('Bash', { command: 'xcrun simctl boot "iPhone 16"' })).toBe(true)
+  expect(isLaunch('Bash', { command: 'sleep 1', run_in_background: true })).toBe(true)
+  expect(isLaunch('mcp__Claude_Browser__preview_start', {})).toBe(true)
+  expect(isLaunch('Bash', { command: 'git status && npm test' })).toBe(false)
+  expect(isLaunch('Read', {})).toBe(false)
 })
