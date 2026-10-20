@@ -13,6 +13,7 @@ import {
   parseSimulators,
   signature,
 } from './scan'
+import { onWindows, toastWindows, toWindows } from './win'
 
 const RUNNING = { plugin: 'dev-watch', key: 'running' } as const
 const KEPT = { plugin: 'dev-watch', key: 'kept' } as const
@@ -72,8 +73,11 @@ const DOCKER = '/usr/local/bin/docker'
 /** Runs a host command; any failure (not installed, timed out) reads as no output. */
 async function sh($: EngineInterface, argv: string[], timeoutMs = 10_000): Promise<string> {
   try {
-    const r = await $.process.run(argv, { timeoutMs })
-    return r.stdout
+    const call = (await onWindows($)) ? toWindows(argv) : { argv }
+    if (!call) return ''
+    const r = await $.process.run(call.argv, { timeoutMs, env: call.env })
+    // Windows ends lines with CRLF, and the parsers' `.` does not match the carriage return.
+    return r.stdout.split(String.fromCharCode(13)).join('')
   } catch {
     return ''
   }
@@ -85,7 +89,8 @@ async function notify($: EngineInterface, text: string, sound: string): Promise<
   try {
     await $.process.run(['osascript', '-e', `display notification "${quoted}" with title "Claude Code" sound name "${sound}"`], { timeoutMs: 5_000 })
   } catch {
-    // No notification is better than a failed hook.
+    // No osascript: Windows, where a native toast does the same job. No notification is better than a failed hook.
+    await toastWindows($, text).catch(() => {})
   }
 }
 

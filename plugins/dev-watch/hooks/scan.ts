@@ -18,8 +18,11 @@ const LABELS: [RegExp, string][] = [
   [/maestro/, 'Maestro'],
 ]
 
-/** Lines that belong to Claude itself (its MCP servers, the app) and must never be flagged or killed. */
-const OWN = /\/\.claude\/|Claude\.app|Claude Helper|\bmcp\b/i
+/**
+ * Lines that belong to Claude itself (its MCP servers, the app) and must never be flagged or killed.
+ * Either slash: Windows command lines use backslashes, and the app is claude.exe there.
+ */
+const OWN = /[\\/]\.claude[\\/]|Claude\.app|Claude Helper|claude\.exe|\bmcp\b/i
 
 export type ServerProc = { pid: string; label: string; cwd: string | null }
 

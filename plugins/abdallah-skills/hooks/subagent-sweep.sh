@@ -5,6 +5,14 @@
 #   2. jest processes re-parented to launchd (ppid 1) that belong to any agent worktree
 #   3. safety net for agents without a worktree: any jest idle (0% CPU) for 45+ minutes
 # Never touches Claude, its MCP servers, or anything outside these patterns. Always exits 0.
+
+# Windows (Git Bash): no lsof, pgrep or ps -o; the PowerShell twin beside this file does the same job.
+case "$(uname -s 2>/dev/null)" in
+  MINGW*|MSYS*|CYGWIN*)
+    exec powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+      -File "$(cygpath -w "$(dirname "$0")/subagent-sweep.ps1")" ;;
+esac
+
 LOG="$HOME/.claude/logs/subagent-sweep.log"
 mkdir -p "$(dirname "$LOG")"
 input=$(cat)

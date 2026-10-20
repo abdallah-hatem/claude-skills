@@ -7,6 +7,13 @@
 # - After a compaction (source "compact"): also say to re-read the state and write it down first.
 # Silent when there is no state to load. Never blocks.
 set -uo pipefail
+# Windows: winget installs jq without always putting it on PATH for hook shells.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  for d in "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/jqlang.jq_*; do [ -d "$d" ] && PATH="$PATH:$d"; done
+fi
+# Portable across macOS (BSD stat/date) and Windows Git Bash (GNU stat/date).
+mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
+epoch() { date -u -d "$1" +%s 2>/dev/null || date -j -u -f '%Y-%m-%dT%H:%M:%S' "$1" +%s 2>/dev/null; }
 
 input=$(cat)
 dir=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null) || dir=""
@@ -15,7 +22,7 @@ source=$(printf '%s' "$input" | jq -r '.source // empty' 2>/dev/null) || source=
 
 root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || root="$dir"
 log="$root/docs/BUILD_LOG.md"
-handoff="$HOME/.claude/handoffs/$(printf '%s' "$root" | tr '/' '-' | sed 's/^-//').md"
+handoff="$HOME/.claude/handoffs/$(printf '%s' "$root" | tr '/:' '--' | sed 's/^-*//').md"
 
 body=""
 if [ -s "$log" ]; then
@@ -45,7 +52,7 @@ the log is behind what the summary says was done (a finished task, a new decisio
 it first."
   fi
 elif [ -s "$handoff" ]; then
-  age=$(( ( $(date +%s) - $(stat -f %m "$handoff") ) / 86400 ))
+  age=$(( ( $(date +%s) - $(mtime "$handoff") ) / 86400 ))
   body="Handoff note for this repo (~/.claude/handoffs/, written ${age} day(s) ago) — where the last
 session left off. Verify it against git before acting on it; update it as work moves, and delete it
 when the work it describes is done.

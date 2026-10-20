@@ -2,6 +2,10 @@
 # UserPromptSubmit — nudge to record a correction in the global or project LEARNINGS.md.
 # Silent unless the prompt is correction-shaped. Never blocks.
 set -uo pipefail
+# Windows: winget installs jq without always putting it on PATH for hook shells.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  for d in "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/jqlang.jq_*; do [ -d "$d" ] && PATH="$PATH:$d"; done
+fi
 
 prompt=$(cat | jq -r '.prompt // empty' 2>/dev/null) || exit 0
 [ -z "$prompt" ] && exit 0
