@@ -8,6 +8,13 @@
 # Silent otherwise. Skipped outside git, in a /build-software run (docs/BUILD_LOG.md), and when
 # this hook already fired for this stop (stop_hook_active) — so it can't loop.
 set -uo pipefail
+# Windows: winget installs jq without always putting it on PATH for hook shells.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  for d in "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/jqlang.jq_*; do [ -d "$d" ] && PATH="$PATH:$d"; done
+fi
+# Portable across macOS (BSD stat/date) and Windows Git Bash (GNU stat/date).
+mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
+epoch() { date -u -d "$1" +%s 2>/dev/null || date -j -u -f '%Y-%m-%dT%H:%M:%S' "$1" +%s 2>/dev/null; }
 
 input=$(cat)
 active=$(printf '%s' "$input" | jq -r '.stop_hook_active // false' 2>/dev/null) || active=false
@@ -19,16 +26,16 @@ transcript=$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/nul
 root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
 [ -s "$root/docs/BUILD_LOG.md" ] && exit 0
 
-note="$HOME/.claude/handoffs/$(printf '%s' "$root" | tr '/' '-' | sed 's/^-//').md"
+note="$HOME/.claude/handoffs/$(printf '%s' "$root" | tr '/:' '--' | sed 's/^-*//').md"
 now=$(date +%s)
 
 since=0
 if [ -n "$transcript" ] && [ -s "$transcript" ]; then
   first=$(jq -r 'select(.timestamp) | .timestamp' "$transcript" 2>/dev/null | head -1)
-  [ -n "$first" ] && since=$(date -j -u -f '%Y-%m-%dT%H:%M:%S' "${first%%.*}" +%s 2>/dev/null || echo 0)
+  [ -n "$first" ] && since=$(epoch "${first%%.*}" || echo 0)
 fi
 note_m=0
-[ -f "$note" ] && note_m=$(stat -f %m "$note")
+[ -f "$note" ] && note_m=$(mtime "$note")
 [ "$note_m" -gt "$since" ] && since=$note_m
 
 progress=""
@@ -38,7 +45,7 @@ if [ "${last_commit:-0}" -gt "$since" ]; then
 elif [ $(( now - note_m )) -gt 1800 ]; then
   while IFS= read -r f; do
     [ -e "$root/$f" ] || continue
-    if [ "$(stat -f %m "$root/$f")" -gt "$since" ]; then progress="files changed"; break; fi
+    if [ "$(mtime "$root/$f")" -gt "$since" ]; then progress="files changed"; break; fi
   done < <(git -C "$root" status --porcelain 2>/dev/null | cut -c4- | sed 's/.* -> //' | head -50)
 fi
 [ -z "$progress" ] && exit 0

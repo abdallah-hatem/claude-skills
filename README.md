@@ -104,6 +104,12 @@ input, so a broken hook can never block a prompt or a compaction. `subagent-swee
 `jq` and `git`; `SessionStart` also fires after a compaction (source `compact`), which is when
 it asks for the build log or the handoff note to be brought up to date.
 
+**Windows** (Git Bash, which Claude Code uses for hooks): install jq with `winget install jqlang.jq`;
+the scripts find it in winget's folder even when it isn't on `PATH`. `stat` and `date` calls work with
+both the BSD and the GNU tools. `subagent-sweep.sh` hands off to `subagent-sweep.ps1` beside it, so copy
+both; Windows exposes no process's working directory, so there it matches agent worktrees by command
+line only. `DRYRUN=1` makes either version log what it would kill and kill nothing.
+
 
 ## Companion skills
 
@@ -132,7 +138,9 @@ claude plugin install dev-watch@abdallah-hatem
 | `agent-watch` | A band of running subagents with elapsed time and step progress from their to-do list ("step 3 of 7: Writing tests"), red when one has been quiet 5 min or sits on a background run 2 min. | none |
 | `control-watch` | A band of what Claude is controlling right now or in the last minute — your Chrome, desktop apps, the built-in browser, Docker, simulators, terminals — and a macOS notification with sound when it takes over your Chrome or an app. | none |
 
-The Code tab doesn't show a mod's toasts, which is why `control-watch` uses a macOS notification.
+The Code tab doesn't show a mod's toasts, which is why `control-watch` uses a macOS notification
+(a native Windows toast on Windows). `dev-watch` runs on Windows too: its process checks go through
+PowerShell and `taskkill`, and simulators, which Windows doesn't have, simply never show.
 To run a mod from a working copy instead of installing it, list its folder in
 `CLAUDE_CODE_PLUGIN_DIRS` (colon-separated) in the `env` block of `~/.claude/settings.json`.
 

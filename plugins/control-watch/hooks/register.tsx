@@ -11,13 +11,26 @@ const RECENT_MS = 60_000
 const controls = new Map<string, Control>()
 let shown = '[]'
 
-/** A macOS notification with a sound: the Code tab doesn't show a mod's toasts. */
+/** A native Windows toast; the text travels in an environment variable, so no quoting can break it. */
+const WIN_TOAST = String.raw`
+[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+$t = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+$x = $t.GetElementsByTagName('text')
+[void]$x.Item(0).AppendChild($t.CreateTextNode('Claude Code'))
+[void]$x.Item(1).AppendChild($t.CreateTextNode($env:CC_TOAST))
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe').Show([Windows.UI.Notifications.ToastNotification]::new($t))`
+
+/** A macOS notification with a sound (a Windows toast where there is no osascript): the Code tab doesn't show a mod's toasts. */
 async function notify($: EngineInterface, text: string): Promise<void> {
   const quoted = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
   try {
     await $.process.run(['osascript', '-e', `display notification "${quoted}" with title "Claude Code" sound name "Glass"`], { timeoutMs: 5_000 })
   } catch {
-    // No notification is better than a failed tool call.
+    try {
+      await $.process.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', WIN_TOAST], { env: { CC_TOAST: text }, timeoutMs: 10_000 })
+    } catch {
+      // No notification is better than a failed tool call.
+    }
   }
 }
 

@@ -3,6 +3,10 @@
 # Claude Code appends a PreCompact hook's stdout to the compaction's custom instructions.
 # The session-state.sh SessionStart hook reloads the durable state right after.
 set -uo pipefail
+# Windows: winget installs jq without always putting it on PATH for hook shells.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  for d in "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/jqlang.jq_*; do [ -d "$d" ] && PATH="$PATH:$d"; done
+fi
 
 input=$(cat)
 dir=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null) || dir=""

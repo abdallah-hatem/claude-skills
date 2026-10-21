@@ -5,6 +5,10 @@
 # Two tiers: global rules (~/.claude/LEARNINGS.md) apply in every project;
 # project rules (<cwd>/.claude/LEARNINGS.md) apply only to the project in cwd.
 set -uo pipefail
+# Windows: winget installs jq without always putting it on PATH for hook shells.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  for d in "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/jqlang.jq_*; do [ -d "$d" ] && PATH="$PATH:$d"; done
+fi
 
 dir=$(cat | jq -r '.cwd // empty' 2>/dev/null) || dir=""
 [ -z "$dir" ] && dir="${CLAUDE_PROJECT_DIR:-$PWD}"

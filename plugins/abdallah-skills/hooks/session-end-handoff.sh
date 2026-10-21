@@ -5,6 +5,13 @@
 # above it is the model's summary, written by stop-handoff.sh, and is kept as is.
 # Skipped outside git and in a /build-software run (docs/BUILD_LOG.md is that run's record).
 set -uo pipefail
+# Windows: winget installs jq without always putting it on PATH for hook shells.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  for d in "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/jqlang.jq_*; do [ -d "$d" ] && PATH="$PATH:$d"; done
+fi
+# Portable across macOS (BSD stat/date) and Windows Git Bash (GNU stat/date).
+mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
+epoch() { date -u -d "$1" +%s 2>/dev/null || date -j -u -f '%Y-%m-%dT%H:%M:%S' "$1" +%s 2>/dev/null; }
 
 input=$(cat)
 dir=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null) || dir=""
@@ -15,16 +22,16 @@ root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
 [ -s "$root/docs/BUILD_LOG.md" ] && exit 0
 
 notes="$HOME/.claude/handoffs"
-note="$notes/$(printf '%s' "$root" | tr '/' '-' | sed 's/^-//').md"
+note="$notes/$(printf '%s' "$root" | tr '/:' '--' | sed 's/^-*//').md"
 mkdir -p "$notes" || exit 0
 
 # Since when: the later of this session's first transcript entry and the note's last write.
 since=0
 if [ -n "$transcript" ] && [ -s "$transcript" ]; then
   first=$(jq -r 'select(.timestamp) | .timestamp' "$transcript" 2>/dev/null | head -1)
-  [ -n "$first" ] && since=$(date -j -u -f '%Y-%m-%dT%H:%M:%S' "${first%%.*}" +%s 2>/dev/null || echo 0)
+  [ -n "$first" ] && since=$(epoch "${first%%.*}" || echo 0)
 fi
-[ -f "$note" ] && { m=$(stat -f %m "$note"); [ "$m" -gt "$since" ] && since=$m; }
+[ -f "$note" ] && { m=$(mtime "$note"); [ "$m" -gt "$since" ] && since=$m; }
 
 branch=$(git -C "$root" branch --show-current 2>/dev/null)
 commits=$(git -C "$root" log --since="@$since" --format='- %h %s' -10 2>/dev/null)
