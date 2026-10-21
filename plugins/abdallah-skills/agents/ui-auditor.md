@@ -109,8 +109,16 @@ through the repo's existing auth setup (`storageState` per role) when there is o
 `375×812` and `1440×900` (plus `768×1024` when the layout has a tablet breakpoint), each with
 `colorScheme: 'light' | 'dark'`, each in English and Arabic through the app's own locale switch
 (route prefix, cookie, or setting). Screenshot `fullPage: true`, and open every dialog, sheet,
-dropdown and toast. The base URL is the one given, or the dev server if running — start one only if
+dropdown, select, date picker and toast — capture each one **open**, with an item hovered, and with
+a value chosen. The base URL is the one given, or the dev server if running — start one only if
 none is, and record it.
+
+**Measure for layout shift.** For every kind of overlay (select, dropdown menu, dialog, the mobile
+menu sheet), record `getBoundingClientRect()` of the page heading, the header and every fixed
+element (floating buttons, cookie bar) before opening and again while it is open, in LTR and RTL.
+Any difference is a `major` finding. A screenshot taken after opening can't show a jump; only the
+measurement can. This was missed once: every select and dialog shifted the page sideways, and two
+audits passed it.
 
 ## 4. Look at every screenshot
 
@@ -147,6 +155,14 @@ Check, on every screen and overlay:
   status-bar strip that doesn't match the page behind it
 - **Consistency with the design doc** — spacing, radius, type sizes or colours outside the token
   set; two empty states, cards or buttons that look different for the same job
+- **Library defaults** — judge every control as design, not only as direction or overflow: "does
+  this look designed for this product, or like a shadcn/Radix default?". Transparent inputs,
+  selects and search boxes the page shows through; select or dropdown lists that are cramped,
+  grey-highlighted, not aligned to their trigger, or showing native ▲▼ scrollbar buttons; a list
+  opening underneath a cookie bar or floating button — each is a `major` finding. This was missed
+  once: two audits checked that the dropdowns mirrored in RTL and never judged how they looked.
+- **Scroll cues** — an edge shadow or fade on a table or row that doesn't actually overflow on that
+  side is a finding
 - **States** — an empty state off-centre or missing its action, a spinner where the design uses a
   skeleton, an error state that is a blank screen
 - **Language** — untranslated strings, raw i18n keys (`home.title`), placeholder or lorem text,

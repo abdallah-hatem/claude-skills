@@ -21,6 +21,7 @@ Abdallah's frontend conventions. Every screen ships reusable, generic, internati
 | Forms | shadcn `<Form>` + react-hook-form + zod |
 | Design | tokens as CSS variables in `globals.css`, mapped to Tailwind — see [design-system.md](design-system.md) |
 | Animation | `motion` for choreography; Tailwind transitions and `tw-animate-css` for state |
+| Icons | one premium set chosen with the design system and mocked first — e.g. Phosphor (duotone), Solar (bold-duotone), Hugeicons — never shadcn's default lucide outline set in visible UI |
 
 **The existing project's stack always wins.** In a repo that already picked Vite, Redux, or anything else, follow the repo. This table is for new projects and for gaps a repo hasn't filled. Never migrate a working project to match it.
 
@@ -66,6 +67,23 @@ are screenshotted and shown as they land, not held for a reply.
 
 When shadcn has no equivalent, style it yourself until it belongs to the design: `appearance-none`, explicit border, radius, padding, background, and hover / focus-visible / disabled states. A control that still looks like the OS drew it is unfinished.
 
+**Nothing ships looking like the library either.** shadcn's defaults are a starting point: form
+controls ship with `bg-transparent` (the page shows through), and `Select` / `DropdownMenu` lists
+are a cramped grey-highlight list not aligned to their trigger. When the design system lands, give
+every form control a solid surface and design the popover content — aligned to the trigger,
+reading-size rows, themed highlight and check, `scrollbar-clean`, stacked above floating UI — in
+the shared primitives. Judge each control **open**, not just closed. See
+[ui-patterns.md](ui-patterns.md#form-controls-and-popovers-look-designed).
+
+**Icons never look stock.** The thin one-weight outline icons that ship with shadcn (lucide, and
+heroicons outline likewise) read as basic and native, most of all on actions people click every
+day: edit, delete, view, publish, menus, nav. Pick one icon set when the design system is set —
+show the user the real actions and nav drawn in two or three candidate sets, and build with the one
+they choose — then use it everywhere a person sees an icon: buttons, row menus, nav, empty states,
+toasts. Wrap it in one `Icon` module so the set lives in one place. A brand's own drawn icons
+(feature medallions and the like) stay bespoke; plain UI chrome (a chevron, a close ✕) may stay
+minimal but comes from the same set.
+
 **Every clickable thing gets `cursor-pointer`.** A native `<button>` renders the arrow cursor, not the hand — so buttons need it explicitly, along with links, clickable rows and cards, tabs, icon buttons, and any custom control. Disabled gets `cursor-not-allowed` instead, never `cursor-pointer`. Nothing non-interactive gets it.
 
 ## Forms
@@ -75,8 +93,11 @@ the input). Every input gets a placeholder **and** keeps its label — the place
 shape of a valid answer, never restates the name. Both are translated strings.
 
 Prose fields — description, notes, address, comment — are a `<Textarea>` with 3–4 rows, never
-a single-line input. Fields are 16px on mobile (`text-base md:text-sm`) or iOS Safari zooms in
-and stays zoomed. Number inputs ship with no spin buttons and ignore the wheel. Numbers a person reads as
+a single-line input. Long-form text in an admin (descriptions, article bodies) is a plain
+auto-growing textarea too, not a rich-text editor, unless the user asks for formatting; when the
+stored format is HTML, convert blank-line paragraphs on save and back to plain text on load.
+Fields are 16px on mobile (`text-base md:text-sm`) or iOS Safari zooms in and stays zoomed.
+Number inputs ship with no spin buttons and ignore the wheel. Numbers a person reads as
 quantities are displayed grouped — `100,000`, not `100000` — with the form holding a number
 and the input holding a string. Egyptian mobile fields accept exactly 11 digits starting with
 `01`: a 12th digit or an impossible prefix is never entered, and a pasted `+20` number is
@@ -85,6 +106,12 @@ normalised.
 See [forms.md](forms.md).
 
 ## Tables and pagination
+
+**Every list a person manages is paginated, and the pagination is always visible** — a summary
+("Showing 1–10 of 14"), first / previous / numbered pages / next / last, and a page-size select,
+even when everything fits on one page. A bar that hides itself when the list fits makes
+pagination look missing on every demo and early dataset. Lists reordered by drag (featured,
+FAQ) are the exception: they need the whole list.
 
 **No control that re-queries a list ever moves the viewport** — pagination, search, sort,
 filter, page size, tab switches, "load more". The user is looking at the rows; jumping to the
@@ -117,6 +144,12 @@ only the body scrolls (`min-h-0 flex-1 overflow-y-auto overscroll-contain`).
 
 **Scroll lives inside the container** — modal, sheet, drawer, popover, dropdown — never on the
 page behind it.
+
+**Opening an overlay never moves the page.** Radix's scroll lock adds a scrollbar-width margin to
+`<body>`; with `scrollbar-gutter: stable` on `<html>` that compensation is applied twice and the
+page jumps sideways on every open. Neutralise the body margin once in `globals.css`, and guard it
+with a test that compares element positions before and after opening. See
+[ui-patterns.md](ui-patterns.md#opening-an-overlay-never-moves-the-page).
 
 See [ui-patterns.md](ui-patterns.md).
 
@@ -230,6 +263,9 @@ The bar stays inside its container: a scroll region never touches a rounded bord
 never runs over the edge or past the corners. In a dialog only the body scrolls, inset from the
 card's sides, with the title and the actions fixed above and below it.
 
+A scroll cue — an edge shadow or fade on a table that scrolls sideways — shows only when content
+actually overflows on that side, and never on a container that fits.
+
 Never a JS scrollbar library. They break keyboard scrolling, momentum, and screen readers, and they cost a dependency for something CSS does in twenty lines.
 
 ## Responsive
@@ -297,6 +333,21 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 - A dropdown that opens empty — no "nothing to choose yet" message, no hint where the first one is
   made
 
+- A form control (input, textarea, select trigger, search box, filter, date picker) with
+  `bg-transparent` — the page shows through and it reads as unfinished
+
+- A select or dropdown list left at the library look: not aligned to its trigger, small grey rows,
+  native ▲▼ scrollbar buttons, or opening underneath a cookie bar or floating button
+
+- Opening a select, dropdown, dialog or sheet that shifts the page sideways
+
+- A scroll shadow drawn on a table or row that doesn't overflow
+
+- A rich-text editor where the user asked for, or never needed, a plain textarea
+
+- shadcn's default lucide outline icons on visible actions (edit, delete, view, publish, menus,
+  nav) — or icons from two sets mixed on one screen
+
 - A header, menu or role-gated button that is missing for a moment on refresh — the server rendered
   signed out because the session lived only in client storage
 
@@ -333,6 +384,7 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 - A hardcoded placeholder string
 - `router.push` or `<Link>` without `scroll: false` on any list control — pagination, search, sort, filter, page size, tabs
 - A table that falls back to skeletons on page change instead of dimming its rows
+- A managed list with no pagination, or a pagination bar that hides itself when the list fits
 - A description, notes, or comment field as a single-line `<Input>`
 - A length limit with no visible counter
 - A raw `100000` shown to a user where `100,000` belongs
