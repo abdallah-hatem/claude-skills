@@ -21,6 +21,7 @@ Abdallah's frontend conventions. Every screen ships reusable, generic, internati
 | Forms | shadcn `<Form>` + react-hook-form + zod |
 | Design | tokens as CSS variables in `globals.css`, mapped to Tailwind — see [design-system.md](design-system.md) |
 | Animation | `motion` for choreography; Tailwind transitions and `tw-animate-css` for state |
+| Icons | one premium set chosen with the design system and mocked first — e.g. Phosphor (duotone), Solar (bold-duotone), Hugeicons — never shadcn's default lucide outline set in visible UI |
 
 **The existing project's stack always wins.** In a repo that already picked Vite, Redux, or anything else, follow the repo. This table is for new projects and for gaps a repo hasn't filled. Never migrate a working project to match it.
 
@@ -73,6 +74,15 @@ every form control a solid surface and design the popover content — aligned to
 reading-size rows, themed highlight and check, `scrollbar-clean`, stacked above floating UI — in
 the shared primitives. Judge each control **open**, not just closed. See
 [ui-patterns.md](ui-patterns.md#form-controls-and-popovers-look-designed).
+
+**Icons never look stock.** The thin one-weight outline icons that ship with shadcn (lucide, and
+heroicons outline likewise) read as basic and native, most of all on actions people click every
+day: edit, delete, view, publish, menus, nav. Pick one icon set when the design system is set —
+show the user the real actions and nav drawn in two or three candidate sets, and build with the one
+they choose — then use it everywhere a person sees an icon: buttons, row menus, nav, empty states,
+toasts. Wrap it in one `Icon` module so the set lives in one place. A brand's own drawn icons
+(feature medallions and the like) stay bespoke; plain UI chrome (a chevron, a close ✕) may stay
+minimal but comes from the same set.
 
 **Every clickable thing gets `cursor-pointer`.** A native `<button>` renders the arrow cursor, not the hand — so buttons need it explicitly, along with links, clickable rows and cards, tabs, icon buttons, and any custom control. Disabled gets `cursor-not-allowed` instead, never `cursor-pointer`. Nothing non-interactive gets it.
 
@@ -334,6 +344,9 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 - A scroll shadow drawn on a table or row that doesn't overflow
 
 - A rich-text editor where the user asked for, or never needed, a plain textarea
+
+- shadcn's default lucide outline icons on visible actions (edit, delete, view, publish, menus,
+  nav) — or icons from two sets mixed on one screen
 
 - A header, menu or role-gated button that is missing for a moment on refresh — the server rendered
   signed out because the session lived only in client storage
