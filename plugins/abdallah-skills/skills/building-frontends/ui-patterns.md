@@ -82,14 +82,21 @@ scrolling, momentum, and screen readers keep working.
   .scrollbar-clean {
     /* Reserve the gutter so content doesn't jump when the bar appears. */
     scrollbar-gutter: stable;
-
-    /* Standard — Firefox, and Chrome 121+. */
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 
-  /* WebKit/Blink fallback. Harmless where the standard properties already applied. */
+  /* Standard properties only where the WebKit pseudo-elements don't exist (Firefox). In
+     Chrome 121+ `scrollbar-width` overrides the ::-webkit-scrollbar styles below, and on
+     Windows that brings back the native ▲▼ arrow buttons and a grey thumb. */
+  @supports not selector(::-webkit-scrollbar) {
+    .scrollbar-clean {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) transparent;
+    }
+  }
+
+  /* WebKit/Blink: Chrome, Edge, Safari. */
   .scrollbar-clean::-webkit-scrollbar { width: 10px; height: 10px; }
+  .scrollbar-clean::-webkit-scrollbar-button { display: none; }
   .scrollbar-clean::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-clean::-webkit-scrollbar-corner { background: transparent; }
   .scrollbar-clean::-webkit-scrollbar-thumb {
@@ -222,3 +229,59 @@ behind the thing it belongs to.
 - Actions live in a fixed footer, never inside the scrolling body.
 - Every scroll body gets `scrollbar-clean`, like every other scroll container.
 
+## Form controls and popovers look designed
+
+shadcn's primitives are a starting point, not a finished look. Two defaults have to be replaced in
+the shared primitives the day the design system lands, not screen by screen later:
+
+- **Form controls get a solid surface.** `Input`, `Textarea`, the `Select` trigger, search boxes,
+  filter controls and date-picker triggers ship with `bg-transparent`, so the page shows through
+  and the field reads as unfinished. Give them a surface token (`bg-card`, or a dedicated
+  `--input` background) with a clear border, a visible focus ring and a distinct disabled state.
+  Ghost buttons and table-row hovers keep their transparency; form controls don't.
+- **Popover content is designed.** A `Select`, `DropdownMenu` or `Combobox` list is aligned to its
+  trigger (`position="popper"`, `sideOffset`, width `var(--radix-select-trigger-width)` with a
+  sensible min-width), uses reading-size rows (40–44px), a themed highlight (not the grey
+  default), a themed check on the inline-end side, a max height with `scrollbar-clean`, and a
+  short fade + scale from the trigger. Put the look in the shared primitive with variants (a
+  public tone and a quieter admin tone) — never one-off overrides at call sites.
+- **Popovers stack above floating UI.** A dropdown opened near the bottom of the screen must sit
+  above the cookie bar, chat or WhatsApp button and toasts. Give overlays a z-index token
+  (`--z-popover`) above every fixed element, instead of lowering the fixed elements.
+
+Judge each one **open**, at phone and desktop, in both languages: does it look designed for this
+product, or like a library default?
+
+## Opening an overlay never moves the page
+
+Radix overlays (Dialog, Sheet, Select, DropdownMenu, Popover) lock page scroll with
+`react-remove-scroll`, which hides the page scrollbar and adds `margin-right` (the scrollbar's
+width) to `<body>` so the content doesn't jump. If `<html>` already reserves the gutter with
+`scrollbar-gutter: stable`, that compensation is applied **twice** and the whole page jumps
+sideways every time something opens. Keep the gutter and neutralise the margin, once, in
+`globals.css`:
+
+```css
+html { scrollbar-gutter: stable; }
+
+/* react-remove-scroll compensates for the scrollbar it hides; the stable gutter already did. */
+html body[data-scroll-locked] {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+```
+
+Fixed elements (header, floating buttons, cookie bar) must not jump either. Guard it with a
+Playwright test: record the `getBoundingClientRect()` of a heading, the header and every fixed
+element, open a select, a dropdown menu and (at phone width) the menu sheet, and assert the rects
+are identical, in LTR and RTL. A screenshot taken after opening can't show the jump; only the
+before/after measurement can.
+
+## Scroll cues only when there is something to scroll to
+
+An edge shadow or fade that says "this table scrolls sideways" appears only when the content
+actually overflows **on that side**: the end cue before the user scrolls to the end, the start cue
+after they scroll away from the start, nothing when it fits. Measure with a `ResizeObserver` and a
+scroll listener on the scroll container, and mirror it in RTL. A cue drawn on a container that
+fits is a static grey bar that means nothing.
