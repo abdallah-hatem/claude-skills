@@ -97,6 +97,12 @@ See [forms.md](forms.md).
 
 ## Tables and pagination
 
+**Every list a person manages is paginated, and the pagination is always visible** — a summary
+("Showing 1–10 of 14"), first / previous / numbered pages / next / last, and a page-size select,
+even when everything fits on one page. A bar that hides itself when the list fits makes
+pagination look missing on every demo and early dataset. Lists reordered by drag (featured,
+FAQ) are the exception: they need the whole list.
+
 **No control that re-queries a list ever moves the viewport** — pagination, search, sort,
 filter, page size, tab switches, "load more". The user is looking at the rows; jumping to the
 top of the page means scrolling back down to see what they just asked for, and the control
@@ -365,6 +371,7 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 - A hardcoded placeholder string
 - `router.push` or `<Link>` without `scroll: false` on any list control — pagination, search, sort, filter, page size, tabs
 - A table that falls back to skeletons on page change instead of dimming its rows
+- A managed list with no pagination, or a pagination bar that hides itself when the list fits
 - A description, notes, or comment field as a single-line `<Input>`
 - A length limit with no visible counter
 - A raw `100000` shown to a user where `100,000` belongs
