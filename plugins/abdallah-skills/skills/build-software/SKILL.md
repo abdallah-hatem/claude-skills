@@ -83,6 +83,20 @@ Business terms only — no table names, endpoints, or components, or it goes sta
 3. **When the business changes mid-build, the doc changes first.** Then the alignment review on the
    plan finds the tasks the change affects, then the code changes.
 
+## The design gate
+
+How much a visual change needs the user depends on its size and the run mode — one rule, used by
+`building-frontends` and `designing-mobile` too:
+
+| Change | Guided / autonomous to preview | Fully autonomous |
+|---|---|---|
+| **Big** — a new app's look, a restyle, a new design direction, a new area or page type with its own look, anything that changes how the whole app or a whole area feels | Mock **three** clearly different, bold options (light and dark; phone screens for an app), show them, **stop for a pick** — or a mix | No mockups, no question. Choose the direction yourself, bold rather than quiet, record it and why in the build log, and build |
+| **Small** — a screen, component or tweak built from the existing design system, a new variant, a layout that follows an existing pattern | Decide yourself and build; show a screenshot as it lands, don't wait for a reply | Decide yourself and build |
+
+When unsure whether a change is big, it is big — outside a fully autonomous run. A fully autonomous
+run never stops for design: it keeps going until the goal is done, and the screenshots of every
+screen go in the build log for the user to look at afterwards.
+
 ## Test credentials
 
 Every test login — local, preview, and production before launch — goes in `CREDENTIALS.local.md` at
@@ -146,15 +160,16 @@ In a guided run, each approval gate ends with a one-line suggestion to `/clear` 
 | 1 | Intake | `grilling` (or `superpowers:brainstorming`) | — |
 | 2 | Spec + business doc | — | **user approves both** |
 | 3 | Contract | `abdallah-skills:building-backends` (or the existing backend) | — |
-| 4 | Design system | `frontend-design` (or `epic-design` for a marketing site); `designing-mobile` for an app | **user approves the look** |
+| 4 | Design system | `frontend-design` (or `epic-design` for a marketing site); `designing-mobile` for an app | **user picks one of three mockups** — except fully autonomous ([the design gate](#the-design-gate)) |
 | 5 | Plan | `superpowers:writing-plans` | **classes, edge cases, alignment review** |
 | 6 | Build | `abdallah-skills:building-backends` / `building-frontends` / `building-mobile`, per task | **tests by class · review for `logic`** |
 | 7 | Verify | `superpowers:verification-before-completion` | **all green + smoke check + UI audit** |
 | 8 | Ship | `abdallah-skills:deploying-to-vercel`; `building-mobile` → `release.md` for an app | **dev: automatic · production: user says go · rollback on failure · a store build always waits for the user** |
 
 In an autonomous run, every gate that waits for the user is decided with the recommended default and
-logged in `docs/BUILD_LOG.md` instead — **except the design look (stage 4), which always waits for
-the user's pick** ([autonomous.md](autonomous.md)).
+logged in `docs/BUILD_LOG.md` instead. **Autonomous to preview still stops for big design choices**
+(three mockups, the user picks); **fully autonomous never stops for design** — see the design gate
+below and [autonomous.md](autonomous.md).
 
 ### 1. Intake
 
@@ -190,9 +205,12 @@ following `building-frontends` → `design-system.md`: colour tokens for light a
 Tailwind, fonts through `next/font` covering Arabic, motion tokens, and `docs/DESIGN.md` with the
 feel, colour roles, type, motion, and what to avoid — no values.
 
-Show the user the palette, the type scale, and one representative screen in light and dark — a preview
-page, or a mockup through the `design` skill. **Stop for approval.** A look agreed now is cheap; a
-look changed after twenty screens is a rewrite.
+A new app's look is a big design change, so it follows [the design gate](#the-design-gate): mock
+**three** clearly different, bold directions — each with its palette, type scale and one
+representative screen in light and dark, on one preview page or through the `design` skill — and
+**stop for the user's pick** (or a mix). A look agreed now is cheap; a look changed after twenty
+screens is a rewrite. In a fully autonomous run, choose the direction yourself, log it with the
+reason, and build — no mockups, no stop.
 
 **For a mobile app, load `designing-mobile`** instead: native-first with the brand on top, tokens in
 NativeWind (shared with the web through `packages/shared` when both exist), and the React Native
@@ -341,7 +359,8 @@ Each reference file ends with the red flags for its own stage. These cut across 
 - An app built or changed without the house lint config, or a task committed with `lint` or `typecheck` failing
 - Independent tasks built one at a time because no parallel check was run
 - Parallel tasks queuing for one shared test database, or a full e2e run per task instead of once per deploy
-- Frontend screens built before the design system is approved
+- Frontend screens built before the design system exists — or, outside a fully autonomous run, before the user picked it from three mockups
+- A fully autonomous run that stops to ask about design or waits on a mockup
 - A task with no class, or one classed down to avoid its tests
 - A test that checks appearance instead of behavior
 - A `CONFLICTS` verdict overridden without asking the user

@@ -19,19 +19,21 @@ intent), big confident type, one or two signature moments. A "quiet", "minimal",
 content speak" direction reads as basic and generic; it was rejected outright once and cost a full
 restyle. When unsure, go further, not safer.
 
-**Show the direction before building on it — in every run mode, autonomous included.** Mock two or
-three clearly different directions as phone screens (welcome, the core screen, a list, a detail)
-on one page, let the user pick or mix, then build tokens. A look chosen by the agent alone is not
-approved.
+**Show the direction before building on it — except in a fully autonomous run.** Mock **three**
+clearly different directions as phone screens (welcome, the core screen, a list, a detail) on one
+page, let the user pick or mix, then build tokens. In a fully autonomous `/build-software` run
+there are no mockups and no question: choose the direction yourself (bold, per the rules above),
+record it and why in the build log, and build. The full rule: `build-software` → the design gate.
 
-**Every visual change after that is shown too, not only the direction.** The user judges by
-looking, not by reading — a yes to a look described in prose is not a yes to the result. Before
-building a new screen, a restyle, a new sheet or component with a visible look, or any choice
-between visual options (fill vs. letterbox, one animation style vs. another), mock it as a phone
-screen in light and dark, show it, and wait for the user's OK. Mock each option, not a menu of
-descriptions; for a named reference app, mock what that app actually does. In an autonomous
-`/build-software` run the stop is the direction and kit-preview approval; screens built on them
-are screenshotted from the simulator and shown as they land, not held for a reply.
+**After the direction, size decides.** The user judges by looking, not by reading — a yes to a
+look described in prose is not a yes to the result.
+- **Big** — a restyle, a new area with its own look, a choice that changes how the app feels
+  (fill vs. letterbox across the feed, a new navigation pattern): three phone-screen mockups in
+  light and dark, wait for the pick. Mock each option; for a named reference app, mock what that
+  app actually does.
+- **Small** — a screen, sheet or component built from the kit and tokens: decide and build;
+  screenshot it from the simulator and show it as it lands, without waiting.
+- **Fully autonomous run:** no mockups and no stops for either.
 
 Before any token or screen, write the product's personality in one sentence and commit to it:
 "a calm, exact ledger for busy shop owners", "a loud, quick companion for a pickup football
@@ -207,8 +209,9 @@ React Native their principles hold but their code doesn't, so build with `expo:e
    does, the haptic moments, the signature moments, and the don'ts. A hex code there goes stale.
 4. **A kit preview screen for approval** — a dev-only route (`app/(dev)/kit.tsx`, behind
    `__DEV__`) showing buttons in every variant and state, inputs with label, placeholder and error,
-   a sheet, a toast, a list row, an empty state and a skeleton, in light and dark. The user approves
-   it before screens are built.
+   a sheet, a toast, a list row, an empty state and a skeleton, in light and dark. It is shown to
+   the user when it's ready (logged in a fully autonomous run), not held for a reply — the
+   direction was the decision.
 5. **Review by screenshot** on iPhone and iPad (and an Android device when Android ships), in LTR
    and RTL, light and dark — the `abdallah-skills:ui-auditor` agent takes and checks the set. Run
    `expo:expo-design-system`'s self-critique pass on each; a defect that recurs is fixed in the
@@ -216,16 +219,17 @@ React Native their principles hold but their code doesn't, so build with `expo:e
 
 ## Red flags
 
-- A screen built before the personality sentence, the tokens and the approved kit preview exist
+- A screen built before the personality sentence, the tokens and the kit preview exist
 - The brand colour is the platform default blue, or no one can say why it is that colour
 - Cards around every row, everything centred, emoji as icons, or two icon families
 - A stock icon (Lucide, SF Symbol, Material) anywhere in the app, tab bar included
 - A card or photo frame rounded on some corners only
 - An iOS large title or a header bar on a tab screen; a status-bar strip that doesn't match the
   page backdrop behind it
-- A quiet/minimal direction, or a direction the user never saw mocked up
-- A new screen, restyle, or visual choice built from a prose description the user never saw
-  mocked up
+- A quiet/minimal direction
+- Outside a fully autonomous run: a direction or other big visual change built without the user
+  picking from three mockups
+- In a fully autonomous run: stopping to ask about design, or showing mockups and waiting
 - A radius, shadow, or spacing value that is not in the set
 - A className override on a kit component to get a new look — that is a missing variant
 - Two empty states, confirmations, or form errors that look different

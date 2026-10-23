@@ -50,14 +50,16 @@ landing pages and anything scroll-driven, `epic-design` sets the direction inste
 
 See [design-system.md](design-system.md).
 
-**Show it before you build it.** The user judges visuals by looking, not by reading — a yes to a
-look described in prose is not a yes to the result. Before building a new page, a new component
-with a visible look, a restyle, or any choice between visual options, render a mockup (an HTML
-preview page or the `design` skill) in light and dark, show it, and wait for the user's OK. When
-choosing between approaches, mock each one — a sample, not a menu of descriptions. When the user
-names a reference app ("like Instagram"), mock what that app actually does. In an autonomous
-`/build-software` run the stop is the design-system approval; screens built on an approved system
-are screenshotted and shown as they land, not held for a reply.
+**Big design changes are shown before they're built; small ones aren't.** The user judges visuals by
+looking, not by reading — a yes to a look described in prose is not a yes to the result.
+- **Big** — a new app's look, a restyle, a new design direction, a new area with its own look:
+  render **three** clearly different mockups (an HTML preview page or the `design` skill) in light
+  and dark, show them, and wait for the user's pick. Mock each option, not a menu of descriptions;
+  for a named reference app ("like Instagram"), mock what that app actually does.
+- **Small** — a page, component or tweak built from the existing design system: decide and build;
+  show a screenshot when it lands, without waiting for a reply.
+- **Fully autonomous `/build-software` run:** no mockups and no questions, big or small — choose,
+  log the choice, build. The full rule: `build-software` → the design gate.
 
 ## Components
 

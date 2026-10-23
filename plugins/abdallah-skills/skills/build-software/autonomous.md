@@ -21,8 +21,8 @@ or `/build-software guided <goal>`.
 
 Choosing an autonomous mode **is** the user's permission, given once, for everything that mode
 covers: approving the spec, pushing, opening PRs, merging, and — for fully autonomous — deploying
-to production. Record it at the top of the build log. **It is not permission to choose the look**:
-see the design exception below.
+to production. Record it at the top of the build log. **Fully autonomous also covers the look**;
+autonomous to preview doesn't — see design below.
 
 ## The one question that still comes first
 
@@ -34,11 +34,16 @@ me something" — ask what the app is for, once, then go. Never invent the goal.
 - **Intake** — answer every question from the request, then the recommended default.
 - **Spec, business doc, feature spec** — produce them as usual, then approve them yourself against
   the goal instead of waiting.
-- **Design is the exception — it always waits for the user, in every mode.** Mock two or three
-  clearly different, bold directions (`designing-mobile` / `frontend-design`), show them, and stop
-  for a pick. Taste can't be judged against the goal: a self-approved "quiet" direction was
-  rejected as "very bad, so basic" after every screen had been built on it, and cost a full
-  restyle. Keep building anything that doesn't depend on the look while waiting.
+- **Design follows [the design gate](SKILL.md#the-design-gate).**
+  - **Autonomous to preview:** a big design change (the app's look, a restyle, a new direction)
+    still stops — mock three clearly different, bold options (`designing-mobile` /
+    `frontend-design`), show them, wait for a pick, and keep building anything that doesn't depend
+    on the look meanwhile. Small changes inside the design system are decided and built.
+  - **Fully autonomous:** never stops for design and shows no mockups. Choose the direction
+    yourself and build until the goal is done. Go bold, not quiet — a self-chosen "quiet" direction
+    was once rejected as "very bad, so basic" after every screen was built on it. Record the
+    direction and the reason in the build log, and put a screenshot of every screen there for the
+    user to review afterwards.
 - **Alignment review `CONFLICTS`** — the business doc wins; fix the code. There is no user to move the
   business mid-run, so the doc written at the start stays the authority.
 - **Anything with more than one reasonable answer** — take the recommended one.
