@@ -21,8 +21,8 @@ or `/build-software guided <goal>`.
 
 Choosing an autonomous mode **is** the user's permission, given once, for everything that mode
 covers: approving the spec, pushing, opening PRs, merging, and — for fully autonomous — deploying
-to production. Record it at the top of the build log. **Fully autonomous also covers the look**;
-autonomous to preview doesn't — see design below.
+to production. Record it at the top of the build log. **Both autonomous modes also cover the
+look** — see design below.
 
 ## The one question that still comes first
 
@@ -35,12 +35,8 @@ me something" — ask what the app is for, once, then go. Never invent the goal.
 - **Spec, business doc, feature spec** — produce them as usual, then approve them yourself against
   the goal instead of waiting.
 - **Design follows [the design gate](SKILL.md#the-design-gate).**
-  - **Autonomous to preview:** a big design change (the app's look, a restyle, a new direction)
-    still stops — mock three clearly different, bold options (`designing-mobile` /
-    `frontend-design`), show them, wait for a pick, and keep building anything that doesn't depend
-    on the look meanwhile. Small changes inside the design system are decided and built.
-  - **Fully autonomous:** never stops for design and shows no mockups. Choose the direction
-    yourself and build until the goal is done. Go bold, not quiet — a self-chosen "quiet" direction
+  - **Both autonomous modes — to preview and fully:** never stop for design and show no mockups,
+    big change or small. Choose the direction yourself and build until the goal is done. Go bold, not quiet — a self-chosen "quiet" direction
     was once rejected as "very bad, so basic" after every screen was built on it. Record the
     direction and the reason in the build log, and put a screenshot of every screen there for the
     user to review afterwards.

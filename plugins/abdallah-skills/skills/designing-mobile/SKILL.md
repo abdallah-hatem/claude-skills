@@ -19,10 +19,10 @@ intent), big confident type, one or two signature moments. A "quiet", "minimal",
 content speak" direction reads as basic and generic; it was rejected outright once and cost a full
 restyle. When unsure, go further, not safer.
 
-**Show the direction before building on it — except in a fully autonomous run.** Mock **three**
+**Show the direction before building on it — in a guided run.** Mock **three**
 clearly different directions as phone screens (welcome, the core screen, a list, a detail) on one
-page, let the user pick or mix, then build tokens. In a fully autonomous `/build-software` run
-there are no mockups and no question: choose the direction yourself (bold, per the rules above),
+page, let the user pick or mix, then build tokens. In an autonomous `/build-software` run (to
+preview or fully) there are no mockups and no question: choose the direction yourself (bold, per the rules above),
 record it and why in the build log, and build. The full rule: `build-software` → the design gate.
 
 **After the direction, size decides.** The user judges by looking, not by reading — a yes to a
@@ -33,7 +33,7 @@ look described in prose is not a yes to the result.
   app actually does.
 - **Small** — a screen, sheet or component built from the kit and tokens: decide and build;
   screenshot it from the simulator and show it as it lands, without waiting.
-- **Fully autonomous run:** no mockups and no stops for either.
+- **Autonomous run (to preview or fully):** no mockups and no stops for either.
 
 Before any token or screen, write the product's personality in one sentence and commit to it:
 "a calm, exact ledger for busy shop owners", "a loud, quick companion for a pickup football
@@ -210,7 +210,7 @@ React Native their principles hold but their code doesn't, so build with `expo:e
 4. **A kit preview screen for approval** — a dev-only route (`app/(dev)/kit.tsx`, behind
    `__DEV__`) showing buttons in every variant and state, inputs with label, placeholder and error,
    a sheet, a toast, a list row, an empty state and a skeleton, in light and dark. It is shown to
-   the user when it's ready (logged in a fully autonomous run), not held for a reply — the
+   the user when it's ready (logged in an autonomous run), not held for a reply — the
    direction was the decision.
 5. **Review by screenshot** on iPhone and iPad (and an Android device when Android ships), in LTR
    and RTL, light and dark — the `abdallah-skills:ui-auditor` agent takes and checks the set. Run
@@ -227,9 +227,9 @@ React Native their principles hold but their code doesn't, so build with `expo:e
 - An iOS large title or a header bar on a tab screen; a status-bar strip that doesn't match the
   page backdrop behind it
 - A quiet/minimal direction
-- Outside a fully autonomous run: a direction or other big visual change built without the user
+- In a guided run: a direction or other big visual change built without the user
   picking from three mockups
-- In a fully autonomous run: stopping to ask about design, or showing mockups and waiting
+- In an autonomous run: stopping to ask about design, or showing mockups and waiting
 - A radius, shadow, or spacing value that is not in the set
 - A className override on a kit component to get a new look — that is a missing variant
 - Two empty states, confirmations, or form errors that look different

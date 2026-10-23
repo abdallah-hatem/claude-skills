@@ -58,7 +58,7 @@ looking, not by reading — a yes to a look described in prose is not a yes to t
   for a named reference app ("like Instagram"), mock what that app actually does.
 - **Small** — a page, component or tweak built from the existing design system: decide and build;
   show a screenshot when it lands, without waiting for a reply.
-- **Fully autonomous `/build-software` run:** no mockups and no questions, big or small — choose,
+- **Autonomous `/build-software` run (to preview or fully):** no mockups and no questions, big or small — choose,
   log the choice, build. The full rule: `build-software` → the design gate.
 
 ## Components
