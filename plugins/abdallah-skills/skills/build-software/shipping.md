@@ -45,9 +45,24 @@ gh repo edit --default-branch dev
 Branches are cut from `dev`: `feature/<name>`, `fix/<name>`, `chore/<name>`. Commit messages are
 conventional: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`, `docs:`.
 
-## feature → dev (by default)
+**`dev` holds only what ships next; a release takes all of it.**
 
-Once Verify has passed for the branch's tasks:
+- `production` is what users run. `dev` is the next release, and the branch day-to-day work starts from.
+- **A big feature lives on its own branch until the user has seen or tested it** — screenshots, or the
+  user running that branch locally. Only then does it merge into `dev`. Small fixes and chores still merge
+  into `dev` by default (below).
+- Merge into `dev` only what the user wants in the next release. Work they are unsure of stays on its
+  branch, however finished it is.
+- **Never ship part of `dev`.** A release merges all of `dev` into `production`. Something on `dev` that
+  should not ship is first taken off `dev` — reverted, or parked on its own branch so it can be merged back
+  later — and only then is `dev` released. Picking pieces of `dev` into `production` by hand leaves the two
+  branches disagreeing and turns every later release into a careful rebuild.
+- An urgent production fix may go straight to `production`; merge it back into `dev` the same day.
+- The main checkout sits on `dev`.
+
+## feature → dev (by default; a big feature after the user's look)
+
+Once Verify has passed for the branch's tasks — and, for a big feature, once the user has seen or tested it:
 
 ```bash
 git fetch origin

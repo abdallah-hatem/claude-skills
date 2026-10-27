@@ -285,8 +285,10 @@ login page.
 Everything reaches users by one path — details in [shipping.md](shipping.md):
 
 1. **feature → `dev`, by default.** Once Verify passes, open a PR into `dev` and merge it, then run the
-   smoke specs against the preview URL.
-2. **`dev` → `production`, on the user's go-ahead.** Run the alignment review over everything since
+   smoke specs against the preview URL. **A big feature waits on its own branch until the user has seen or
+   tested it**; `dev` holds only what ships next.
+2. **`dev` → `production`, on the user's go-ahead — all of `dev`, never part of it.** Anything on `dev`
+   that should not ship is taken off `dev` (or parked on its own branch) first. Run the alignment review over everything since
    the last release, open a release PR, then **stop** — merging it is the production deploy.
 3. **Smoke-check production after every deploy.** If the read-only specs fail, roll back first, then
    fix forward through `dev`.
