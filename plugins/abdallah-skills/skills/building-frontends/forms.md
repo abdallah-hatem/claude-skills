@@ -65,6 +65,15 @@ a different message from a search that matches nothing ("No matches"), and both 
 component, not in each page. When the record can be made from the form, the picker's `+`
 quick-create is the way out; otherwise the hint names the page that makes it. Test it: open each
 picker with an empty list, and with a search that matches nothing.
+
+### A picker that depends on another
+
+When a dropdown's options come from another field's choice (city after country, type after
+category), it is **disabled until that field has a value**: never open onto an empty or wrong list.
+While blocked, its placeholder says what to pick first ("Choose a category first", translated) and
+the cursor is `not-allowed`. Changing the parent clears a child value that no longer fits; clearing
+the parent blocks the child again. The shared select takes a `disabled` prop for this, so pages
+don't hand-roll it. Test both states: blocked with the parent empty, enabled once it has a value.
 - **Translated** like every other string (both locales), with numbers kept left-to-right in RTL.
 
 ```tsx
