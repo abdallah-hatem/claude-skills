@@ -60,6 +60,10 @@ it streams in automatically, no `isLoading` state needed.
 - For mutations, update optimistically. A skeleton after "Save" is a regression.
 - Under ~200ms, render nothing. A skeleton that appears and vanishes reads as a glitch.
 - Never animate a skeleton faster than ~1.5s per cycle; quicker pulses read as an error state.
+- The skeleton traces the component **in the state it opens in**. A disclosure, accordion,
+  tab or panel that starts open is skeletoned open (its rows), one that starts folded is
+  skeletoned as the folded bar. Changing a default state (open/closed, which tab, how many
+  rows show) means changing the skeleton in the same change, with a test that pins its shape.
 
 ## Scrollbar
 
