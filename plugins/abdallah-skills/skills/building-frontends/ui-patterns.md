@@ -264,13 +264,21 @@ sideways every time something opens. Keep the gutter and neutralise the margin, 
 ```css
 html { scrollbar-gutter: stable; }
 
-/* react-remove-scroll compensates for the scrollbar it hides; the stable gutter already did. */
+/* The page never loses its scrollbar: Chrome drops even a stable gutter once the lock hides
+   overflow on <body> (or on <html>), and the page shifts. Keep overflow visible and undo the
+   margin the lock adds; the lock still blocks wheel and touch scrolling behind the modal. */
 html body[data-scroll-locked] {
+  overflow: visible !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   --removed-body-scroll-bar-size: 0px !important;
 }
 ```
+
+`scrollbar-gutter: stable` alone is **not** enough: measure `innerWidth -
+document.documentElement.getBoundingClientRect().width` before and after opening a dialog with
+real scrollbars (Playwright: `launchOptions: { ignoreDefaultArgs: ["--hide-scrollbars"] }`). If it
+drops to 0, the page moved. A failing shift test is never "machine noise" until that number says so.
 
 Fixed elements (header, floating buttons, cookie bar) must not jump either. Guard it with a
 Playwright test: record the `getBoundingClientRect()` of a heading, the header and every fixed
