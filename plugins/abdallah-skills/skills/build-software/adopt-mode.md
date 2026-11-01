@@ -28,7 +28,7 @@ take back only the answers:
 
 ## 2. Business doc and design doc
 
-Write `docs/BUSINESS_LOGIC.md` in the layout from `SKILL.md` — business, roles, entities and rules,
+Write `docs/BUSINESS_LOGIC.md` as the split index plus `docs/business/` section files, in the layout from `SKILL.md` — business, roles, entities and rules,
 flows, invariants, money, scope — **in business terms, describing what the code does now.** Scope
 lists what is built; Planned starts empty unless the repo's docs or the user name something.
 

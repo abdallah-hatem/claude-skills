@@ -11,6 +11,11 @@ Every run keeps a build log — a small index at `docs/BUILD_LOG.md` linking to 
 made on the user's behalf, guided runs the gates the user approved. Layout in `autonomous.md`. Read the
 index and only the files the work at hand needs; a brief names files, never the whole log.
 
+The index stays small (aim under ~15 KB): current stage, waiting on the user, blocked, next up, and the
+newest entries. Older entries move verbatim to `docs/build-log/history/<YYYY-MM>.md` at each phase end,
+or whenever the index passes that size. The business doc is split the same way (SKILL.md, "The business
+doc") — a large file every agent opens is paid for by every agent.
+
 - **Update `Current stage` at every stage and task boundary**, before moving on.
 - **Anything the run will need later is written to a file first** — the build log, the plan's
   checkboxes, the spec, the business doc.

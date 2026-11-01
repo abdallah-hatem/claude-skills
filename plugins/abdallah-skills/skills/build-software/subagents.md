@@ -107,7 +107,7 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   skill says. List every shared piece it creates (`common/`, `lib/`, `components/ui/`) by path in the
   report.
 - **Before changing a symbol other code uses,** grep for every caller and update each one.
-- **The business doc** — `docs/BUSINESS_LOGIC.md`, to read before starting.
+- **The business doc** — the `docs/business/` section files the task touches, by path (not the whole doc).
 - **The build-log files it needs, by path** — its phase's `docs/build-log/decisions/<phase>.md` and
   any `notes/` file that applies — never "read the build log". It writes its own report to
   `docs/build-log/waves/<feature>/<task>.md` and touches no other log file, so parallel tasks never

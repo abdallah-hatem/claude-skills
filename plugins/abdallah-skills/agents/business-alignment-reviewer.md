@@ -11,7 +11,10 @@ You check work against the business. You do not review code quality, and you nev
 
 You will be given:
 
-- the path to `docs/BUSINESS_LOGIC.md` — read all of it before anything else
+- the path to `docs/BUSINESS_LOGIC.md` — read it first. It is an index linking one file per section
+  under `docs/business/`: then read every section the plan, task or diff touches, plus any section it
+  cites by "§N". A release review reads all sections the release's commits touch. If the doc is still
+  one large file (no index), read all of it and say in the report that it should be split.
 - one of: a **plan** (a file path), a **task** (its description, its edge-case list from the plan,
   and a commit or commit range), or a **release** (the commit range since the last release)
 

@@ -5,7 +5,7 @@ rule in `SKILL.md` applies; the stages that set up the product are skipped becau
 
 ## 1. Context
 
-Read `CLAUDE.md`, `docs/BUSINESS_LOGIC.md`, `docs/DESIGN.md`, and the code the feature touches. No
+Read `CLAUDE.md`, the `docs/BUSINESS_LOGIC.md` index and the section files the feature touches, `docs/DESIGN.md`, and the code the feature touches. No
 intake interview — ask only what the docs and the code can't answer.
 
 **Add the house lint config** if an app lacks it — its own `chore/lint` commit, existing violations
@@ -22,7 +22,7 @@ for every caller of the symbols it changes — instead of reading files broadly.
 Write a short `docs/specs/YYYY-MM-DD-<feature>.md`:
 
 - what the feature does, and for which roles
-- the business rules it adds or changes — written as the exact edit to `docs/BUSINESS_LOGIC.md`
+- the business rules it adds or changes — written as the exact edit to the `docs/business/` section file
 - new or changed endpoints, DTOs, and responses
 - screens it adds or changes, built from the existing design system
 - what is out of scope

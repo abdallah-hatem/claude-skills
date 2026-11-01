@@ -77,9 +77,21 @@ A spec records one decision; this file is what is true **now**. It holds:
 
 Business terms only — no table names, endpoints, or components, or it goes stale with every refactor.
 
-1. **Read it before every task.** It is how a new session, or a subagent, recovers the business.
-2. **Every behavior change updates it in the same commit** and bumps its `Last updated` line.
-   Otherwise the task isn't done.
+**It is split from the start.** `docs/BUSINESS_LOGIC.md` is a short index (keep it under ~10 KB): what
+the markers mean (DECIDED, OPEN, GUESS…), then one line per section — number, title, link, what it
+covers. Each section lives in its own file, `docs/business/NN-slug.md`; dated change notes go in
+`docs/business/00-recent-changes.md`, not at the top of the index. "§N" in a brief, commit or code
+comment means the file the index lists for §N. One file holding the whole doc grows past what every
+task can afford to read: every agent pays for all of it to use one section. When a section file passes
+~40 KB, split it in two and add the index line. Adopting a repo whose business doc is one large file
+starts by splitting it this way, content moved verbatim, and proving the pieces rebuild the original.
+
+1. **Read the index before every task, then only the sections the task touches.** That is how a new
+   session, or a subagent, recovers the business. A brief names the section files, never "read the
+   business doc".
+2. **Every behavior change updates its section file in the same commit**, adds a dated line to
+   `00-recent-changes.md`, and changes the index line only if the section's scope changed. Otherwise
+   the task isn't done.
 3. **When the business changes mid-build, the doc changes first.** Then the alignment review on the
    plan finds the tasks the change affects, then the code changes.
 
