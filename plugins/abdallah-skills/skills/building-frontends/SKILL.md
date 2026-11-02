@@ -249,9 +249,17 @@ invalidating a query whose screen is not mounted only marks it stale. If a reque
 already in flight — the screen that made the change often starts one — its answer, read before
 the change, lands afterwards and is stored as fresh. The other screen then shows the old figure
 until it goes stale on its own. After a mutation that changes figures another screen shows, refetch
-those queries whether mounted or not (TanStack: `invalidateQueries({ queryKey, refetchType: 'all' })`,
-which also cancels the in-flight request). Test it the way it fails: hold that one response back a
-few seconds, make the change, then open the other screen.
+those queries whether mounted or not, cancelling first. TanStack never cancels a query's *first*
+fetch to refetch it — it only does so once the query holds data — so invalidating alone, even with
+`refetchType: 'all'`, joins the stale request and stores its answer:
+
+```ts
+await queryClient.cancelQueries({ queryKey })
+await queryClient.invalidateQueries({ queryKey, refetchType: 'all' })
+```
+
+Test it the way it fails: hold that one response back until after the change, then open the other
+screen.
 
 ## Loading states
 
