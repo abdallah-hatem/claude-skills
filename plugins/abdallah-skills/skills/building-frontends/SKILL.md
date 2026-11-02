@@ -133,6 +133,12 @@ While the next page loads, keep the current rows in place and dim them. Swapping
 skeletons collapses the table to a different height, which moves the viewport just as badly
 as scrolling did — see Loading states.
 
+**Size amount columns for the largest realistic figure, not the demo data.** A fixed-width
+money or quantity column that fits "450.00" in the seed overflows at "4,000,000.00" in real use
+— in every language. Pick the biggest amount the business can plausibly record, give every
+column that shows it (total, paid, outstanding) the same width, and test the table with a row
+holding that amount.
+
 ## Modals and overlays
 
 **Size a dialog to its content**, not to shadcn's `max-w-lg` default: a `size` prop on the
@@ -235,6 +241,17 @@ appears a moment after the page does.
 Test it by freezing the server's paint: block the page's scripts, reload, and assert the account
 card shows the right name, the role's menu is complete, and the role's buttons are present (and
 absent for a role without them).
+
+## Client query caches
+
+When a client-side query cache is in use (TanStack Query, SWR), refresh after a change with care:
+invalidating a query whose screen is not mounted only marks it stale. If a request for it was
+already in flight — the screen that made the change often starts one — its answer, read before
+the change, lands afterwards and is stored as fresh. The other screen then shows the old figure
+until it goes stale on its own. After a mutation that changes figures another screen shows, refetch
+those queries whether mounted or not (TanStack: `invalidateQueries({ queryKey, refetchType: 'all' })`,
+which also cancels the in-flight request). Test it the way it fails: hold that one response back a
+few seconds, make the change, then open the other screen.
 
 ## Loading states
 

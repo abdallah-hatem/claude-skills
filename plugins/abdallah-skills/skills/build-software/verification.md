@@ -142,6 +142,40 @@ BASE_URL=https://<app>.vercel.app npx playwright test --grep @readonly          
 - **Sign-in happens in `auth.setup.ts`** from the seeded accounts. Nobody types a password by hand.
 - **`e2e/.auth/` and `e2e/shots/` are gitignored** — the saved sessions are live tokens.
 
+## Tests that survive a full run
+
+A spec that passes alone and on a fresh seed can still fail in the full suite, on CI, or on a
+different day. Every e2e spec is written to pass on any day, after any other spec, on a slow machine:
+
+- **No calendar assumptions.** Don't click "the 10th" or expect "this month" to have data — on the
+  1st or 2nd it hasn't. Pick the first day the picker offers, or derive dates from today.
+- **Read the state you meet, not the seed you remember.** Earlier specs leave records behind:
+  extra users, closed records, very large amounts. Find a record that fits the test by asking the API
+  for one with the properties it needs, page through whole lists rather than the first page, and when
+  the right answer depends on existing state, read that state and compute the expectation from it.
+- **Clean up what you add that changes others' results.** A spec that creates users, accounts or
+  settings that later specs count takes them out again in `afterAll`.
+- **Wait for the screen, don't read it once.** Assert with retrying matchers (`toHaveCount`,
+  `toHaveText`, `toHaveURL`) instead of reading a value once and comparing it.
+- **Optional config is optional on CI too.** A feature that needs a key CI doesn't have (push, mail)
+  checks it is hidden there and skips the rest.
+- To prove a fix, rebuild the late-run state in a throwaway setup spec, show the old test failing
+  with CI's exact error, then the fixed one passing in that state and on a fresh seed.
+
+## Visual baselines
+
+`toHaveScreenshot` baselines are per operating system: fonts render differently, so keep a
+`-darwin` set taken locally and a `-linux` set taken by CI, and never copy one over the other.
+
+- **Linux CI:** headless Chromium rounds each glyph to a whole pixel, so Latin text comes out wider
+  than on a Mac and fixed-width columns overflow only on CI. Launch Chromium with
+  `--font-render-hinting=none` on Linux (`launchOptions.args` in `playwright.config.ts`, gated on
+  `process.platform === 'linux'`).
+- **Freeze what changes:** the seed, the clock (the API's and the browser's), and anything random.
+- **First Linux run:** CI writes the missing baselines (`--update-snapshots=missing`) and uploads them
+  as an artifact. Download, look at every one, then commit. A baseline nobody looked at checks nothing.
+- A deliberate screen change retakes that screen's baselines in both sets.
+
 ## Red flags
 
 - A test account that exists only because someone created it by hand
@@ -152,3 +186,5 @@ BASE_URL=https://<app>.vercel.app npx playwright test --grep @readonly          
 - Screenshots produced and never looked at
 - Production smoke specs that create data
 - A suite that seeds once and then fails its later flows on a sign-in rate limit
+- An e2e spec that clicks a fixed day of the month, or expects a fresh seed in the middle of the suite
+- Visual baselines committed without being looked at, or one OS's set copied over the other's

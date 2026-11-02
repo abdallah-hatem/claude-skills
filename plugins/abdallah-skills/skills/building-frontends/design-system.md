@@ -126,7 +126,8 @@ operating system picks, and the two scripts stop looking like one product.
 // app/[locale]/layout.tsx
 import { Inter, IBM_Plex_Sans_Arabic } from 'next/font/google'
 
-const latin = Inter({ subsets: ['latin'], variable: '--font-latin' })
+// adjustFontFallback: false — see below; without it Arabic never reaches the Arabic face
+const latin = Inter({ subsets: ['latin'], variable: '--font-latin', adjustFontFallback: false })
 const arabic = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
   weight: ['400', '500', '600', '700'],
@@ -144,6 +145,14 @@ const arabic = IBM_Plex_Sans_Arabic({
 
 The stack does the switching: the Latin face has no Arabic glyphs, so Arabic text falls
 through to the Arabic face on its own — mixed-language lines included.
+
+**Only if the Latin font's variable ends at the Latin face.** By default `next/font` puts a
+generated "<Font> Fallback" face into that variable — `local(Arial)`, size-adjusted, with no
+`unicode-range`, so it claims every character. Arabic then stops at Arial and the Arabic face
+never loads on Mac or Windows; on Linux, where Arial is missing, it does, and lines come out a
+different width per OS. Set `adjustFontFallback: false` on every font that sits ahead of another
+script's font in a stack. Check it: DevTools → Computed → Rendered Fonts on an Arabic line must
+name the Arabic face, not Arial.
 
 - Fonts load through `next/font`: self-hosted, no layout shift, no flash of fallback text.
 - At most three or four text sizes on a screen. Hierarchy comes from size, weight, and colour
