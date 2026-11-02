@@ -126,8 +126,13 @@ operating system picks, and the two scripts stop looking like one product.
 // app/[locale]/layout.tsx
 import { Inter, IBM_Plex_Sans_Arabic } from 'next/font/google'
 
-// adjustFontFallback: false — see below; without it Arabic never reaches the Arabic face
-const latin = Inter({ subsets: ['latin'], variable: '--font-latin', adjustFontFallback: false })
+// fallback names the Arabic face — see below; without it Arabic never reaches the Arabic face
+const latin = Inter({
+  subsets: ['latin'],
+  variable: '--font-latin',
+  adjustFontFallback: false,
+  fallback: ['IBM Plex Sans Arabic'],
+})
 const arabic = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
   weight: ['400', '500', '600', '700'],
@@ -150,8 +155,10 @@ through to the Arabic face on its own — mixed-language lines included.
 generated "<Font> Fallback" face into that variable — `local(Arial)`, size-adjusted, with no
 `unicode-range`, so it claims every character. Arabic then stops at Arial and the Arabic face
 never loads on Mac or Windows; on Linux, where Arial is missing, it does, and lines come out a
-different width per OS. Set `adjustFontFallback: false` on every font that sits ahead of another
-script's font in a stack. Check it: DevTools → Computed → Rendered Fonts on an Arabic line must
+different width per OS. On every font that sits ahead of another script's font, set
+`adjustFontFallback: false` **and** `fallback: ['<the other script's font family>']` —
+`adjustFontFallback: false` alone is not enough under Turbopack, which still emits the Arial face;
+only an explicit `fallback` replaces it. Check it in the served CSS and in the browser: DevTools → Computed → Rendered Fonts on an Arabic line must
 name the Arabic face, not Arial.
 
 - Fonts load through `next/font`: self-hosted, no layout shift, no flash of fallback text.
