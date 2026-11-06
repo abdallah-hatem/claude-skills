@@ -62,7 +62,7 @@ anything, because the model decides when to invoke it. Hooks are run by the harn
 | Hook | Event | Does |
 |---|---|---|
 | `capture-correction.sh` | `UserPromptSubmit` | notices correction-shaped messages and asks the model to record the rule |
-| `load-learnings.sh` | `SessionStart` | force-loads `~/.claude/LEARNINGS.md` (every project) and `<repo>/.claude/LEARNINGS.md` (that repo) so the record is actually read |
+| `load-learnings.sh` | `SessionStart` | **Superseded by the `learnings` mod** — use it only without mods. It sends the same files as hook context, which is cut to a 2KB preview once LEARNINGS passes ~10KB |
 | `burn-warn.py` | `UserPromptSubmit` | warns when the 5-hour usage window is burning fast, compared with your own usual block — the median of your last 45 days, learned, not a fixed number |
 | `statusline-burn.py` | `statusLine` | the 5-hour burn in the status line; also the engine `burn-warn.py` imports, so it must sit at `~/.claude/statusline-burn.py`. Run it once with `--rebuild-history` to learn from past transcripts; `--stats` shows what it has learned |
 | `session-state.sh` | `SessionStart` | loads the work's state into every new, resumed, cleared, or compacted session: a `/build-software` run's `docs/BUILD_LOG.md` header, or the repo's handoff note from `~/.claude/handoffs/` |
@@ -80,7 +80,6 @@ Copy them somewhere stable and wire them up in `~/.claude/settings.json`:
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/capture-correction.sh", "timeout": 5 }] }
     ],
     "SessionStart": [
-      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/load-learnings.sh", "timeout": 5 }] },
       { "hooks": [{ "type": "command", "command": "~/.claude/hooks/session-state.sh", "timeout": 5 }] }
     ],
     "PreCompact": [
