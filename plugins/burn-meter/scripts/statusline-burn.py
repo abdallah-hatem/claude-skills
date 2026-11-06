@@ -196,17 +196,39 @@ def current_block(events):
 
 
 def load_history():
+    """The recorded blocks; {} when there is no history yet, None when it exists but can't be read."""
+    if not os.path.exists(HISTORY):
+        return {}
     try:
         with open(HISTORY) as f:
             return json.load(f).get("blocks", {})
     except Exception:
-        return {}
+        return None
+
+
+def write_history(payload):
+    # a per-process temp name: the status line, the warn hook and the mod run at once, and a
+    # shared temp file let one of them publish another's half-written copy
+    tmp = f"{HISTORY}.{os.getpid()}.tmp"
+    try:
+        with open(tmp, "w") as f:
+            json.dump(payload, f)
+        os.replace(tmp, HISTORY)
+    except Exception:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
 
 
 def record_blocks(events, now=None):
     """Fold the blocks this scan can see into the rolling history, and prune old ones."""
     now = now or time.time()
     blocks = load_history()
+    if blocks is None:
+        # unreadable (mid-write by another process, or corrupt): never overwrite months of
+        # history with the last few hours — skip this round
+        return {}
     for start, _end, total in replay_blocks(list(events)):
         k = str(int(start))
         # a scan only sees the last RETAIN hours, so an early view of a block can be
@@ -214,13 +236,7 @@ def record_blocks(events, now=None):
         blocks[k] = max(total, blocks.get(k, 0.0))
     cutoff = now - HISTORY_DAYS * 86400
     blocks = {k: v for k, v in blocks.items() if float(k) > cutoff}
-    try:
-        tmp = HISTORY + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump({"blocks": blocks, "updated": now}, f)
-        os.replace(tmp, HISTORY)
-    except Exception:
-        pass
+    write_history({"blocks": blocks, "updated": now})
     return blocks
 
 
@@ -238,7 +254,7 @@ def refresh_thresholds(blocks=None, now=None):
     global MEDIAN, HEAVY, N_BLOCKS, LEARNED
     now = now or time.time()
     if blocks is None:
-        blocks = load_history()
+        blocks = load_history() or {}
     done = [v for k, v in blocks.items()
             if float(k) + FIVE_H < now and v >= WORKING_FLOOR]
     N_BLOCKS = len(done)
@@ -284,13 +300,7 @@ def rebuild_history():
         except OSError:
             continue
     blocks = {str(int(s)): tot for s, _e, tot in replay_blocks(events)}
-    try:
-        tmp = HISTORY + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump({"blocks": blocks, "updated": now, "rebuilt": now}, f)
-        os.replace(tmp, HISTORY)
-    except Exception:
-        pass
+    write_history({"blocks": blocks, "updated": now, "rebuilt": now})
     return blocks
 
 
