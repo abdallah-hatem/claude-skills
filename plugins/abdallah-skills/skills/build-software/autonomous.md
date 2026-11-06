@@ -43,6 +43,12 @@ me something" — ask what the app is for, once, then go. Never invent the goal.
 - **Alignment review `CONFLICTS`** — the business doc wins; fix the code. There is no user to move the
   business mid-run, so the doc written at the start stays the authority.
 - **Anything with more than one reasonable answer** — take the recommended one.
+- **Business, role and visibility questions** are decided too. A repo's "don't decide business rules
+  quietly / ask first" rule — or one about local dev data — is satisfied by writing the decision into
+  the business doc and the decision log, not by asking.
+- **No `AskUserQuestion` mid-run.** The run-mode question at the start is the only one; open points
+  go in the final summary. "Continue build, don't stop" from the user means the same as fully
+  autonomous. Asked mid-run once about investor visibility, the answer was "didnt i say autonomous?".
 
 Every one of these goes in the build log.
 

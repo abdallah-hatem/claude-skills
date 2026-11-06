@@ -159,6 +159,10 @@ different day. Every e2e spec is written to pass on any day, after any other spe
   `toHaveText`, `toHaveURL`) instead of reading a value once and comparing it.
 - **Optional config is optional on CI too.** A feature that needs a key CI doesn't have (push, mail)
   checks it is hidden there and skips the rest.
+- **Every test timing out on `page.goto`, with `next-server` near 100% CPU, is the dev server, not
+  the tests.** Stop the run, kill the server, `rm -rf apps/web/.next`, and never let `next build`
+  and `next dev` share one `.next`. Split long suites into ~3-minute spec groups, each a foreground
+  run with a 10-minute timeout.
 - To prove a fix, rebuild the late-run state in a throwaway setup spec, show the old test failing
   with CI's exact error, then the fixed one passing in that state and on a fresh seed.
 

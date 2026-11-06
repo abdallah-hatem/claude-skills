@@ -348,6 +348,9 @@ never edits. Run it from the main thread, after the wave, never beside another s
 
 `FINDINGS`: every `blocker`, `major` and `minor` becomes a fix task in the plan (class `surface`, or
 `ui` when behavior changes), then the audit runs again on those screens. `nit`s go in the build log.
+A re-audit judges each fixed screen as a whole, in the fixed state (error shown, dialog open), against
+its neighbours — not just "is finding #N fixed" — and measures alignment with bounding boxes, not by
+eye: a fix once moved the `+` beside a field out of line while its own finding was marked fixed.
 Unreached screens in its coverage list are logged, and seeded when the gap is missing data.
 
 ## Subagents

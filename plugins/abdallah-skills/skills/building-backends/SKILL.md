@@ -171,6 +171,14 @@ Production is multi-stage: `npm ci`, a pruned dependency stage so devDependencie
 
 See [docker.md](docker.md).
 
+## AI / LLM calls
+
+- **Every LLM call has an input-token budget**, and its tests include one realistic-size input — a
+  real ~30k-token lesson failed on a free tier while tiny fixtures passed.
+- **Before a bulk AI job, check the provider's free-tier limits with a real call** (e.g. Groq ~8k
+  tokens/min, Gemini Flash ~20 requests/day) and size the job to them — or say up front it needs a
+  paid key.
+
 ## Lint
 
 `lint` and `typecheck` pass before every commit. The house config turns the Red flags a linter can

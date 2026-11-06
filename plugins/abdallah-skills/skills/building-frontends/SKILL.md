@@ -242,6 +242,23 @@ Test it by freezing the server's paint: block the page's scripts, reload, and as
 card shows the right name, the role's menu is complete, and the role's buttons are present (and
 absent for a role without them).
 
+## Wiring to an API
+
+- **Use the API's filters, search, paging and totals.** Filter state lives in the URL and the
+  server fetches with it. Never filter, search or sum paged data in the browser, and never ship a
+  shortcut known to be wrong as a "for now" or a caveat — fix it, or stop and ask. A promo
+  redemptions table once totalled the first 100 rows client-side and passed review only because
+  the test promo had two rows.
+- **Every endpoint wiring ships with tests** — the params sent, the response mapping, and the
+  empty / 422 / 502 states — and the live check uses data where a shortcut would give a different
+  answer.
+- **Say up front what the API doesn't cover.** Unasked, in its own section: which screens, cards,
+  columns or features have no endpoint or no response shape, and which come back null or empty —
+  naming the missing endpoint, not "not available yet".
+- **Cache what the UI fetches**, keyed by endpoint and params with a sensible staleness: toggling
+  back shows the cached data instantly, a mutation invalidates exactly what it changes, and logout
+  clears it all.
+
 ## Client query caches
 
 When a client-side query cache is in use (TanStack Query, SWR), refresh after a change with care:

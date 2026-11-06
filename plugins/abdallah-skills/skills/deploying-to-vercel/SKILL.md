@@ -130,6 +130,16 @@ function instance*. Both are needed — the pooled URL alone still lets each ins
 nine connections and queue behind them. Use the unpooled URL for migrations only, where
 advisory locks matter.
 
+## Branches and builds
+
+- **A new project whose default branch isn't the release branch:** set the production branch
+  (`PATCH /v9/projects/<name>/branch`) before the first push.
+- **`ignoreCommand` runs without `VERCEL_ENV`.** Skip a build only on `VERCEL_ENV = preview`, or on a
+  set `VERCEL_GIT_COMMIT_REF` that isn't the production branch — then check the next production
+  deploy reaches READY on the new commit.
+- **Neon databases come from Vercel's Neon marketplace integration** (`vercel integration add neon`,
+  `vercel integration list --all`). Never start `neonctl` auth.
+
 ## Provisioning from the CLI
 
 Both of these create the resource, attach it to the linked project, and write the

@@ -15,6 +15,12 @@ reads, test output, and debugging are discarded when the subagent reports back.
 - **Independent tasks run in parallel**, each in its own worktree, or they overwrite each other's
   changes. Backend and frontend tasks become independent once the Contract stage has fixed the API.
 - **Broad investigations and reviews** also go to subagents — only the conclusion comes back.
+- **Model by kind of work:** judgment (reviewing, designing, picking, writing copy) runs on Opus;
+  Sonnet only for mechanical steps (installs, renders, file moves). Don't downgrade a judgment agent
+  to save tokens without saying so.
+- **Readiness comes from each task's real dependencies, not the plan's wave table.** Before every
+  dispatch and every time a task lands, start everything ready and non-colliding in one message;
+  idle capacity while something is ready is the failure.
 
 **Stay in the main thread for anything that needs the user:** intake, approvals, any open decision. A
 subagent cannot ask the user anything.
@@ -126,6 +132,15 @@ A subagent starts with none of this conversation, so the brief has to stand alon
   subagent that starts a long test run in the background stops mid-turn and leaves its work
   uncommitted. Lint errors are fixed, never disabled without a `-- reason`.
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
+- **Base check** for a worktree task: name the exact base SHA; `git merge-base HEAD <sha>` must equal
+  it, else `git reset --hard <sha>` first — worktrees can start on a stale base.
+- **Long test runs:** a 10-minute timeout (`timeout: 600000`) on every e2e Bash call, never end the
+  turn while a run is in progress, and `jest --forceExit` when it would otherwise hang.
+- **Docker:** start it if needed, never quit it — the main thread owns Docker while agents run.
+- **Stop only what you started** — by the PID you recorded, or the port's listener
+  (`lsof -ti tcp:<port> -sTCP:LISTEN`). Never a bare `lsof -ti:<port>` (it also returns connected
+  programs) and never a machine-wide pattern like `pkill -f next-server`, which kills other sessions'
+  servers.
 - **Report back in ten lines or fewer:** the files changed, the test command with the runner's summary
   line and any failures in full, the `lint` and `typecheck` result, the commit hash, and the shared pieces it
   created. No narrative, no recap of the brief.
@@ -136,6 +151,15 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 Check, don't trust — cheaply. Confirm the commit exists with `git show --stat`, re-run the tests with
 quiet output, and for a `logic` task let the alignment review read the diff. "All tests pass" without
 the runner's summary line is a claim, not evidence.
+
+**A "waiting for the background run" report is a stall to take over.** First check whether the run is
+still alive (`pgrep -fl playwright`); if it is, wait and commit rather than re-run, and check for
+duplicate dev servers. The `agent-watch` mod flags these stalls.
+
+**After every hand-back, check what is still running.** If no running agent still needs Docker, a
+server or a simulator, close it then — not at the end of the wave. A finished subagent leaves no
+process behind: the `SubagentStop` hook (`subagent-sweep.sh`) kills leftovers; glance at its log
+(`~/.claude/logs/subagent-sweep.log`) when an agent reports.
 
 **Compare the shared pieces across the wave.** Agents in parallel worktrees can't see each other, so
 two of them can each write the same helper or component. When the reports list overlapping pieces,
