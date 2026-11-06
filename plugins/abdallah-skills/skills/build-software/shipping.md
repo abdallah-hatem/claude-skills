@@ -164,6 +164,20 @@ Every Vercel project — the web app, and the API when it is deployed separately
 
 Provisioning, env-var failures, and ESM/Prisma issues on Vercel: `deploying-to-vercel`.
 
+## Hosting target
+
+Pick it before the first deploy and record it in the build log:
+
+| Target | Load | Preview / production |
+|---|---|---|
+| Vercel | `deploying-to-vercel` | as above |
+| Self-hosted VPS (Coolify/Docker, Cloudflare in front) | `deploying-to-vps` | one Coolify app per environment: production deploys from `production`, a staging app (own database, noindex) from `dev`; the panel's Redeploy replaces `vercel rollback` |
+
+The branch flow, release PR and smoke checks are the same for both. On a VPS, `prisma migrate deploy`
+may run as the panel's pre-deployment command (with retries) instead of by hand — it runs once per deploy,
+not in the build, and a failure keeps the old version live. Every migration must still stay compatible
+with the code before it.
+
 ## Migrations
 
 `prisma migrate deploy` runs deliberately against the environment's **unpooled** database URL,

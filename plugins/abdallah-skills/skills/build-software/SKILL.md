@@ -176,7 +176,7 @@ In a guided run, each approval gate ends with a one-line suggestion to `/clear` 
 | 5 | Plan | `superpowers:writing-plans` | **classes, edge cases, alignment review** |
 | 6 | Build | `abdallah-skills:building-backends` / `building-frontends` / `building-mobile`, per task | **tests by class · review for `logic`** |
 | 7 | Verify | `superpowers:verification-before-completion` | **all green + smoke check + UI audit** |
-| 8 | Ship | `abdallah-skills:deploying-to-vercel`; `building-mobile` → `release.md` for an app | **dev: automatic · production: user says go · rollback on failure · a store build always waits for the user** |
+| 8 | Ship | the hosting target's skill: `abdallah-skills:deploying-to-vercel` (Vercel) or `abdallah-skills:deploying-to-vps` (self-hosted VPS: Coolify/Docker, Cloudflare); `building-mobile` → `release.md` for an app | **dev: automatic · production: user says go · rollback on failure · a store build always waits for the user** |
 
 In an autonomous run, every gate that waits for the user is decided with the recommended default and
 logged in `docs/BUILD_LOG.md` instead — **design included: no autonomous run stops for mockups**
@@ -294,7 +294,9 @@ login page.
 
 ### 8. Ship
 
-Everything reaches users by one path — details in [shipping.md](shipping.md):
+Everything reaches users by one path — details in [shipping.md](shipping.md). **Choose the hosting
+target first** and load its skill: Vercel → `deploying-to-vercel`; a self-hosted VPS (Coolify/Docker
+behind Cloudflare) → `deploying-to-vps`. The branch flow below is the same for both.
 
 1. **feature → `dev`, by default.** Once Verify passes, open a PR into `dev` and merge it, then run the
    smoke specs against the preview URL.
