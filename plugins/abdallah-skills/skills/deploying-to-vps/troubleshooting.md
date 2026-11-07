@@ -15,6 +15,7 @@
 | Coolify chose Docker Compose | Repo has a local-DB compose file | Build pack → Dockerfile |
 | Push doesn't deploy | Webhook blocked by the panel lock, or no webhook yet | Allow GitHub `hooks` ranges on 8000 (daily refresh); meanwhile Redeploy |
 | Deploy click did nothing | Tab closed too fast | Confirm a new deployment row before waiting |
+| Build fails: "column … does not exist" while prerendering | Pages are prerendered from the live DB at build, but the pre-deployment migration runs after the build | Apply the additive migration to the live DB first, then deploy (or make those pages dynamic) |
 | Deploy fails in seconds: P1001 can't reach DB | Managed DB blip during `migrate deploy` | Retry loop in the pre-deployment command |
 | Deploy fails: `Could not resolve host: github.com` | Provider DNS resolver hiccup | Redeploy; recurring → Docker daemon `dns` |
 | Build: npm `ECONNRESET` | Flaky server network | npm retry ENV in the base stage |
