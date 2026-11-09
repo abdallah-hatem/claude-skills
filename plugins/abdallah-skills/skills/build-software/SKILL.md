@@ -154,6 +154,11 @@ rules keep it small — commands and examples in [efficiency.md](efficiency.md):
    session loses nothing. **Update the log the moment each step lands** — a merge, a fix, a review
    verdict, a push, a PR, a hold lifted, a request queued — in the same commit as the work when there
    is one. Never batch it for later: a log that lags even one step is how the user finds it stale.
+   **Every queued request lives in the log's `## Next up` section** — whatever the user calls it
+   ("add to todo", "later", "next up", "queue it"). Never a separate TODO file, issue list or note.
+   Each item keeps the user's decisions and open points under it, and is **removed from Next up only
+   when it is fully done** (built, verified and shipped or merged); a half-done item stays, marked
+   with where it stands.
 2. **The main thread coordinates; subagents do the heavy work.** Build tasks run in fresh subagents,
    whose file reads, test output, and debugging are discarded when they report back. This happens on
    its own in every run — no one has to clear anything.

@@ -83,7 +83,8 @@ Current stage: 6 — Build (T9 of 14) · <one line of where things are>
 ## Blocked
 - **T11 — SMS**: provider needs an API key this machine doesn't have.
 ## Next up
-- …
+- **<request in the user's words>** — queued YYYY-MM-DD · decisions / open points under it ·
+  removed only when fully done
 ## Phases
 - Notifications (D55) — built · [decisions](build-log/decisions/notifications.md) · [waves](build-log/waves/notifications/)
 - Streaks (D59) — building · [decisions](build-log/decisions/streaks.md) · [waves](build-log/waves/streaks/)
