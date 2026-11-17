@@ -165,39 +165,83 @@ Two values exist at all times, and they must not be confused:
 formatted number field is `type="text"` with `inputMode="numeric"`, which is where it wanted
 to be anyway.
 
-**Format on blur, keep it raw while focused.** Reformatting on every keystroke moves the
-caret: type `1000`, the field becomes `1,000`, and the cursor jumps to the end mid-number.
-Formatting only on blur removes that whole class of bug without any caret bookkeeping.
+**Group live, while typing — and keep the caret where the user is.** Commas appear as the number
+is typed (`3` → `30` → `300` → `3,000` → `30,000`), so the reader never counts places. The naive
+version moves the caret to the end on every keystroke; the fix is to remember how many **digits**
+sit before the caret, reformat, then put the caret back after that many digits. Separators don't
+count, so inserting or removing a comma never shifts the user's position. Deleting a comma with
+Backspace deletes the digit before it instead (otherwise the comma just comes back). Decimals are
+typed freely up to the allowed places; on blur the value is completed to the fixed decimals
+(`30,000` → `30,000.00` for money).
 
 ```tsx
 // Grouping only — digits stay Latin so the field is typable under `ar`.
-const nf = new Intl.NumberFormat('en-US')
+const nf = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 })
 
-export function NumberInput({ value, onChange, ...props }: NumberInputProps) {
+/** "1234567.5" → "1,234,567.5" — keeps a trailing "." or trailing zeros the user is still typing. */
+function groupLive(raw: string): string {
+  const [int = '', dec] = raw.split('.')
+  const grouped = int === '' ? '' : nf.format(Number(int))
+  return dec === undefined ? grouped : `${grouped || '0'}.${dec}`
+}
+
+/** Caret index after the n-th digit (separators skipped). */
+function caretAfterDigits(text: string, n: number): number {
+  if (n <= 0) return 0
+  let seen = 0
+  for (let i = 0; i < text.length; i++) if (/\d/.test(text[i]!) && ++seen === n) return i + 1
+  return text.length
+}
+
+export function NumberInput({ value, onChange, decimals = 0, ...props }: NumberInputProps) {
+  const ref = useRef<HTMLInputElement>(null)
   const [text, setText] = useState(value == null ? '' : nf.format(value))
-  const [focused, setFocused] = useState(false)
 
-  // Re-sync when the form changes the value from outside (reset, defaults).
+  // Re-sync when the form changes the value from outside (reset, defaults) — not mid-typing.
   useEffect(() => {
-    if (!focused) setText(value == null ? '' : nf.format(value))
-  }, [value, focused])
+    if (document.activeElement !== ref.current) setText(value == null ? '' : nf.format(value))
+  }, [value])
 
   return (
     <Input
-      inputMode="numeric"
+      ref={ref}
+      type="text"
+      inputMode={decimals ? 'decimal' : 'numeric'}
       value={text}
-      onFocus={() => { setFocused(true); setText(value == null ? '' : String(value)) }}
-      onChange={(e) => {
-        const raw = e.target.value.replace(/[^\d.-]/g, '')   // separators out
-        setText(raw)
-        onChange(raw === '' ? null : Number(raw))             // form gets a number
+      onKeyDown={(e) => {
+        // Backspace right after a comma: remove the digit before it, not the comma.
+        const el = e.currentTarget, at = el.selectionStart ?? 0
+        if (e.key === 'Backspace' && el.selectionStart === el.selectionEnd && el.value[at - 1] === ',') {
+          el.setSelectionRange(at - 1, at - 1)
+        }
       }}
-      onBlur={() => { setFocused(false); setText(value == null ? '' : nf.format(value)) }}
+      onChange={(e) => {
+        const el = e.target
+        const caret = el.selectionStart ?? el.value.length
+        const digitsBefore = el.value.slice(0, caret).replace(/[^\d]/g, '').length
+        let raw = el.value.replace(/[^\d.]/g, '').replace(/\.(?=.*\.)/g, '') // one dot max
+        if (decimals === 0) raw = raw.replace(/\..*/, '')
+        else raw = raw.replace(new RegExp(`(\\.\\d{${decimals}}).+`), '$1')   // cap decimals
+        const next = groupLive(raw)
+        setText(next)
+        onChange(raw === '' || raw === '.' ? null : Number(raw))              // form gets a number
+        requestAnimationFrame(() => {
+          const pos = caretAfterDigits(next, digitsBefore) + (raw.endsWith('.') && caret === el.value.length ? 1 : 0)
+          ref.current?.setSelectionRange(pos, pos)
+        })
+      }}
+      onBlur={() => setText(value == null ? '' : new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value))}
       {...props}
     />
   )
 }
 ```
+
+Test it like a user types, not by setting the value: type `30000` → `30,000`; put the caret
+between `3` and `0` and type `5` → `350,000` with the caret after the `5`; Backspace after a comma
+removes the digit before it; paste `1234567` → `1,234,567`; typing `12.5` keeps the dot while
+typing; letters are ignored; the form state is always a `number`.
 
 **Keep the digits Latin.** `new Intl.NumberFormat('ar')` renders Arabic-Indic numerals
 (`١٠٠٬٠٠٠`), which nobody types on a normal keyboard. Group with `en-US`, or use
