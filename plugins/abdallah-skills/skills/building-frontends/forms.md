@@ -258,7 +258,8 @@ export function NumberInput({ value, onChange, decimals = 0, ...props }: NumberI
 }
 ```
 
-Test it like a user types, not by setting the value: type `30000` → `30,000`; put the caret
+Test it like a user types, not by setting the value — **in a real browser (Playwright)**, because
+jsdom doesn't move the caret the way Chrome does and passes a field that's broken for real users: type `30000` → `30,000`; put the caret
 between `3` and `0` and type `5` → `350,000` with the caret after the `5`; Backspace after a comma
 removes the digit before it; paste `1234567` → `1,234,567`; typing `12.5` keeps the dot while
 typing; letters are ignored; the form state is always a `number`.
