@@ -66,6 +66,26 @@ component, not in each page. When the record can be made from the form, the pick
 quick-create is the way out; otherwise the hint names the page that makes it. Test it: open each
 picker with an empty list, and with a search that matches nothing.
 
+### A picker with many options gets a search
+
+Any dropdown that can show **more than 6 options** is searchable: a search box at the top of the
+open list, focused when it opens, filtering as you type. Six or fewer stays a plain select —
+scanning is faster than typing. The count is the options the list can hold, not today's seed: an
+employee, supplier, product or violation picker is searchable even when the demo has five, because
+the real data won't. Build it once — the shared select switches to the searchable version by
+itself above the threshold (or a `searchable` prop forces it), so pages never choose.
+
+- **Search matches what people type:** every visible label, both languages, and codes (`EMP-0012`),
+  ignoring case, diacritics and Arabic letter variants (أ/إ/آ → ا, ة → ه, ى → ي).
+- **Keyboard:** arrows move through the filtered results, Enter picks, Escape closes; the selected
+  option stays highlighted when the list reopens.
+- **Grouped options keep their group headings** while filtering; a heading with no matches hides.
+- **No matches** shows its own message (see "A picker with nothing in it"), never an empty strip.
+- **Remote lists** (hundreds of rows) search on the server with a short debounce instead of loading
+  everything; the same component, fed by a query.
+- Test it: open with more than 6 options → the search box is there and focused; type part of a name
+  and of a code → only matches remain; Arabic with a hamza variant matches; 6 options → no search box.
+
 ### A picker that depends on another
 
 When a dropdown's options come from another field's choice (city after country, type after
