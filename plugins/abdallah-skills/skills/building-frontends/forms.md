@@ -264,6 +264,13 @@ between `3` and `0` and type `5` → `350,000` with the caret after the `5`; Bac
 removes the digit before it; paste `1234567` → `1,234,567`; typing `12.5` keeps the dot while
 typing; letters are ignored; the form state is always a `number`.
 
+**Clicking into a number field selects the whole figure.** People click a filled amount to
+change it, not to edit one digit, so typing should replace it. `select()` on focus alone is undone
+by the click's own mouseup, so also `preventDefault()` that first mouseup — only for the click that
+focused the field. A second click on the focused field places the caret as normal, so editing
+mid-number still works. Test it in the browser: click a filled field → selection covers the whole
+text; type → the old value is gone; click again → a collapsed caret.
+
 **Keep the digits Latin.** `new Intl.NumberFormat('ar')` renders Arabic-Indic numerals
 (`١٠٠٬٠٠٠`), which nobody types on a normal keyboard. Group with `en-US`, or use
 `ar-EG-u-nu-latn` if you want Arabic locale rules with Latin digits. Display-only text can

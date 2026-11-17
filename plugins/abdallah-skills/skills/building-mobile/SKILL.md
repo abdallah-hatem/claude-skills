@@ -198,6 +198,7 @@ rules in `building-frontends` → Forms apply, and the schemas and helpers come 
 - List rows' secondary actions sit behind one ⋯ (or a long-press menu), never as loose buttons on the row; destructive ones last, in the danger colour.
 - Any picker that can hold more than 6 options is searchable (a search field at the top of its sheet, matching both languages and codes); 6 or fewer stays a plain select.
 - Numbers read as quantities are grouped live while typing (`100,000`), caret kept in place, with the form holding a `number`.
+- Focusing a filled number field selects its whole value (`selectTextOnFocus`), so typing replaces it.
 - Egyptian mobile numbers: exactly 11 digits starting `01`, a pasted `+20` normalised — the web's
   helpers, from `packages/shared` when it exists.
 - **Double submit is impossible:** the submit button is disabled and shows its spinner while
