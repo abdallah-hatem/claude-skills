@@ -195,7 +195,7 @@ rules in `building-frontends` → Forms apply, and the schemas and helpers come 
   field gets the phone pad, an email the email keyboard, a one-time code `oneTimeCode`.
 - `returnKeyType="next"` moves focus to the next field; the last field's return submits.
 - Prose fields are the kit's `Textarea` (multiline, 3–4 lines tall), never a one-line `Input`.
-- Numbers read as quantities are shown grouped (`100,000`) with the form holding a `number`.
+- Numbers read as quantities are grouped live while typing (`100,000`), caret kept in place, with the form holding a `number`.
 - Egyptian mobile numbers: exactly 11 digits starting `01`, a pasted `+20` normalised — the web's
   helpers, from `packages/shared` when it exists.
 - **Double submit is impossible:** the submit button is disabled and shows its spinner while

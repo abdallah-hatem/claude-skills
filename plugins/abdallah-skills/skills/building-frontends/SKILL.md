@@ -437,7 +437,7 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 - `maxLength` on a phone field — it clips a pasted `+20` number before it can be normalised
 - A phone number passed through `Number()` — the leading zero is lost
 - Formatted text stored in form state or sent to the API
-- Reformatting on every keystroke — the caret jumps; format on blur
+- A grouped number field that waits for blur to add commas, or regroups while typing but moves the caret — group live and restore the caret by digit count (forms.md)
 - A `type="number"` with visible spin buttons, or one the wheel can change
 - `preventDefault()` in an `onWheel` handler — React makes it passive, so it does nothing
 - `type="number"` for a phone, OTP, or ID — use `inputMode="numeric"`
