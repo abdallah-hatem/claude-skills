@@ -134,6 +134,15 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
 - **Base check** for a worktree task: name the exact base SHA; `git merge-base HEAD <sha>` must equal
   it, else `git reset --hard <sha>` first — worktrees can start on a stale base.
+- **Scale parallel agents to what the machine can take.** Before starting another agent, and whenever
+  a check fails, look at the load: `uptime` (a load average well above the CPU core count —
+  `sysctl -n hw.ncpu` — is overloaded) and the test logs (many unrelated tests failing on timeouts with
+  no assertion failures is overload, not bugs). Machine fine and runs passing → it may take another
+  agent. Overloaded or timeouts piling up → start nothing new; pause the lowest-priority agents (stop
+  them — their committed work stays in their branches — and stop their leftover test runs and servers
+  by their worktree path), keep the ones closest to done, and resume the paused ones one at a time as
+  the load drops. Heavy suites (API e2e, browser smoke) belong in the cloud CI, not on the laptop, when
+  the project's CI can run them.
 - **Before any PR, merge the latest `origin/dev`** into the branch (`git fetch origin && git merge
   origin/dev`), resolve conflicts, re-run the checks. Other agents land work while a task runs; a
   branch that was current at the start is usually behind at the end.

@@ -1,6 +1,6 @@
 {
   "name": "abdallah-skills",
-  "version": "1.62.17",
+  "version": "1.62.18",
   "description": "Frontend and backend conventions for Next.js + NestJS + Prisma, plus a correction-capture loop.",
   "author": {
     "name": "Abdallah"
