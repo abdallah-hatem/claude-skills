@@ -70,6 +70,13 @@ tabs in Playwright and assert the header stays attached and the record isn't fet
 - For mutations, update optimistically. A skeleton after "Save" is a regression.
 - Under ~200ms, render nothing. A skeleton that appears and vanishes reads as a glitch.
 - Never animate a skeleton faster than ~1.5s per cycle; quicker pulses read as an error state.
+- **A skeleton matches its component exactly** — same outer box, sections in the same order, same
+  rows/cards/columns, sizes, paddings, avatars and toolbars — and **any change to a component
+  updates its skeleton in the same change**. Build the skeleton from the same layout primitives as
+  the component so it can't drift, and enforce it: mark the main blocks with
+  `data-skeleton-block="<name>"` on both, and a Playwright spec compares the skeleton's blocks with
+  the loaded screen's (same order, sizes within a few pixels) on every screen, phone and desktop.
+  A PR that changes a component without its skeleton fails that spec.
 - The skeleton traces the component **in the state it opens in**. A disclosure, accordion,
   tab or panel that starts open is skeletoned open (its rows), one that starts folded is
   skeletoned as the folded bar. Changing a default state (open/closed, which tab, how many

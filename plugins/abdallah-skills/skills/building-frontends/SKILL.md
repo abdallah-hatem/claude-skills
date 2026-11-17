@@ -363,6 +363,7 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 ## Red flags
 
+- A component changed without updating its skeleton, or no spec that compares them
 - A filtered list with no one-click "Clear filters"
 - Paging that leaves the user at the bottom of the new page instead of the top of the list
 - A table or list that shows a person or record by name without linking to its page
