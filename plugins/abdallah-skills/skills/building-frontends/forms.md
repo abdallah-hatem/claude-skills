@@ -165,6 +165,24 @@ number — prefer `type="text"` with `inputMode="numeric"`. It gets the mobile n
 without inheriting any of `type="number"`'s behaviour, and unlike `type="number"` it respects
 `maxLength`.
 
+## Save and Cancel stay on screen in long forms
+
+A page form taller than the screen (an edit page, a settings section) keeps its **Save / Cancel row
+pinned to the bottom of the viewport** while the user scrolls, so they never scroll to the end just
+to save. One shared component for it — never a per-page copy.
+
+- **`position: sticky`, not `fixed`,** as the last child of the `<form>`, with `bottom:
+  max(0.75rem, env(safe-area-inset-bottom))`. Sticky settles back into place at the end of the form
+  and never covers the last fields; fixed covers them and needs a spacer.
+- **A raised card** (border, shadow, the card background) so content scrolling under it doesn't
+  show through, and a z-index above the form but below popovers and dialogs.
+- **Add / create forms: always pinned.** **Settings-style forms that save edits: pinned while there
+  are unsaved changes** (with "Unsaved changes" / "Fix the errors" status on the start side); when
+  nothing changed it sits in place at the end.
+- **Dialogs don't need it:** their footer already sits outside the scrolling body.
+- **Test it in a real browser:** at the top and halfway down a long form, on phone and desktop, the
+  Save button's box is inside the viewport.
+
 ## Formatted numbers
 
 Any number read as a quantity — money, counts, distances — is displayed **grouped**:

@@ -363,6 +363,8 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 ## Red flags
 
+- A long page form whose Save / Cancel row is only at the end — it must stay pinned (sticky) while
+  scrolling
 - Tab pages that each render the record's header and actions themselves, instead of a shared
   `layout.tsx` — every tab switch flashes the header to a skeleton
 - A new page, restyle, or visual choice built from a prose description the user never saw
