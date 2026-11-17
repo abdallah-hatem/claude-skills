@@ -53,6 +53,16 @@ shifts the layout:
 In the App Router, a route's own skeleton belongs in `loading.tsx` next to `page.tsx` —
 it streams in automatically, no `isLoading` state needed.
 
+**Tabs and sub-pages share a layout.** When sibling routes show the same frame — a record's header,
+its actions, a tab bar (`/customers/[id]`, `/customers/[id]/orders`, `/customers/[id]/invoices`) —
+that frame lives in the parent's `layout.tsx`, which fetches the record once and stays mounted
+while the user moves between tabs. Each tab's `loading.tsx` skeletons **only the tab's content**.
+If each tab page renders the header itself, every tab switch refetches the record and flashes the
+whole page — name, status, buttons — back to a skeleton. A tab page that also needs the record
+reads it through the same cached fetch (`cache()`), not a second request. Pages that don't share
+the frame (an edit form) go in a separate route group so they don't inherit it. Test it: switch
+tabs in Playwright and assert the header stays attached and the record isn't fetched again.
+
 **Rules**
 
 - Skeleton for *first paint of absent data*. For a refetch of data already on screen, keep
