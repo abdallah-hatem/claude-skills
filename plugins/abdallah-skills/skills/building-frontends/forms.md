@@ -180,6 +180,11 @@ to save. One shared component for it — never a per-page copy.
   are unsaved changes** (with "Unsaved changes" / "Fix the errors" status on the start side); when
   nothing changed it sits in place at the end.
 - **Dialogs don't need it:** their footer already sits outside the scrolling body.
+- **Save needs a change.** A form that edits something existing (an edit page, a settings section,
+  an edit dialog) keeps Save **disabled until a value differs from what's saved**, and disables it
+  again when the user changes it back (`formState.isDirty` against the loaded values). The bar says
+  so: "No changes yet" / "You have unsaved changes". A Save that sends an unchanged record is a bug.
+  Create forms are the exception: Save stays enabled so submitting shows what's missing.
 - **Test it in a real browser:** at the top and halfway down a long form, on phone and desktop, the
   Save button's box is inside the viewport.
 

@@ -363,6 +363,7 @@ pull-to-refresh, status bar colour. Test it on a real phone.
 
 ## Red flags
 
+- An edit form whose Save is enabled before anything changed
 - A long page form whose Save / Cancel row is only at the end — it must stay pinned (sticky) while
   scrolling
 - Tab pages that each render the record's header and actions themselves, instead of a shared
