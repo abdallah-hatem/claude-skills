@@ -75,6 +75,16 @@ tabs in Playwright and assert the header stays attached and the record isn't fet
   skeletoned as the folded bar. Changing a default state (open/closed, which tab, how many
   rows show) means changing the skeleton in the same change, with a test that pins its shape.
 
+## Paging scrolls back to the top of the list
+
+Changing page in a paged list (cards or table) brings **the top of that list** back into view,
+just below any sticky top bar — never leaves the user at the bottom of the new page. Do it once,
+in the shared pagination component: after the page change, scroll the list's container (not the
+whole page) into view, only when its top is above the screen so a short list doesn't jump, smooth
+unless reduced motion. Keep `scroll: false` on the URL update so the router doesn't jump to the
+page top first. Test it in a real browser: scroll to the bottom, press Next, the first item of the
+new page is on screen.
+
 ## A record's name links to the record
 
 Wherever a list, table, card or log shows a person or record that has its own page — an employee
