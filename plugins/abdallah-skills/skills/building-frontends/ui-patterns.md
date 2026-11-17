@@ -65,6 +65,30 @@ it streams in automatically, no `isLoading` state needed.
   skeletoned as the folded bar. Changing a default state (open/closed, which tab, how many
   rows show) means changing the skeleton in the same change, with a test that pins its shape.
 
+## Row actions live in a ⋯ menu
+
+A table's actions column holds **one three-dots (⋯) button per row**, never a row of loose buttons.
+It opens a dropdown of the actions that row allows. Loose buttons crowd the column, wrap on
+narrow screens, push columns sideways and make a destructive action one stray click away.
+
+- **One shared `RowActions` component** in the table kit; pages pass the row's actions, never build
+  their own menu.
+- **Only what applies:** an action the row can't take is hidden, not shown disabled (an approved
+  record has no "Approve").
+- **Order:** the common action first; destructive ones (delete, cancel, retire, hide) last, in the
+  danger colour, after a divider, and they still confirm.
+- **Each item has an icon and a label.** The trigger's accessible name names the row ("Actions for
+  EMP-0012"), so screen readers and tests can find it.
+- **Keyboard and RTL:** opens with click, Enter or Space; arrows move, Escape closes; the menu aligns
+  to the row's end edge and mirrors in RTL.
+- **Phone cards** that stand in for a table's rows put the same ⋯ in the card's top end corner.
+- **A row with exactly one, primary action** (e.g. "Open") may use the whole row as the link instead
+  of a menu; still no loose buttons.
+- **Card grids that are a screen's main content** (people, products) may keep one or two visible
+  buttons when the design calls for them — the rule is for tables and their card stand-ins.
+- Test it: the menu shows only the applicable actions for rows in different states; destructive
+  items sit last and confirm; keyboard opens and navigates it.
+
 ## Scrollbar
 
 Native scrollbars are inconsistent across platforms and heavy on Windows. One utility fixes
