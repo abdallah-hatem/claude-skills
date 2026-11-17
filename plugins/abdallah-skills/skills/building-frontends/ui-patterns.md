@@ -75,6 +75,15 @@ tabs in Playwright and assert the header stays attached and the record isn't fet
   skeletoned as the folded bar. Changing a default state (open/closed, which tab, how many
   rows show) means changing the skeleton in the same change, with a test that pins its shape.
 
+## Every filtered list can clear its filters in one click
+
+A list with a search box or filters shows a **"Clear filters"** action whenever at least one is
+active, with the count ("Clear filters · 3"), and hides it when nothing is applied. One click
+resets the search, every filter and the page in a single URL update. The "no results" empty state
+offers the same action. One shared component used by every list's toolbar, placed at its end and
+kept visible on phone when the toolbar wraps — never a per-list reset, and never a list where the
+only way back is to undo each filter by hand.
+
 ## Paging scrolls back to the top of the list
 
 Changing page in a paged list (cards or table) brings **the top of that list** back into view,
