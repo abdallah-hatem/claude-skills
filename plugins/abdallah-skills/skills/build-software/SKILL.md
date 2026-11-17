@@ -102,10 +102,10 @@ How much a visual change needs the user depends on its size and the run mode —
 
 | Change | Guided | Autonomous — to preview or fully |
 |---|---|---|
-| **Big** — a new app's look, a restyle, a new design direction, a new area or page type with its own look, anything that changes how the whole app or a whole area feels | Mock **three** clearly different, bold options (light and dark; phone screens for an app), show them, **stop for a pick** — or a mix | No mockups, no question. Choose the direction yourself, bold rather than quiet, record it and why in the build log, and build |
+| **Big** — a new app's look, a restyle, a new design direction, a new area or page type with its own look, anything that changes how the whole app or a whole area feels, **changing how an existing screen lays out its content (a table becoming cards, a list becoming a board) or the navigation structure (grouping or reordering the sidebar)** — even for one screen, even mid-build | Mock **three** clearly different, bold options (light and dark; phone screens for an app), show them, **stop for a pick** — or a mix | No mockups, no question. Choose the direction yourself, bold rather than quiet, record it and why in the build log, and build |
 | **Small** — a screen, component or tweak built from the existing design system, a new variant, a layout that follows an existing pattern | Decide yourself and build; show a screenshot as it lands, don't wait for a reply | Decide yourself and build |
 
-When unsure whether a change is big, it is big — in a guided run. An autonomous run, to preview or
+When unsure whether a change is big, it is big — in a guided run. Show the mockups **unasked**: a layout or navigation change is never built first and shown after. An autonomous run, to preview or
 fully, never stops for design: it keeps going until the goal is done, and the screenshots of every
 screen go in the build log for the user to look at afterwards.
 
