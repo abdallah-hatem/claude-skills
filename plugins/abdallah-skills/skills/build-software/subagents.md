@@ -134,6 +134,9 @@ A subagent starts with none of this conversation, so the brief has to stand alon
 - **Don't push, open PRs, or merge.** Shipping happens once, from the main thread, after Verify.
 - **Base check** for a worktree task: name the exact base SHA; `git merge-base HEAD <sha>` must equal
   it, else `git reset --hard <sha>` first — worktrees can start on a stale base.
+- **Before any PR, merge the latest `origin/dev`** into the branch (`git fetch origin && git merge
+  origin/dev`), resolve conflicts, re-run the checks. Other agents land work while a task runs; a
+  branch that was current at the start is usually behind at the end.
 - **Long test runs:** a 10-minute timeout (`timeout: 600000`) on every e2e Bash call, never end the
   turn while a run is in progress, and `jest --forceExit` when it would otherwise hang.
 - **Docker:** start it if needed, never quit it — the main thread owns Docker while agents run.

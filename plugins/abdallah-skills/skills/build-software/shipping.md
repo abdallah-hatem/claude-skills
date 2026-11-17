@@ -49,6 +49,13 @@ conventional: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`, `docs:`.
 
 Once Verify has passed for the branch's tasks:
 
+**Every PR starts from the latest `dev` — for the whole team, people and agents.** Fetch and bring
+`origin/dev` into the branch, resolve conflicts on the branch, re-run the checks, then open the PR.
+Conflicts are cheap on your branch and expensive in review. Enforce it, don't just ask for it: the
+branch protection on `dev`, `testing` and `production` requires branches to be **up to date before
+merging** (`required_status_checks.strict = true`), and the local CI script warns when the branch is
+behind `origin/dev`.
+
 ```bash
 git fetch origin
 git rebase origin/dev            # pick up whatever landed meanwhile — then re-run the full suite
