@@ -75,6 +75,19 @@ tabs in Playwright and assert the header stays attached and the record isn't fet
   skeletoned as the folded bar. Changing a default state (open/closed, which tab, how many
   rows show) means changing the skeleton in the same change, with a test that pins its shape.
 
+## A record's name links to the record
+
+Wherever a list, table, card or log shows a person or record that has its own page — an employee
+in a payroll table, a customer on an order, the subject of a log entry — **the name is a link to
+that page**. One shared component per record type (`EmployeeLink`, …), never a hand-built link in
+each table:
+
+- It looks like the name, not a blue underlined link; underline on hover and a visible focus ring.
+- It respects permissions: plain text when the user can't open that page.
+- Clicking it never fires the row's other click handlers; it's keyboard reachable and has a 44px
+  tap area on phones.
+- The record's own page header and form inputs are the only places a name isn't a link.
+
 ## Row actions live in a ⋯ menu
 
 A table's actions column holds **one three-dots (⋯) button per row**, never a row of loose buttons.
