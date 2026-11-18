@@ -79,8 +79,10 @@ Business terms only — no table names, endpoints, or components, or it goes sta
 
 **It is split from the start.** `docs/BUSINESS_LOGIC.md` is a short index (keep it under ~10 KB): what
 the markers mean (DECIDED, OPEN, GUESS…), then one line per section — number, title, link, what it
-covers. Each section lives in its own file, `docs/business/NN-slug.md`; dated change notes go in
-`docs/business/00-recent-changes.md`, not at the top of the index. "§N" in a brief, commit or code
+covers. Each section lives in its own file, `docs/business/NN-slug.md`; dated change notes are
+**one file per change** in `docs/business/recent-changes/` (`YYYY-MM-DD-NNN-<slug>.md`), with
+`00-recent-changes.md` only explaining the folder — never one shared file, because parallel PRs
+all appending to it conflict. "§N" in a brief, commit or code
 comment means the file the index lists for §N. One file holding the whole doc grows past what every
 task can afford to read: every agent pays for all of it to use one section. When a section file passes
 ~40 KB, split it in two and add the index line. Adopting a repo whose business doc is one large file
@@ -89,8 +91,8 @@ starts by splitting it this way, content moved verbatim, and proving the pieces 
 1. **Read the index before every task, then only the sections the task touches.** That is how a new
    session, or a subagent, recovers the business. A brief names the section files, never "read the
    business doc".
-2. **Every behavior change updates its section file in the same commit**, adds a dated line to
-   `00-recent-changes.md`, and changes the index line only if the section's scope changed. Otherwise
+2. **Every behavior change updates its section file in the same commit**, adds its own file to
+   `docs/business/recent-changes/`, and changes the index line only if the section's scope changed. Otherwise
    the task isn't done.
 3. **When the business changes mid-build, the doc changes first.** Then the alignment review on the
    plan finds the tasks the change affects, then the code changes.
@@ -152,8 +154,13 @@ rules keep it small — commands and examples in [efficiency.md](efficiency.md):
 1. **State lives in files, not in the conversation.** Every run — guided or autonomous — keeps
    `docs/BUILD_LOG.md`, the plan's checkboxes, and the business doc current, so a compaction or a new
    session loses nothing. **Update the log the moment each step lands** — a merge, a fix, a review
-   verdict, a push, a PR, a hold lifted, a request queued — in the same commit as the work when there
-   is one. Never batch it for later: a log that lags even one step is how the user finds it stale.
+   verdict, a push, a PR, a hold lifted, a request queued. Never batch it for later: a log that lags
+   even one step is how the user finds it stale. **The log has one writer: the main thread (whoever
+   merges).** Feature and fix PRs — subagents' included — never edit `docs/BUILD_LOG.md`; their PR
+   body ends with a short "Log entry", and the merger writes it into the log right after the merge
+   (a small docs PR when the branch is protected). Parallel PRs all appending to the same spot of the
+   log is what makes them conflict. At session start, compare the log with the PRs merged since and
+   add any missing entry. A repo whose docs say otherwise wins.
    **Every queued request lives in the log's `## Next up` section** — whatever the user calls it
    ("add to todo", "later", "next up", "queue it"). Never a separate TODO file, issue list or note.
    Each item keeps the user's decisions and open points under it, and is **removed from Next up only
