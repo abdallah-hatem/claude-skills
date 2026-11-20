@@ -67,6 +67,14 @@ tabs in Playwright and assert the header stays attached and the record isn't fet
 
 - Skeleton for *first paint of absent data*. For a refetch of data already on screen, keep
   the stale content and dim it — do not flash back to skeletons.
+- **A list that refetches also shows a small spinner in its search field.** While a search,
+  filter, tab or page change is loading, the spinner replaces the search icon in place (same
+  size, no layout shift), then the icon returns. It covers every re-query of that list, so
+  dropdowns and filters get no spinner of their own. Show it after ~150–200ms and keep it at
+  least ~300ms so fast results don't flicker; reduced motion gets a static indicator; announce
+  "Loading…" once, not per keystroke. Put it on the shared search component as a `loading`
+  prop, wired from each list's pending state. A list with filters but no search field keeps
+  only the dim.
 - For mutations, update optimistically. A skeleton after "Save" is a regression.
 - Under ~200ms, render nothing. A skeleton that appears and vanishes reads as a glitch.
 - Never animate a skeleton faster than ~1.5s per cycle; quicker pulses read as an error state.
