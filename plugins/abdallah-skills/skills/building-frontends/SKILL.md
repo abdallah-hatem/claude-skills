@@ -249,6 +249,13 @@ absent for a role without them).
   shortcut known to be wrong as a "for now" or a caveat — fix it, or stop and ask. A promo
   redemptions table once totalled the first 100 rows client-side and passed review only because
   the test promo had two rows.
+- **No client-side paging, search, filtering or sorting — ever.** Fetching the whole collection
+  and then slicing, filtering or sorting it in the browser is refused, even for lists that look
+  small today (a month's payroll lines, a statement's subtotals). The API takes `page`, `limit`,
+  `q`, filters and `sort`, returns `{ items, total }` plus any "all N" totals computed over the
+  filtered set, and the screen renders only that page. Exports fetch the full set from the server.
+  Only static config compiled into the code (an enum, a list of permission keys) may be filtered
+  in the browser. Reviews check for `.slice(`/`.filter(`/`.sort(` over fetched lists.
 - **Every endpoint wiring ships with tests** — the params sent, the response mapping, and the
   empty / 422 / 502 states — and the live check uses data where a shortcut would give a different
   answer.
