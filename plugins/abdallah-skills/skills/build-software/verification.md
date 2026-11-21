@@ -165,7 +165,7 @@ different day. Every e2e spec is written to pass on any day, after any other spe
   heavier. Give the suite one helper that every navigation goes through: wait until
   `document.querySelector('div[hidden][id^="S:"]')` is null (with a timeout that fails loudly naming
   the page — a copy that never goes is a real bug), and log the longest wait. Image-loaded checks
-  skip images inside a hidden copy (lazy ones never load). A duplicate-element failure on screens the
+  skip images inside a hidden copy and lazy images below the fold (neither loads until shown). A duplicate-element failure on screens the
   change never touched is this race, not a duplicated component — bisect the data, not the UI.
 - **Optional config is optional on CI too.** A feature that needs a key CI doesn't have (push, mail)
   checks it is hidden there and skips the rest.
