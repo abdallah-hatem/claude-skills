@@ -63,6 +63,29 @@ reads it through the same cached fetch (`cache()`), not a second request. Pages 
 the frame (an edit form) go in a separate route group so they don't inherit it. Test it: switch
 tabs in Playwright and assert the header stays attached and the record isn't fetched again.
 
+**Switching a tab or section must feel instant and move forward only.** Three traps make a
+switch feel wrong even when the logic is right:
+
+- **No transition on the selected state.** A `transition-colors` on a tab, segment or side-list
+  item's *selected* state cross-fades the old and new highlights for its duration, while the new
+  content shows on the first frame. For that moment the old tab still looks selected, so the eye
+  reads "the highlight went back, then came over". Fade on hover only; the selected marker changes
+  in the same frame as the click (keep one shared hover-only motion class for every tab-like
+  control).
+- **Client-side state changes don't round-trip the server.** A section or tab that is only view
+  state (which settings section is open) updates the URL with `window.history.replaceState` /
+  `pushState`, not `router.replace`/`push`, which re-renders the server page on every click and can
+  briefly show stale state. Read the section from the URL first so deep links, reload and back still
+  land on it. Real sub-routes (a record's tabs) use links under a shared layout, as above.
+- **A new tab or section opens at its top.** If the page is scrolled down inside one section,
+  switching shows the next one from its heading, not at the old scroll position: scroll instantly
+  (no smooth scroll that animates past content) only when the new top is off screen, and move focus
+  to the new heading without a second jump. The header stays mounted.
+
+Guard it with a Playwright check: record the active marker per frame (MutationObserver plus a
+frame loop) and assert each switch reads exactly `[old, clicked]`, the header node is unchanged,
+no server render fires for view-state switches, and the new section starts near the top.
+
 **Rules**
 
 - Skeleton for *first paint of absent data*. For a refetch of data already on screen, keep
