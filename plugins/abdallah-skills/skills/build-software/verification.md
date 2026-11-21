@@ -157,6 +157,16 @@ different day. Every e2e spec is written to pass on any day, after any other spe
   settings that later specs count takes them out again in `afterAll`.
 - **Wait for the screen, don't read it once.** Assert with retrying matchers (`toHaveCount`,
   `toHaveText`, `toHaveURL`) instead of reading a value once and comparing it.
+- **Streamed pages exist twice for a moment.** With React streaming (Next.js `loading.tsx` /
+  Suspense), the content arrives as a hidden copy (`<div hidden id="S:0">`) that React swaps in on the
+  next animation frame; until then every element in it is in the DOM twice. A one-shot read
+  (`textContent()`, `evaluate()`, `innerText`) or a strict locator hit in that gap fails with
+  "resolved to 2 elements" — rarely on a laptop, regularly on a busy CI runner, more as pages get
+  heavier. Give the suite one helper that every navigation goes through: wait until
+  `document.querySelector('div[hidden][id^="S:"]')` is null (with a timeout that fails loudly naming
+  the page — a copy that never goes is a real bug), and log the longest wait. Image-loaded checks
+  skip images inside a hidden copy (lazy ones never load). A duplicate-element failure on screens the
+  change never touched is this race, not a duplicated component — bisect the data, not the UI.
 - **Optional config is optional on CI too.** A feature that needs a key CI doesn't have (push, mail)
   checks it is hidden there and skips the rest.
 - **Every test timing out on `page.goto`, with `next-server` near 100% CPU, is the dev server, not
