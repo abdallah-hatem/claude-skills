@@ -153,6 +153,10 @@ different day. Every e2e spec is written to pass on any day, after any other spe
   extra users, closed records, very large amounts. Find a record that fits the test by asking the API
   for one with the properties it needs, page through whole lists rather than the first page, and when
   the right answer depends on existing state, read that state and compute the expectation from it.
+- **Create test data the way the app does.** Go through the API (or a shared fixture that applies
+  the same rules), not straight into the database, unless the test is about the database. A row the
+  API would refuse (a parent with none of its required children) breaks unrelated screens with
+  errors that look like app bugs.
 - **Clean up what you add that changes others' results.** A spec that creates users, accounts or
   settings that later specs count takes them out again in `afterAll`.
 - **Wait for the screen, don't read it once.** Assert with retrying matchers (`toHaveCount`,
