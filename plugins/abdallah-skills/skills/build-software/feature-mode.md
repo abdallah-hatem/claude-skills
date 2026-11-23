@@ -47,6 +47,13 @@ As new-app stage 7 — edge cases matched to named tests, and the smoke check. R
 and **every** smoke spec, not only the new ones: a feature in an existing app is where unrelated flows
 break. The `ui-auditor` runs over the screens the feature touches.
 
+Then an **independent review**: a fresh agent that took no part in writing the feature reads its
+diff and the code it touches, cold, and reports findings ranked by severity with the exact path to
+each (who sends what to get what) — access control (scopes, ids from the client, privilege ceilings,
+self-approval), business rules against the business doc, and data leaks. It is read-only and is
+given the code, not the author's conclusions. Check its findings in the code, fix the real ones (with
+a test each) before merging, and put the rest to the user.
+
 ## 6. Ship
 
 As new-app stage 8 ([shipping.md](shipping.md)): PR into `dev` and merge, smoke specs against the
