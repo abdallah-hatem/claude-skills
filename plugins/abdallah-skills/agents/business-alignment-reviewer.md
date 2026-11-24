@@ -47,6 +47,10 @@ targeted grep before reading whole files, and read only the lines you need.
 - Every behavior the diff adds or changes is described in the doc. If it isn't, the verdict is
   `DOC OUT OF DATE`.
 - If the diff edits the doc itself, the change agrees with the rest of the doc.
+- Every record the task gives a lifecycle has a timeline walk (planning.md → Timeline walks) tested
+  with an injected "today": what is current, which actions appear and what they create at each
+  step, the boundary days, and the paths back. A lifecycle with only fixed-date cases is a
+  `CONFLICTS` finding.
 - Every edge case the plan lists for this task has a test. Search the test files (`Grep`) for a
   test matching each case, and report each case with no matching test as a `CONFLICTS` finding.
 

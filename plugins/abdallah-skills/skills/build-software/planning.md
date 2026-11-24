@@ -24,6 +24,29 @@ three sources, in this order:
 
 Business-doc cases come first because no generic checklist can produce them.
 
+### Timeline walks
+
+Single-moment cases miss what breaks **between** moments. Every record with a life — anything with a
+status, a start and an end, or a decision that creates the next record (a contract, a subscription, a
+booking, an approval, a term) — also gets one or more **timeline walks** in the plan: one record taken
+through every state with "today" moving forward, including the paths back (undo, cancel, withdraw,
+reactivate) and the next period starting. At each step write down:
+
+- what is shown as **current**, upcoming or past, and what every date on screen reads;
+- which actions are offered — and what pressing each one would create (a decision taken early must
+  not act on a period that hasn't started);
+- what the reminders and counts do on the boundary days (the last day, the first day of the next
+  period, midnight in the business's time zone).
+
+Each walk becomes a test that injects "today" and asserts every step, named after the steps.
+
+```markdown
+Timeline — a yearly subscription:
+- [ ] Month 6: renewed early → next year's term is Upcoming, not Current; no Renew on it (walk: renew early)
+- [ ] First day of next term: it becomes Current; actions appear on it                (walk: period starts)
+- [ ] Month 11: cancelled after renewal → the upcoming term is cancelled, kept        (walk: path back)
+```
+
 ## Edge cases for `ui` and `surface` tasks
 
 `ui` tasks list only the interaction cases that apply — validation messages, empty and error states,
@@ -64,6 +87,7 @@ grows. During Verify, each case is ticked off against the test named for it.
   tasks that both modify a file can share a wave only when their edits are purely additive — routes,
   providers, locale keys in separate namespaces.
 - A `logic` task with no edge-case list, or one drawn only from the generic checklist
+- A record with a lifecycle and no timeline walk — every case tested at one fixed date
 - A rule in the business doc that must never break, with no case that tries to break it
 - An edge case without an expected outcome or a source
 - A case found during Build that was tested but never added to the plan
