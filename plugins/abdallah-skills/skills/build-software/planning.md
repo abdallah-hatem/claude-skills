@@ -47,6 +47,22 @@ Timeline — a yearly subscription:
 - [ ] Month 11: cancelled after renewal → the upcoming term is cancelled, kept        (walk: path back)
 ```
 
+### Blind scenarios
+
+The builder's tests share the builder's reading of the spec, so they miss what it misread. A feature
+with business or money rules also gets **blind scenarios**: a separate agent that reads only the spec
+and the business doc — never the code — and writes numbered Given/When/Then scenarios with concrete
+data and the expected results worked out (amounts to the smallest unit, dates, wording in every
+language), weighted toward whole flows and money. It ends with every place the docs are ambiguous or
+contradict each other.
+
+- The builder turns every scenario into a test named after its number (pure rules as unit tests,
+  flows and timelines end to end).
+- Where build and scenario disagree, neither side bends silently: it is a bug (fix the build), a
+  misread scenario (say why), or a spec gap (decide, write the decision into the spec and the business
+  doc, then test it). The report lists each one.
+- The scenarios file is committed next to the spec, so a later change re-runs the same checks.
+
 ## Edge cases for `ui` and `surface` tasks
 
 `ui` tasks list only the interaction cases that apply — validation messages, empty and error states,
