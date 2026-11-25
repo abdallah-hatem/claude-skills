@@ -148,6 +148,40 @@ deps stage needs the engine binaries next to the pruned `node_modules`.
 `prisma generate` needs `DATABASE_URL` to be *parseable*, not reachable — a placeholder at
 build time is legitimate, since nothing connects.
 
+### In a pnpm monorepo
+
+`pnpm deploy --filter api --prod <dir>` gathers the API with its production dependencies, but it
+picks files by the package's `"files"` list. **With no `"files"` list it takes everything not
+git-ignored: `src/`, `test/`, seed scripts.** Copying that folder into the runtime stage ships the
+source. Either give `apps/api/package.json` a `"files": ["dist", "prisma"]`, or build an explicit
+folder from the deploy output and copy only that:
+
+```dockerfile
+RUN pnpm --filter api build \
+  && pnpm deploy --filter api --prod --legacy /out \
+  && mkdir -p /final/prisma \
+  && cp -r apps/api/dist /final/dist \
+  && cp -r apps/api/prisma/migrations apps/api/prisma/schema.prisma /final/prisma/ \
+  && cp /out/package.json /final/ && cp -r /out/node_modules /final/node_modules
+
+FROM node:22-bookworm-slim
+WORKDIR /app
+COPY --from=build --chown=node:node /final ./
+USER node
+```
+
+**`COPY --chown`, never a `RUN chown -R` afterwards.** Changing owners rewrites every file into a
+new layer, so `node_modules` is stored twice and the image grows by its whole size.
+
+**Prove what shipped** before calling the image done:
+
+```bash
+docker run --rm <image> sh -c 'ls /app; ls /app/src 2>&1; whoami'
+```
+
+Only `dist`, `node_modules`, `package.json`, `prisma` (and any runtime folders) belong there, and
+the user is not root.
+
 ## Migrations are not the container's job
 
 ```dockerfile
@@ -187,5 +221,8 @@ coverage
 - **A separate test database**, never the dev one.
 - **`npm ci` everywhere**, never `npm install`, in any image.
 - **Never copy the build stage's `node_modules` into the runtime stage.**
+- **Copy an allowlist into the runtime stage**, never a whole package folder, and list the image's
+  `/app` after building: no `src/`, no `test/`.
+- **`COPY --chown`**, never `RUN chown -R` after copying.
 - **Never bake secrets into an image.** They arrive as runtime env.
 - **`.dockerignore` before the first build**, not after `.env` has shipped.
